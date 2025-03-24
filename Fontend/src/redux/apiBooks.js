@@ -1,0 +1,78 @@
+import axios from "axios";
+import {
+  getBooksStart,
+  getBooksSuccess,
+  getBooksFailed,
+  createBookStart,
+  createBookSuccess,
+  createBookFailed,
+  updateBookStart,
+  updateBookSuccess,
+  updateBookFailed,
+  deleteBookStart,
+  deleteBookSuccess,
+  deleteBookFailed,
+} from "./bookSlice";
+
+// GET ALL BOOKS
+export const getAllBooks = async (accessToken, dispatch) => {
+  dispatch(getBooksStart());
+  try {
+    const res = await axios.get("http://localhost:8000/v1/books", {
+      headers: { token: `Bearer ${accessToken}` },
+    });
+    dispatch(getBooksSuccess(Array.isArray(res.data) ? res.data : []));
+    return res.data;
+  } catch (err) {
+    dispatch(getBooksFailed());
+    console.error("Lỗi khi tải sách:", err);
+    return [];
+  }
+};
+
+// CREATE BOOK
+export const createBook = async (book, accessToken, dispatch) => {
+  dispatch(createBookStart());
+  try {
+    const res = await axios.post("http://localhost:8000/v1/books", book, {
+      headers: { token: `Bearer ${accessToken}` },
+    });
+    dispatch(createBookSuccess(res.data));
+    return res.data;
+  } catch (err) {
+    dispatch(createBookFailed());
+    console.error("Lỗi khi tạo sách:", err);
+    throw err;
+  }
+};
+
+// UPDATE BOOK
+export const updateBook = async (bookId, updatedBook, accessToken, dispatch) => {
+  dispatch(updateBookStart());
+  try {
+    const res = await axios.put(`http://localhost:8000/v1/books/${bookId}`, updatedBook, {
+      headers: { token: `Bearer ${accessToken}` },
+    });
+    dispatch(updateBookSuccess(res.data));
+    return res.data;
+  } catch (err) {
+    dispatch(updateBookFailed());
+    console.error("Lỗi khi cập nhật sách:", err);
+    throw err;
+  }
+};
+
+// DELETE BOOK
+export const deleteBook = async (bookId, accessToken, dispatch) => {
+  dispatch(deleteBookStart());
+  try {
+    await axios.delete(`http://localhost:8000/v1/books/${bookId}`, {
+      headers: { token: `Bearer ${accessToken}` },
+    });
+    dispatch(deleteBookSuccess(bookId)); // Xóa sách thành công
+  } catch (err) {
+    dispatch(deleteBookFailed());
+    console.error("Lỗi khi xóa sách:", err);
+    throw err;
+  }
+};
