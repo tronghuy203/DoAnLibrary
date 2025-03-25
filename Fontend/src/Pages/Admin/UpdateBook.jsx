@@ -1,7 +1,9 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { updateBook, getAllBooks } from "../../redux/apiBooks";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useParams, useNavigate } from "react-router-dom";
+import { createAxios } from "../../createInstance";
+import { loginSuccess } from "../../redux/authSlice";
 
 const UpdateBook = () => {
   const { bookId } = useParams();
@@ -10,13 +12,15 @@ const UpdateBook = () => {
   const [error, setError] = useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const accessToken = localStorage.getItem("accessToken");
+  const user = useSelector((state) => state.auth.login.currentUser);
+
+  const axiosJWT = useMemo(() => createAxios(user, dispatch, loginSuccess), [user, dispatch]);
 
   useEffect(() => {
     const fetchBooks = async () => {
       try {
         setLoading(true);
-        const books = await getAllBooks(accessToken, dispatch);
+        const books = await getAllBooks(user.accessToken, dispatch, axiosJWT);
         const foundBook = books.find((b) => b._id === bookId);
         if (foundBook) {
           setBook(foundBook);
@@ -30,7 +34,7 @@ const UpdateBook = () => {
       }
     };
     fetchBooks();
-  }, [bookId, dispatch, accessToken]);
+  }, [bookId, dispatch, user, axiosJWT]);
 
   const handleChange = (e) => {
     setBook({ ...book, [e.target.name]: e.target.value });
@@ -39,7 +43,7 @@ const UpdateBook = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      await updateBook(bookId, book, accessToken, dispatch);
+      await updateBook(bookId, book, user.accessToken, dispatch, axiosJWT);
       alert("Cập nhật thành công!");
       navigate("/admin/books/list");
     } catch (error) {

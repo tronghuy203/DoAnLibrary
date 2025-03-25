@@ -1,6 +1,5 @@
 import axios from "axios";
 import {jwtDecode} from "jwt-decode";
-import { loginSuccess } from "./redux/authSlice";
 
 const refreshToken = async () =>{
     try {

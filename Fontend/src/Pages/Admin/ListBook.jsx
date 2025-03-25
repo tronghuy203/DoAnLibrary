@@ -1,30 +1,34 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { getAllBooks, deleteBook } from "../../redux/apiBooks";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
+import { createAxios } from "../../createInstance";
+import { loginSuccess } from "../../redux/authSlice";
 
 const ListBook = () => {
   const [books, setBooks] = useState([]); // Ensure books is an array
   const dispatch = useDispatch();
-  const accessToken = localStorage.getItem("accessToken");
+  const user = useSelector((state) => state.auth.login.currentUser);
+  const axiosJWT = useMemo(() => createAxios(user, dispatch, loginSuccess), [user, dispatch]);
 
   useEffect(() => {
     const fetchBooks = async () => {
+      if (!user?.accessToken) return;
       try {
-        const data = await getAllBooks(accessToken, dispatch);
+        const data = await getAllBooks(user.accessToken, dispatch, axiosJWT);
         setBooks(Array.isArray(data) ? data : []);
       } catch (err) {
         console.error("Lỗi khi tải danh sách sách:", err);
-        setBooks([]); // Ensure books is always an array
+        setBooks([]);
       }
     };
     fetchBooks();
-  }, [dispatch, accessToken]);
+  }, [dispatch, dispatch, axiosJWT]);
 
   const handleDelete = async (bookId) => {
     if (window.confirm("Bạn có chắc chắn muốn xóa sách này không?")) {
       try {
-        await deleteBook(bookId, accessToken, dispatch);
+        await deleteBook(bookId, user.accessToken, dispatch,axiosJWT);
         setBooks((prevBooks) => prevBooks.filter((book) => book._id !== bookId));
       } catch (err) {
         console.error("Lỗi khi xóa sách:", err);
