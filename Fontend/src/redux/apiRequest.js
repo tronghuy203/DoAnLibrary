@@ -1,6 +1,6 @@
 import axios from "axios";
 import {loginFailed, loginStart,loginSuccess, logoutFailed, logoutStart, logoutSuccess, registerFailed, registerStart, registerSuccess,verifyEmailStart,verifyEmailSuccess,verifyEmailFailed} from "./authSlice";
-import { getUsersStart,getUsersFailed, getUsersSuccess, deleteUserStart, deleteUserFailed, deleteUserSuccess, updateUserSuccess } from "./userSlice";
+import { getUsersStart,getUsersFailed, getUsersSuccess, deleteUserStart, deleteUserFailed, deleteUserSuccess, updateUserSuccess, updateUserFailed, updateUserStart } from "./userSlice";
 
 
 export const loginUser = async(user,dispatch,navigate) =>{
@@ -97,6 +97,23 @@ export const deleteUser = (userId, accessToken, navigate, axiosJWT) => {
         }
     };
 };
+
+export const updateUserProfile = async (userId, data, accessToken, axiosJWT, dispatch) => {
+    dispatch(updateUserStart()); // Bắt đầu cập nhật (isFetching: true)
+    try {
+        const res = await axiosJWT.put(`/v1/user/update-profile/${userId}`, data, {
+            headers: { token: `Bearer ${accessToken}` },
+        });
+        dispatch(updateUserSuccess(res.data)); // Cập nhật Redux với dữ liệu mới
+        dispatch(loginSuccess({ ...res.data, accessToken }));  // Cập nhật Redux cho auth.login.currentUser
+        alert("Cập nhật thành công!");
+    } catch (err) {
+        dispatch(updateUserFailed()); // Cập nhật lỗi trong Redux
+        alert("Cập nhật thất bại!");
+        console.log(err);
+    }
+};
+
 
 export const logOut = async(dispatch,id,navigate,accessToken,axiosJWT) =>{
     dispatch(logoutStart());

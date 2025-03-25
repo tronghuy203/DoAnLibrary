@@ -30,6 +30,9 @@ const userSlice = createSlice({
                 user._id === action.payload._id ? action.payload : user
             );
             state.isFetching = false;
+            if (state.auth?.login?.currentUser?._id === action.payload._id) {
+                state.auth.login.currentUser = action.payload;
+            }
         },
         
         updateUserFailed: (state) => {

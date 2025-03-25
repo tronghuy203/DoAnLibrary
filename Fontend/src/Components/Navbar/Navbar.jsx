@@ -46,7 +46,7 @@ const Navbar = () => {
       <div className="py-6 mx-10">
         <nav className="flex flex-row justify-between items-center relative">
           <div >
-            <h1 className="basis-2/6 lg:ml-12 text-xl font-semibold cursor-pointer ">Travle</h1>
+            <h1 className="basis-2/6 lg:ml-12 text-xl font-semibold cursor-pointer ">Library</h1>
           </div>
           {/* thanh tìm kiếm */}
           {/* {user && (
