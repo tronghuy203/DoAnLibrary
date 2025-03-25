@@ -13,7 +13,7 @@ router.post("/resend-verification", authController.resendVerificationCode);
 
 router.post("/refresh",authController.requestRefreshToken);
 
-router.post("/logout",middlewareController.verifyToken,authController.userLogout)
+router.post("/logout",middlewareController.verifyToken, authController.userLogout)
 
 
 module.exports = router;

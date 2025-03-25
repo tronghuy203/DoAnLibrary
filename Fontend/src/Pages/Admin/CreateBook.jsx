@@ -1,6 +1,8 @@
-import React, { useState } from "react";
+import React, { useMemo, useState } from "react";
 import { createBook } from "../../redux/apiBooks";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
+import { createAxios } from "../../createInstance"; // Import axiosJWT
+import { loginSuccess } from "../../redux/authSlice";
 
 const CreateBook = () => {
   const [book, setBook] = useState({
@@ -10,7 +12,11 @@ const CreateBook = () => {
     price: 0,
   });
   const [message, setMessage] = useState("");
+
   const dispatch = useDispatch();
+  const user = useSelector((state) => state.auth.login.currentUser);
+  const accessToken = user?.accessToken;
+  const axiosJWT = useMemo(() => createAxios(user, dispatch, loginSuccess), [user, dispatch]);
 
   const handleChange = (e) => {
     setBook({ ...book, [e.target.name]: e.target.value });
@@ -19,9 +25,11 @@ const CreateBook = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
-      // Lấy accessToken từ localStorage (đảm bảo token của admin đã được lưu)
-      const accessToken = localStorage.getItem("accessToken");
-      const data = await createBook(book, accessToken, dispatch);
+      if (!accessToken) {
+        setMessage("Bạn cần đăng nhập để tạo sách.");
+        return;
+      }
+      const data = await createBook(book, accessToken, dispatch, axiosJWT);
       setMessage("Sách đã được tạo thành công!");
       console.log("Created Book:", data);
     } catch (err) {
@@ -70,6 +78,7 @@ const CreateBook = () => {
             name="price"
             value={book.price}
             onChange={handleChange}
+            required
           />
         </div>
         <button type="submit">Tạo sách</button>
