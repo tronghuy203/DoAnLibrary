@@ -115,7 +115,7 @@ const Register = () => {
 
     return (
         <section
-            className="relative w-full h-auto bg-cover bg-center flex items-center justify-center"
+            className="relative w-full h-screen bg-cover bg-center flex items-center justify-center"
             style={{ backgroundImage: `url(${anhnen})` }}
         >
             <div className="absolute inset-0 bg-black opacity-20"></div>

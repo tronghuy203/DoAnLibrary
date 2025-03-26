@@ -1,27 +1,32 @@
 const User = require("../models/User");
 
 const userController = {
-    getAllUsers: async(req,res) =>{
-        try{
-            const user = await User.find();
-            res.status(200).json(user);
-        }catch(err){
+    getAllUsers: async (req, res) => {
+        try {
+            const users = await User.find();
+            res.status(200).json(users);
+        } catch (err) {
             res.status(500).json(err);
         }
     },
 
-    updateUsers: async(req,res) =>{
+    updateUser: async (req, res) => {
         try {
-            if (req.user.admin) {
-                await User.findByIdAndUpdate(req.params.id,req.body, { new: true });
-                return res.status(200).json("Update successfully")
+            if (req.user.id === req.params.id || req.user.admin) {
+                const updatedUser = await User.findByIdAndUpdate(
+                    req.params.id,
+                    req.body,
+                    { new: true }
+                );
+                return res.status(200).json(updatedUser);
             } else {
-                return res.status(403).json("ban khong phai admin")
+                return res.status(403).json("Bạn chỉ có thể cập nhật thông tin của mình!");
             }
         } catch (error) {
-            return res.status(500).json(error)
+            return res.status(500).json(error);
         }
     },
+    
 
     deleteUser: async (req, res) => {
         try {
@@ -37,7 +42,25 @@ const userController = {
         } catch (err) {
             res.status(500).json(err);
         }
+    },
+
+    updateProfile: async (req, res) => {
+        try {
+            const updatedUser = await User.findByIdAndUpdate(
+                req.user.id,
+                {
+                    fullName: req.body.fullName,
+                    dob: req.body.dob,
+                    phone: req.body.phone,
+                    avatar: req.body.avatar
+                },
+                { new: true }
+            );
+            res.status(200).json(updatedUser);
+        } catch (err) {
+            res.status(500).json(err);
+        }
     }
-}
+};
 
 module.exports = userController;
