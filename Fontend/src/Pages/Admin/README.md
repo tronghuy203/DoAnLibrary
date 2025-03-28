@@ -1,89 +1,110 @@
-import React, { useEffect, useMemo, useState } from "react";
-import { updateBook, getAllBooks } from "../../redux/apiBooks";
+import React, { useMemo, useState } from "react";
+import { createBook } from "../../redux/apiBooks";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams, useNavigate } from "react-router-dom";
 import { createAxios } from "../../createInstance";
 import { loginSuccess } from "../../redux/authSlice";
-import { BookOpenIcon, UserIcon, DocumentTextIcon, CurrencyDollarIcon, ArrowLeftIcon, ExclamationCircleIcon, ArrowPathIcon } from "@heroicons/react/24/outline";
+import { BookOpenIcon, UserIcon, DocumentTextIcon, CurrencyDollarIcon, CheckCircleIcon, ExclamationCircleIcon, PhotoIcon } from "@heroicons/react/24/outline";
 
-const UpdateBook = () => {
-  const { bookId } = useParams();
-  const [book, setBook] = useState({ title: "", author: "", description: "", price: 0 });
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState("");
+const CreateBook = () => {
+  const [book, setBook] = useState({
+    title: "",
+    author: "",
+    description: "",
+    price: 0,
+  });
+  const [coverImage, setCoverImage] = useState(null);
+  const [coverImagePreview, setCoverImagePreview] = useState(null);
+  const [message, setMessage] = useState("");
+
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const user = useSelector((state) => state.auth.login.currentUser);
-
+  const accessToken = user?.accessToken;
   const axiosJWT = useMemo(() => createAxios(user, dispatch, loginSuccess), [user, dispatch]);
-
-  useEffect(() => {
-    const fetchBooks = async () => {
-      try {
-        setLoading(true);
-        const books = await getAllBooks(user.accessToken, dispatch, axiosJWT);
-        const foundBook = books.find((b) => b._id === bookId);
-        if (foundBook) {
-          setBook(foundBook);
-        } else {
-          setError("Không tìm thấy sách.");
-        }
-      } catch (error) {
-        setError("Lỗi khi tải dữ liệu sách.");
-      } finally {
-        setLoading(false);
-      }
-    };
-    fetchBooks();
-  }, [bookId, dispatch, user, axiosJWT]);
 
   const handleChange = (e) => {
     setBook({ ...book, [e.target.name]: e.target.value });
   };
 
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-    try {
-      await updateBook(bookId, book, user.accessToken, dispatch, axiosJWT);
-      alert("Cập nhật thành công!");
-      navigate("/admin/books/list");
-    } catch (error) {
-      alert("Cập nhật thất bại! Vui lòng thử lại.");
+  const handleImageChange = (e) => {
+    const file = e.target.files[0];
+    if (file) {
+      setCoverImage(file);
+      const reader = new FileReader();
+      reader.onloadend = () => {
+        setCoverImagePreview(reader.result);
+      };
+      reader.readAsDataURL(file);
+    } else {
+      setCoverImage(null);
+      setCoverImagePreview(null);
     }
   };
 
-  if (loading) {
-    return (
-      <div className="min-h-screen bg-gray-900 text-gray-100 flex flex-col items-center justify-center py-8 px-4">
-        <div className="flex items-center gap-2 text-gray-300 text-lg animate-pulse">
-          <ArrowPathIcon className="w-6 h-6 animate-spin" />
-          <p>Đang tải dữ liệu sách...</p>
-        </div>
-      </div>
-    );
-  }
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      if (!accessToken) {
+        setMessage("Bạn cần đăng nhập để tạo sách.");
+        return;
+      }
 
-  if (error) {
-    return (
-      <div className="min-h-screen bg-gray-900 text-gray-100 flex flex-col items-center justify-center py-8 px-4">
-        <div className="flex items-center gap-2 bg-red-600 text-white px-4 py-3 rounded-lg shadow-lg animate-fade-in">
-          <ExclamationCircleIcon className="w-6 h-6" />
-          <p>{error}</p>
-        </div>
-      </div>
-    );
-  }
+      const formData = new FormData();
+      formData.append("title", book.title);
+      formData.append("author", book.author);
+      formData.append("description", book.description);
+      formData.append("price", book.price);
+      if (coverImage) {
+        formData.append("coverImage", coverImage);
+      }
+
+      const data = await createBook(formData, accessToken, dispatch, axiosJWT);
+      setMessage("Sách đã được tạo thành công!");
+      console.log("Created Book:", data);
+
+      setBook({
+        title: "",
+        author: "",
+        description: "",
+        price: 0,
+      });
+      setCoverImage(null);
+      setCoverImagePreview(null);
+    } catch (err) {
+      setMessage("Có lỗi xảy ra khi tạo sách!");
+      console.error(err);
+    }
+  };
 
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 flex flex-col items-center py-8 px-4 lg:px-8">
       <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-center text-blue-400 mb-12 animate-fade-in">
-        Cập nhật sách
+        Tạo sách mới
       </h2>
+
+      {message && (
+        <div
+          className={`flex items-center gap-2 w-full max-w-2xl text-center text-sm sm:text-base mb-6 px-4 py-3 rounded-lg shadow-lg transform transition-all duration-300 animate-fade-in ${
+            message.includes("thành công")
+              ? "bg-green-600 text-white"
+              : "bg-red-600 text-white"
+          }`}
+        >
+          {message.includes("thành công") ? (
+            <CheckCircleIcon className="w-6 h-6" />
+          ) : (
+            <ExclamationCircleIcon className="w-6 h-6" />
+          )}
+          <p>{message}</p>
+        </div>
+      )}
 
       <form
         onSubmit={handleSubmit}
-        className="w-full max-w-xl bg-gradient-to-br from-gray-800 to-gray-700 p-8 rounded-xl shadow-lg transform transition-all duration-300 animate-fade-in"
+        className="w-full max-w-2xl bg-gradient-to-br from-gray-800 to-gray-700 p-8 rounded-xl shadow-lg transform transition-all duration-300 animate-fade-in"
+        encType="multipart/form-data" 
       >
+
+
         <div className="mb-6 relative">
           <label
             className="block text-gray-300 text-sm font-semibold mb-2"
@@ -142,12 +163,40 @@ const UpdateBook = () => {
               name="description"
               value={book.description}
               onChange={handleChange}
-              required
               className="w-full pl-10 pr-4 py-3 bg-gray-700 text-gray-100 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 resize-y shadow-sm hover:shadow-md"
               placeholder="Nhập mô tả sách"
               rows="4"
             />
           </div>
+        </div>
+
+        <div className="mb-6">
+          <label
+            className="block text-gray-300 text-sm font-semibold mb-2"
+            htmlFor="coverImage"
+          >
+            Ảnh bìa
+          </label>
+          <div className="relative">
+            <PhotoIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+            <input
+              type="file"
+              id="coverImage"
+              name="coverImage"
+              accept="image/*" 
+              onChange={handleImageChange}
+              className="w-full pl-10 pr-4 py-3 bg-gray-700 text-gray-100 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200 shadow-sm hover:shadow-md file:mr-4 file:py-2 file:px-4 file:rounded-lg file:border-0 file:text-sm file:font-semibold file:bg-blue-600 file:text-white hover:file:bg-blue-700"
+            />
+          </div>
+          {coverImagePreview && (
+            <div className="mt-4 flex justify-center">
+              <img
+                src={coverImagePreview}
+                alt="Cover Preview"
+                className="w-32 h-48 object-cover rounded-lg shadow-md"
+              />
+            </div>
+          )}
         </div>
 
         <div className="mb-8 relative">
@@ -173,26 +222,16 @@ const UpdateBook = () => {
           </div>
         </div>
 
-        <div className="flex gap-4">
-          <button
-            type="submit"
-            className="flex-1 flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition duration-200 shadow-md hover:shadow-lg"
-          >
-            <BookOpenIcon className="w-5 h-5" />
-            Cập nhật
-          </button>
-          <button
-            type="button"
-            onClick={() => navigate("/admin/books/list")}
-            className="flex-1 flex items-center justify-center gap-2 bg-gray-600 hover:bg-gray-700 text-white font-semibold py-3 rounded-lg transition duration-200 shadow-md hover:shadow-lg"
-          >
-            <ArrowLeftIcon className="w-5 h-5" />
-            Hủy
-          </button>
-        </div>
+        <button
+          type="submit"
+          className="w-full flex items-center justify-center gap-2 bg-blue-600 hover:bg-blue-700 text-white font-semibold py-3 rounded-lg transition duration-200 shadow-md hover:shadow-lg"
+        >
+          <BookOpenIcon className="w-5 h-5" />
+          Tạo sách
+        </button>
       </form>
     </div>
   );
 };
 
-export default UpdateBook;
+export default CreateBook;
