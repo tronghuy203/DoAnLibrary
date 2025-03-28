@@ -68,18 +68,18 @@ const authController = {
     verifyEmail: async (req, res) => {
         try {
             const { email, code } = req.body;
-
-            // Kiểm tra thông tin tạm
+            console.log("Request body:", req.body); // Log dữ liệu gửi từ client
+            console.log("tempUsers hiện tại:", tempUsers); // Log toàn bộ tempUsers
             const tempUser = tempUsers[email];
             if (!tempUser) {
+                console.log("Không tìm thấy tempUser cho email:", email);
                 return res.status(404).json("Không tìm thấy thông tin đăng ký");
             }
-
+            console.log("tempUser:", tempUser); // Log dữ liệu tempUser
+            console.log("So sánh:", tempUser.verificationCode, "với", code); // Log mã
             if (tempUser.verificationCode !== code) {
                 return res.status(400).json("Mã xác thực không đúng");
             }
-
-            // Lưu user vào MongoDB sau khi xác thực thành công
             const newUser = new User({
                 username: tempUser.username,
                 email: tempUser.email,
@@ -87,16 +87,13 @@ const authController = {
                 isVerified: true,
                 verificationCode: null,
             });
-
+            console.log("Dữ liệu trước khi lưu:", newUser); // Log trước khi lưu
             const user = await newUser.save();
             console.log("User đã lưu:", user);
-
-            // Xóa thông tin tạm
             delete tempUsers[email];
-
             return res.status(200).json("Xác thực thành công! Tài khoản đã được tạo.");
         } catch (err) {
-            console.error("Lỗi server:", err);
+            console.error("Lỗi chi tiết trong verifyEmail:", err); // Log lỗi chi tiết
             return res.status(500).json({ message: "Lỗi server", error: err.message });
         }
     },

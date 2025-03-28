@@ -7,6 +7,8 @@ const Home = lazy(() => import("../Pages/Home/Home"));
 const Profile = lazy(() => import("../Pages/Profile/Profile"));
 const Login = lazy(() => import("../Pages/Login/Login"));
 const Register = lazy(() => import("../Pages/Register/Register"));
+const AllBooks = lazy(() => import("../Pages/AllBooks/AllBooks"));
+const Cart = lazy(() => import("../Pages/Cart/Cart"));
 
 const UserRoutes = () => {
   return (
@@ -14,6 +16,8 @@ const UserRoutes = () => {
       <Suspense fallback={<div>Loading...</div>}>
         <Routes>
           <Route path="/" element={<Home />} />
+          <Route path="/all-books" element={<AllBooks />} />
+          <Route path="/cart" element={<Cart />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />

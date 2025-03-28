@@ -4,6 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { logOut } from "../../redux/apiRequest";
 import { createAxios } from "../../createInstance";
 import { logoutSuccess } from "../../redux/authSlice";
+import { Link } from "react-router-dom";
 
 const Navbar = () => {
   const user = useSelector((state) => state.auth.login.currentUser);
@@ -42,12 +43,13 @@ const Navbar = () => {
   };
 
   return (
-    <div className="content-wrapper max-w-full text-base mx-auto px-8 bg-slate-200">
-      <div className="py-6 mx-10">
-        <nav className="flex flex-row justify-between items-center relative">
-          <div >
-            <h1 className="basis-2/6 lg:ml-12 text-xl font-semibold cursor-pointer ">Library</h1>
-          </div>
+    <div className="content-wrapper max-w-full text-base mx-auto px-8 z-50 relative bg-zinc-800 text-white">
+      <div className="">
+        <nav className="z-50 relative flex bg-zinc-800 text-white px-8 py-4 items-center justify-between">
+          <Link to="/" className="flex items-center">
+            <img className="h-10 me-4" src="https://static.vecteezy.com/system/resources/previews/024/043/963/original/book-icon-clipart-transparent-background-free-png.png" alt="Logo Book" />
+            <h1 className="text-2xl font-semibold">BookLibrary</h1>
+          </Link>
           {/* thanh tìm kiếm */}
           {/* {user && (
           <div className="relative flex ml-auto mt-1 mr-6">
@@ -79,6 +81,26 @@ const Navbar = () => {
                 }
               >
                 Profile
+              </NavLink>
+              <NavLink
+                to="/all-books"
+                className={({ isActive }) =>
+                  `min-w-[70px] text-center py-2 ${
+                    isActive ? activeNavbar : ""
+                  }`
+                }
+              >
+                AllBooks
+              </NavLink>
+              <NavLink
+                to="/cart"
+                className={({ isActive }) =>
+                  `min-w-[70px] text-center py-2 ${
+                    isActive ? activeNavbar : ""
+                  }`
+                }
+              >
+                Cart
               </NavLink>
               {user ? (
                 <>
