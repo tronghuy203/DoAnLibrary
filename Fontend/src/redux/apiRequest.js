@@ -1,5 +1,5 @@
 import axios from "axios";
-import {loginFailed, loginStart,loginSuccess, logoutFailed, logoutStart, logoutSuccess, registerFailed, registerStart, registerSuccess,verifyEmailStart,verifyEmailSuccess,verifyEmailFailed} from "./authSlice";
+import {loginFailed, loginStart,loginSuccess, logoutFailed, logoutStart, logoutSuccess, registerFailed, registerStart, registerSuccess,verifyEmailStart,verifyEmailSuccess,verifyEmailFailed, forgotPasswordStart, forgotPasswordSuccess, forgotPasswordFailed, verifyResetCodeStart, verifyResetCodeSuccess, verifyResetCodeFailed, resetPasswordStart, resetPasswordSuccess, resetPasswordFailed} from "./authSlice";
 import { getUsersStart,getUsersFailed, getUsersSuccess, deleteUserStart, deleteUserFailed, deleteUserSuccess, updateUserSuccess, updateUserFailed, updateUserStart } from "./userSlice";
 
 
@@ -31,6 +31,43 @@ export const registerUser = async(user, dispatch, navigate)=>{
 
     }
 };
+
+export const forgotPassword = async (email, dispatch) => {
+    dispatch(forgotPasswordStart());
+    try {
+        const res = await axios.post("/v1/auth/forgot-password", { email });
+        dispatch(forgotPasswordSuccess());
+        return res.data; 
+    } catch (error) {
+        dispatch(forgotPasswordFailed());
+        return error.response?.data || { message: "Có lỗi xảy ra." };
+    }
+};
+
+export const verifyResetCode = async (email, code, dispatch) => {
+    dispatch(verifyResetCodeStart());
+    try {
+        const res = await axios.post("/v1/auth/verify-reset-code", {email, code }); 
+        dispatch(verifyResetCodeSuccess());
+        return res.data;
+    } catch (error) {
+        dispatch(verifyResetCodeFailed());
+        return error.response?.data || { message: "Mã OTP không hợp lệ." }; 
+    }
+};
+
+export const resetPassword = async (data, dispatch) => {
+    dispatch(resetPasswordStart());
+    try {
+        const res = await axios.post("/v1/auth/reset-password", data);
+        dispatch(resetPasswordSuccess());
+        return res.data;
+    } catch (error) {
+        dispatch(resetPasswordFailed());
+        throw error.response?.data || { message: "Có lỗi xảy ra." };
+    }
+};
+
 
 export const verifyEmail = async (data, dispatch, navigate) => {
     dispatch(verifyEmailStart());

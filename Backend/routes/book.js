@@ -1,8 +1,8 @@
 const router = require("express").Router();
-const bookController = require("../controllers/bookController");
+const {bookController, upload } = require("../controllers/bookController");
 const middlewareController = require("../controllers/middlewareController");
 
-router.post("/", middlewareController.verifyAdmin, bookController.createBook);
+router.post("/", middlewareController.verifyAdmin, upload.single("image"), bookController.createBook);
 
 router.get("/", bookController.getAllBooks);
 

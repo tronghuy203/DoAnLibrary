@@ -5,14 +5,14 @@ const bookSchema = new mongoose.Schema({
         type: String,
         require: true,
     },
-    // image: {
-    //     type: String,
-    //     require: true,
-    // },
-    // category:{
-    //     type: String,
-    //     require: true,
-    // },
+    image: {
+        type: String,
+        require: true,
+    },
+    category:{
+        type: String,
+        require: true,
+    },
     author: {
         type: String,
         require: true,
