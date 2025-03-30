@@ -88,8 +88,10 @@ const ListBook = () => {
           <table className="w-full bg-gray-800 rounded-xl shadow-lg">
             <thead>
               <tr className="bg-gradient-to-r from-gray-700 to-gray-600 text-gray-300 text-left text-sm sm:text-base">
-                <th className="py-4 px-6 font-semibold rounded-tl-xl">Tiêu đề</th>
+                <th className="py-4 px-6 font-semibold rounded-tl-xl">Ảnh</th>
+                <th className="py-4 px-6 font-semibold">Tiêu đề</th>
                 <th className="py-4 px-6 font-semibold">Tác giả</th>
+                <th className="py-4 px-6 font-semibold">Danh mục</th>
                 <th className="py-4 px-6 font-semibold">Giá (VND)</th>
                 <th className="py-4 px-6 font-semibold rounded-tr-xl">Hành động</th>
               </tr>
@@ -100,11 +102,21 @@ const ListBook = () => {
                   key={book._id}
                   className="border-t border-gray-700 hover:bg-gray-700 transition duration-200"
                 >
+                  <td className="py-4 px-6 ">
+                    <img
+                      src={book.image || "https://via.placeholder.com/100"}
+                      alt={book.title}
+                      className="w-16 h-16 object-cover rounded-md shadow"
+                    />
+                  </td>
                   <td className="py-4 px-6 text-gray-200 text-sm sm:text-base">
                     {book.title}
                   </td>
                   <td className="py-4 px-6 text-gray-200 text-sm sm:text-base">
                     {book.author}
+                  </td>
+                  <td className="py-4 px-6 text-gray-200 text-sm sm:text-base">
+                    {book.category || "Chưa có danh mục"}
                   </td>
                   <td className="py-4 px-6 text-gray-200 text-sm sm:text-base">
                     {book.price.toLocaleString()} VND

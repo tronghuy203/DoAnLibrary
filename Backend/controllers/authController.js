@@ -6,6 +6,7 @@ const nodemailer = require("nodemailer");
 
 let refreshTokens = [];
 let tempUsers = {};
+let resetCodes = {};
 
 const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
@@ -132,11 +133,71 @@ const authController = {
         }
     },
 
+    forgotPassword: async (req, res) => {
+        try {
+            const { email } = req.body;
+            const user = await User.findOne({ email });
+            if (!user) return res.status(404).json("Email không tồn tại.");
+
+            const resetCode = Math.floor(100000 + Math.random() * 900000).toString();
+            resetCodes[email] = resetCode;
+
+            const mailOptions = {
+                from: process.env.EMAIL_USER,
+                to: email,
+                subject: "Mã xác thực đặt lại mật khẩu",
+                text: `Mã xác thực của bạn là: ${resetCode}`,
+            };
+
+            transporter.sendMail(mailOptions, (err, info) => {
+                if (err) return res.status(500).json("Lỗi gửi email.");
+                res.status(200).json("Mã xác thực đặt lại mật khẩu đã được gửi.");
+            });
+        } catch (err) {
+            res.status(500).json("Lỗi server.");
+        }
+    },
+
+    // Xác thực OTP quên mật khẩu
+    verifyResetCode: async (req, res) => {
+        try {
+            const { email, code } = req.body;
+            if (resetCodes[email] !== code) {
+                return res.status(400).json({ success: false, message: "Mã xác thực không đúng." });
+            }
+            res.status(200).json({ success: true, message: "Xác thực thành công. Nhập mật khẩu mới." });
+        } catch (err) {
+            res.status(500).json({ success: false, message: "Lỗi server." });
+        }
+    },
+
+    // Đặt lại mật khẩu mới
+    resetPassword: async (req, res) => {
+        try {
+            const { email, newPassword, confirmNewPassword  } = req.body;
+            if (!resetCodes[email]) return res.status(400).json("Email không hợp lệ.");
+
+            if (newPassword !== confirmNewPassword) {
+                return res.status(400).json("Mật khẩu xác nhận không khớp.");
+            }
+
+            const salt = await bcrypt.genSalt(10);
+            const hashedPassword = await bcrypt.hash(newPassword, salt);
+
+            await User.findOneAndUpdate({ email }, { password: hashedPassword });
+            delete resetCodes[email];
+
+            res.status(200).json("Mật khẩu đã được cập nhật.");
+        } catch (err) {
+            res.status(500).json("Lỗi server.");
+        }
+    },
+
     generateAccessToken: (user) => {
         return jwt.sign(
             { id: user.id, admin: user.admin },
             process.env.JWT_ACCESS_KEY,
-            { expiresIn: "30s" }
+            { expiresIn: "1d" }
         );
     },
 

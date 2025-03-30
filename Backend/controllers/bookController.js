@@ -1,16 +1,36 @@
 const Book = require("../models/Book");
+const multer = require("multer");
+const path = require("path");
+
+// Cấu hình lưu ảnh
+const storage = multer.diskStorage({
+  destination: (req, file, cb) => {
+    cb(null, "uploads/"); // Lưu ảnh vào thư mục uploads/
+  },
+  filename: (req, file, cb) => {
+    cb(null, Date.now() + path.extname(file.originalname)); // Đổi tên file
+  },
+});
+
+const upload = multer({ storage });
 
 const bookController = {
+  // Tạo sách mới
   createBook: async (req, res) => {
     try {
-      const newBook = new Book(req.body);
+      const { title, author, description, price, category } = req.body;
+      const image = req.file ? `/uploads/${req.file.filename}` : "";
+
+      const newBook = new Book({ title, author, description, price, image, category });
       const savedBook = await newBook.save();
+
       res.status(201).json(savedBook);
     } catch (err) {
-      res.status(500).json(err);
+      res.status(500).json({ message: "Lỗi khi tạo sách!", error: err.message });
     }
   },
 
+  // Lấy tất cả sách
   getAllBooks: async (req, res) => {
     try {
       const books = await Book.find();
@@ -20,6 +40,7 @@ const bookController = {
     }
   },
 
+  // Lấy sách theo ID
   getBookById: async (req, res) => {
     try {
       const book = await Book.findById(req.params.id);
@@ -32,15 +53,25 @@ const bookController = {
     }
   },
 
+  // Cập nhật sách
   updateBook: async (req, res) => {
     try {
-      const updatedBook = await Book.findByIdAndUpdate(req.params.id, req.body ,{ new: true });
+      const { title, author, description, price, category } = req.body;
+      const image = req.file ? `/uploads/${req.file.filename}` : req.body.image;
+
+      const updatedBook = await Book.findByIdAndUpdate(
+        req.params.id,
+        { title, author, description, price, image , category },
+        { new: true }
+      );
+
       res.status(200).json(updatedBook);
     } catch (err) {
       res.status(500).json(err);
     }
   },
 
+  // Xóa sách
   deleteBook: async (req, res) => {
     try {
       await Book.findByIdAndDelete(req.params.id);
@@ -51,4 +82,4 @@ const bookController = {
   },
 };
 
-module.exports = bookController;
+module.exports = { bookController, upload };

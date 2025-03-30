@@ -65,7 +65,7 @@ const Navbar = () => {
               <NavLink
                 to="/"
                 className={({ isActive }) =>
-                  `min-w-[70px] text-center py-2 ${
+                  `min-w-[70px] text-center py-2 text-black lg:text-white${
                     isActive ? activeNavbar : ""
                   }`
                 }
@@ -75,7 +75,7 @@ const Navbar = () => {
               <NavLink
                 to="/profile"
                 className={({ isActive }) =>
-                  `min-w-[70px] text-center py-2 ${
+                  `min-w-[70px] text-center py-2 text-black lg:text-white ${
                     isActive ? activeNavbar : ""
                   }`
                 }
@@ -85,7 +85,7 @@ const Navbar = () => {
               <NavLink
                 to="/all-books"
                 className={({ isActive }) =>
-                  `min-w-[70px] text-center py-2 ${
+                  `min-w-[70px] text-center py-2 text-black lg:text-white ${
                     isActive ? activeNavbar : ""
                   }`
                 }
@@ -95,7 +95,7 @@ const Navbar = () => {
               <NavLink
                 to="/cart"
                 className={({ isActive }) =>
-                  `min-w-[70px] text-center py-2 ${
+                  `min-w-[70px] text-center py-2 text-black lg:text-white ${
                     isActive ? activeNavbar : ""
                   }`
                 }
@@ -104,12 +104,12 @@ const Navbar = () => {
               </NavLink>
               {user ? (
                 <>
-                  <p className="font-bold min-w-[100px] text-center">
+                  <p className="font-bold min-w-[100px] text-center text-black lg:text-white ">
                     Hi, <span>{user.username}</span>
                   </p>
                   <NavLink
                     to="/logout"
-                    className="min-w-[70px] text-center py-2"
+                    className="min-w-[70px] text-center py-2 text-black lg:text-white"
                     onClick={handleLogout}
                   >
                     Log out
@@ -120,7 +120,7 @@ const Navbar = () => {
                   <NavLink
                     to="/login"
                     className={({ isActive }) =>
-                      `min-w-[70px] text-center items-center py-2 ${
+                      `min-w-[70px] text-center items-center py-2 text-black lg:text-white${
                         isActive ? activeNavbar : ""
                       }`
                     }
@@ -130,7 +130,7 @@ const Navbar = () => {
                   <NavLink
                     to="/register"
                     className={({ isActive }) =>
-                      `min-w-[70px] text-center py-2 ${
+                      `min-w-[70px] text-center py-2 text-black lg:text-white ${
                         isActive ? activeNavbar : ""
                       }`
                     }

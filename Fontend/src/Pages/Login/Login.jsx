@@ -87,6 +87,11 @@ const Login = () => {
                         <span className="text-red-500 text-sm mb-3 text-center">{errors.general}</span>
                     )}
 
+                    <div className="text-right text-sm mb-3">
+                        <Link to="/forgot-password" className="text-teal-400 hover:underline">
+                            Quên mật khẩu?
+                        </Link>
+                    </div>
                     <button
                         className="w-36 h-12 my-3 rounded-xl mx-auto bg-gray-800 hover:bg-gray-700 transition duration-300 ease-in-out"
                         type="submit"
