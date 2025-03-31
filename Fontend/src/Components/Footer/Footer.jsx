@@ -4,7 +4,7 @@ import { EnvelopeIcon, PhoneIcon, GlobeAltIcon, UserGroupIcon } from "@heroicons
 const Footer = () => {
   return (
     <footer className="bg-gradient-to-r from-zinc-800 to-zinc-900 text-gray-100 px-6 py-8 lg:px-12 lg:py-10">
-      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 animate-fade-in">
+      <div className="max-w-7xl mx-auto grid grid-cols-1 md:grid-cols-3 gap-8 animate-fade-in justify-center text-center">
         <div className="flex flex-col items-center md:items-start">
           <div className="flex items-center gap-2 mb-4">
             <UserGroupIcon className="w-8 h-8 text-blue-400" />

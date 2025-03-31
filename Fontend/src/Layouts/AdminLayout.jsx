@@ -155,7 +155,7 @@ const AdminLayout = () => {
 
           <div className="mt-auto">
             <button
-              className="w-full flex items-center gap-3 py-3 px-4 text-gray-300 hover:bg-red-600 hover:text-white rounded-lg transition duration-200"
+              className="w-full flex items-center gap-3 py-3 mb-10 px-4 text-gray-300 hover:bg-red-600 hover:text-white rounded-lg transition duration-200"
               onClick={handleLogout}
             >
               <ArrowLeftOnRectangleIcon className="w-5 h-5" />
