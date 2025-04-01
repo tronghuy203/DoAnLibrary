@@ -6,6 +6,7 @@ const cookieParser = require("cookie-parser");
 const authRoute = require("./routes/auth");
 const userRoute = require("./routes/user");
 const bookRoute = require("./routes/book");
+const documentRoute = require("./routes/document");
 const path = require("path");
 
 dotenv.config();
@@ -23,6 +24,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/v1/auth", authRoute);
 app.use("/v1/user", userRoute);
 app.use("/v1/books", bookRoute);
+app.use("/v1/documents", documentRoute);
 
 app.listen(8000, () => {
     console.log("Server is running");

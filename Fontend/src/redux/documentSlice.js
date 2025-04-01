@@ -1,0 +1,96 @@
+import { createSlice } from "@reduxjs/toolkit";
+
+const documentSlice = createSlice({
+  name: "document",
+  initialState: {
+    documents: [],
+    documentDetail: null,
+    isFetching: false,
+    error: false,
+  },
+  reducers: {
+    // Lấy danh sách tài liệu
+    getDocumentsStart: (state) => {
+      state.isFetching = true;
+      state.error = false;
+    },
+    getDocumentsSuccess: (state, action) => {
+      state.isFetching = false;
+      state.documents = action.payload;
+    },
+    getDocumentsFailed: (state) => {
+      state.isFetching = false;
+      state.error = true;
+    },
+
+    // Lấy chi tiết tài liệu
+    getDocumentDetailStart: (state) => {
+      state.isFetching = true;
+      state.error = false;
+    },
+    getDocumentDetailSuccess: (state, action) => {
+      state.isFetching = false;
+      state.documentDetail = action.payload;
+    },
+    getDocumentDetailFailed: (state) => {
+      state.isFetching = false;
+      state.error = true;
+    },
+
+    // Upload tài liệu mới
+    uploadDocumentStart: (state) => {
+      state.isFetching = true;
+      state.error = false;
+    },
+    uploadDocumentSuccess: (state, action) => {
+        state.isFetching = false;
+        
+        if (!Array.isArray(state.documents)) {
+            state.documents = [];  // Initialize it as an empty array if not
+          }
+        
+        if (action.payload && Array.isArray(state.documents)) {
+          state.documents.push(action.payload);
+        } else {
+          state.error = true; // Optional: Set an error flag if payload is invalid
+          console.error("Invalid payload in uploadDocumentSuccess:", action.payload);
+        }
+      },
+      
+    uploadDocumentFailed: (state) => {
+      state.isFetching = false;
+      state.error = true;
+    },
+
+    // Xóa tài liệu
+    deleteDocumentStart: (state) => {
+      state.isFetching = true;
+      state.error = false;
+    },
+    deleteDocumentSuccess: (state, action) => {
+      state.isFetching = false;
+      state.documents = state.documents.filter(doc => doc._id !== action.payload);
+    },
+    deleteDocumentFailed: (state) => {
+      state.isFetching = false;
+      state.error = true;
+    },
+  },
+});
+
+export const {
+  getDocumentsStart,
+  getDocumentsSuccess,
+  getDocumentsFailed,
+  getDocumentDetailStart,
+  getDocumentDetailSuccess,
+  getDocumentDetailFailed,
+  uploadDocumentStart,
+  uploadDocumentSuccess,
+  uploadDocumentFailed,
+  deleteDocumentStart,
+  deleteDocumentSuccess,
+  deleteDocumentFailed,
+} = documentSlice.actions;
+
+export default documentSlice.reducer;

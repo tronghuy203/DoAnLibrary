@@ -13,6 +13,9 @@ const ResetPassword = lazy(() => import("../Pages/ForgotPassword/ResetPassword")
 const AllBooks = lazy(() => import("../Pages/AllBooks/AllBooks"));
 const Cart = lazy(() => import("../Pages/Cart/Cart"));
 const DetailBook = lazy(() => import("../Pages/DetailBook/Detailbook"));
+const DocumentList = lazy(() => import("../Pages/UserDocument/UserDocumentList"));
+const DetailDocument = lazy(() => import("../Pages/UserDocument/DetailDocument"));
+const UploadDocument = lazy(() => import("../Pages/UserDocument/UploadDocument"));
 const UserRoutes = () => {
   return (
     <UserLayout>
@@ -28,6 +31,9 @@ const UserRoutes = () => {
           <Route path="/verify-reset-code" element={<VerifyResetCode />} />
           <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/books/:id" element={<DetailBook />} />
+          <Route path="/document-list" element={<DocumentList />} />
+          <Route path="/document/:id" element={<DetailDocument />} />
+          <Route path="/upload-document" element={<UploadDocument />} />
         </Routes>
       </Suspense>
     </UserLayout>
