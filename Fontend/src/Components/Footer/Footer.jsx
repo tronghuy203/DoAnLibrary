@@ -58,7 +58,7 @@ const FooterLinks3 = [
 
 const Footer = () => {
   return (
-    <div className="py-10 bg-gray-100 flex justify-center items-center dark:bg-zinc-950 dark:text-white duration-200">
+    <div className="py-10 bg-gray-200 flex justify-center items-center dark:bg-zinc-950 dark:text-white duration-200">
       <div className="container">
         <div className="grid md:grid-cols-3 py-5 ">
           {/* company details */}

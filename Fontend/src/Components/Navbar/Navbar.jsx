@@ -6,7 +6,7 @@ import { createAxios } from "../../createInstance";
 import { logoutSuccess } from "../../redux/authSlice";
 import { Link } from "react-router-dom";
 import DarkMode from "./DarkMode";
-import {UserIcon, ShoppingCartIcon, BookOpenIcon, ArrowRightOnRectangleIcon, ArrowLeftOnRectangleIcon } from "@heroicons/react/24/outline";
+import {UserIcon, ShoppingCartIcon, BookOpenIcon, ArrowRightOnRectangleIcon, ArrowLeftOnRectangleIcon, DocumentTextIcon} from "@heroicons/react/24/outline";
 
 const Navbar = () => {
   const user = useSelector((state) => state.auth.login.currentUser);
@@ -45,7 +45,6 @@ const Navbar = () => {
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-zinc-900 backdrop-blur-md shadow-sm">
       <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-
           <Link to="/" className="flex items-center space-x-3">
             <img 
               className="h-10 w-10 object-contain" 
@@ -58,11 +57,13 @@ const Navbar = () => {
           <div className="hidden lg:flex items-center space-x-1">
             <NavItem to="/" icon={<BookOpenIcon className="w-5 h-5" />} text="Trang chủ" />
             <NavItem to="/all-books" icon={<BookOpenIcon className="w-5 h-5" />} text="Sách" />
+            <NavItem to="/document-list" icon={<DocumentTextIcon className="w-5 h-5" />} text="Tài liệu" />
             <NavItem to="/cart" icon={<ShoppingCartIcon className="w-5 h-5" />} text="Giỏ hàng" />
             <NavItem to="/profile" icon={<UserIcon className="w-5 h-5" />} text="Hồ sơ" />
             
             <div className="flex items-center space-x-4 ml-4">
               <DarkMode />
+
               {user ? (
                 <>
                   <span className="flex items-center text-sm text-gray-800 dark:text-gray-200">
@@ -107,6 +108,7 @@ const Navbar = () => {
             <div className="px-2 pt-2 pb-3 space-y-1 text-center">
               <MobileNavItem to="/" icon={<BookOpenIcon className="w-5 h-5" />} text="Home" />
               <MobileNavItem to="/all-books" icon={<BookOpenIcon className="w-5 h-5" />} text="Books" />
+              <MobileNavItem to="/document-list" icon={<DocumentTextIcon className="w-5 h-5" />} text="Tài liệu" />
               <MobileNavItem to="/cart" icon={<ShoppingCartIcon className="w-5 h-5" />} text="Cart" />
               <MobileNavItem to="/profile" icon={<UserIcon className="w-5 h-5" />} text="Profile" />
               
