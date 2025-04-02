@@ -37,6 +37,19 @@ const documentSlice = createSlice({
       state.error = true;
     },
 
+     incrementViewSuccess: (state, action) => {
+          const document = state.documents.find(doc => doc._id === action.payload.id);
+          if (document) {
+            document.views = action.payload.views;
+          }
+        },
+        incrementDownloadSuccess: (state, action) => {
+          const document = state.documents.find(doc => doc._id === action.payload.id);
+          if (document) {
+            document.downloads = action.payload.downloads;
+          }
+        },
+
     // Upload tài liệu mới
     uploadDocumentStart: (state) => {
       state.isFetching = true;
@@ -85,6 +98,8 @@ export const {
   getDocumentDetailStart,
   getDocumentDetailSuccess,
   getDocumentDetailFailed,
+  incrementViewSuccess,
+  incrementDownloadSuccess,
   uploadDocumentStart,
   uploadDocumentSuccess,
   uploadDocumentFailed,

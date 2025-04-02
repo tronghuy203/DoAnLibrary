@@ -1,4 +1,3 @@
-import axios from "axios";
 import {
   getDocumentsStart,
   getDocumentsSuccess,
@@ -12,6 +11,8 @@ import {
   deleteDocumentStart,
   deleteDocumentSuccess,
   deleteDocumentFailed,
+  incrementDownloadSuccess,
+  incrementViewSuccess
 } from "./documentSlice";
 
 // Lấy tất cả tài liệu (Admin)
@@ -64,7 +65,45 @@ export const getDocumentDetail = async (documentId, accessToken, dispatch, axios
 };
 
 
+// Tăng lượt xem tài liệu
+export const viewDocument = async (documentId, accessToken, dispatch, axiosJWT) => {
+  try {
+    const res = await axiosJWT.get(`/v1/documents/view/${documentId}`, {
+      headers: { token: `Bearer ${accessToken}` },
+    });
+    const { id, views } = res.data;
+    dispatch(incrementViewSuccess({ id, views }));
+  } catch (err) {
+    console.error("Lỗi khi xem tài liệu:", err);
+  }
+};
 
+// Tải tài liệu
+export const downloadDocument = async (documentId, accessToken, documentTitle, dispatch, axiosJWT) => {
+  try {
+    // Gọi API để lấy dữ liệu file
+    const response = await axiosJWT.get(`/v1/documents/download/${documentId}`, {
+      headers: { token: `Bearer ${accessToken}` },
+      responseType: 'blob', // Quan trọng: để xử lý file binary
+    });
+
+    // Tạo URL từ blob
+    const url = window.URL.createObjectURL(new Blob([response.data]));
+    const link = window.document.createElement('a');
+    link.href = url;
+    link.download = `${documentTitle || 'document'}.pdf`; // Đặt tên file tải về
+    window.document.body.appendChild(link);
+    link.click();
+    window.document.body.removeChild(link);
+    window.URL.revokeObjectURL(url); // Giải phóng URL
+
+    // Cập nhật số lượt tải xuống
+    dispatch(incrementDownloadSuccess({ id: documentId, downloads: response.data.downloads || 0 }));
+  } catch (err) {
+    console.error("Lỗi khi tải tài liệu:", err);
+    throw err; // Ném lỗi để component có thể xử lý
+  }
+};
 
 // Tải lên tài liệu mới
 export const uploadDocument = async (documentData, accessToken, dispatch, axiosJWT) => {

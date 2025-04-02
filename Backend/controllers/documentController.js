@@ -2,31 +2,28 @@ const Document = require("../models/Document");
 const multer = require("multer");
 const path = require("path");
 
-// Cấu hình lưu file
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads/"); // Lưu file vào thư mục uploads/
+    cb(null, "uploads/"); 
   },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname)); // Đổi tên file
+    cb(null, Date.now() + path.extname(file.originalname)); 
   },
 });
 
 const upload = multer({ storage });
 
 const documentController = {
-  // Tải lên tài liệu mới
   uploadDocument: async (req, res) => {
     try {
-
       const { title, description } = req.body;
       const fileUrl = req.file ? `/uploads/${req.file.filename}` : "";
-      
+
       const newDocument = new Document({
         title,
         description,
         fileUrl,
-        uploadedBy: req.user.id, // Lấy ID user từ JWT
+        uploadedBy: req.user.id,
       });
 
       const savedDocument = await newDocument.save();
@@ -36,7 +33,7 @@ const documentController = {
     }
   },
 
-  // Lấy tất cả tài liệu
+
   getAllDocuments: async (req, res) => {
     try {
       const documents = await Document.find().populate("uploadedBy", "username");
@@ -46,7 +43,7 @@ const documentController = {
     }
   },
 
-  // Lấy tài liệu theo ID
+
   getDocumentById: async (req, res) => {
     try {
       const document = await Document.findById(req.params.id);
@@ -59,11 +56,14 @@ const documentController = {
     }
   },
 
-  // Xem tài liệu online
+
   viewDocument: async (req, res) => {
     try {
       const document = await Document.findById(req.params.id);
       if (!document) return res.status(404).json({ message: "Tài liệu không tồn tại" });
+
+      document.views += 1;
+      await document.save();
 
       res.sendFile(path.join(__dirname, "../uploads", path.basename(document.fileUrl)));
     } catch (err) {
@@ -71,11 +71,14 @@ const documentController = {
     }
   },
 
-  // Tải tài liệu xuống
   downloadDocument: async (req, res) => {
     try {
       const document = await Document.findById(req.params.id);
       if (!document) return res.status(404).json({ message: "Tài liệu không tồn tại" });
+
+  
+      document.downloads += 1;
+      await document.save();
 
       res.download(path.join(__dirname, "../uploads", path.basename(document.fileUrl)));
     } catch (err) {
@@ -83,13 +86,38 @@ const documentController = {
     }
   },
 
-  // Xóa tài liệu
   deleteDocument: async (req, res) => {
     try {
       await Document.findByIdAndDelete(req.params.id);
       res.status(200).json("Tài liệu đã được xóa thành công");
     } catch (err) {
       res.status(500).json(err);
+    }
+  },
+
+  getTotalStats: async (req, res) => {
+    try {
+      const stats = await Document.aggregate([
+        {
+          $group: {
+            _id: null,
+            totalViews: { $sum: "$views" },
+            totalDownloads: { $sum: "$downloads" }
+          }
+        }
+      ]);
+      res.status(200).json(stats[0] || { totalViews: 0, totalDownloads: 0 });
+    } catch (err) {
+      res.status(500).json({ message: "Lỗi khi lấy thống kê tổng", error: err });
+    }
+  },
+
+  getDocumentStats: async (req, res) => {
+    try {
+      const stats = await Document.find({}, "title views downloads");
+      res.status(200).json(stats);
+    } catch (err) {
+      res.status(500).json({ message: "Lỗi khi lấy thống kê", error: err });
     }
   },
 };

@@ -1,7 +1,7 @@
 import React, { useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { getAllDocumentsUser } from "../../redux/apiDocument";
+import { getAllDocumentsUser, viewDocument } from "../../redux/apiDocument"; // Import viewDocument action
 import { createAxios } from "../../createInstance";
 import { loginSuccess } from "../../redux/authSlice";
 
@@ -14,9 +14,9 @@ const UserDocumentList = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    if (!user){
-      navigate("/login")
-    }else if (user?.accessToken) {
+    if (!user) {
+      navigate("/login");
+    } else if (user?.accessToken) {
       getAllDocumentsUser(user?.accessToken, dispatch, axiosJWT);
     }
   }, [user, navigate, user?.accessToken, dispatch, axiosJWT]);
@@ -26,6 +26,10 @@ const UserDocumentList = () => {
   };
 
   const handleDetailClick = (id) => {
+    // Increment view count before navigating to the details page
+    if (user?.accessToken) {
+      viewDocument(id, user?.accessToken, dispatch, axiosJWT); // Call the viewDocument action
+    }
     navigate(`/document/${id}`);
   };
 

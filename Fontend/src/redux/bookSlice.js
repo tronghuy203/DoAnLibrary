@@ -38,7 +38,6 @@ const bookSlice = createSlice({
       state.error = true;
     },
 
-
     // CREATE BOOK
     createBookStart: (state) => {
       state.isFetching = true;
@@ -95,6 +94,8 @@ export const {
   getBookDetailStart,
   getBookDetailSuccess,
   getBookDetailFailed,
+  incrementViewSuccess,
+  incrementDownloadSuccess,
   createBookStart,
   createBookSuccess,
   createBookFailed,
