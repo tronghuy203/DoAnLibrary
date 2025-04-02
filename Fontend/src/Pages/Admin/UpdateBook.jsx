@@ -38,7 +38,11 @@ const UpdateBook = () => {
   }, [bookId, dispatch, user, axiosJWT]);
 
   const handleChange = (e) => {
-    setBook({ ...book, [e.target.name]: e.target.value });
+    if (e.target.name === "image") {
+      setBook({ ...book, image: e.target.files[0] });
+    } else {
+      setBook({ ...book, [e.target.name]: e.target.value });
+    }
   };
 
   const handleSubmit = async (e) => {
@@ -126,6 +130,21 @@ const UpdateBook = () => {
               placeholder="Nhập tên tác giả"
             />
           </div>
+        </div>
+
+        <div className="mb-6 relative">
+          <label className="block text-gray-300 text-sm font-semibold mb-2" htmlFor="image">Ảnh</label>
+          <input type="file" id="image" name="image" onChange={handleChange} className="w-full p-3 bg-gray-700 text-gray-100 rounded-lg" />
+        </div>
+
+        <div className="mb-6 relative">
+          <label className="block text-gray-300 text-sm font-semibold mb-2" htmlFor="category">Danh mục</label>
+          <select id="category" name="category" value={book.category} onChange={handleChange} className="w-full p-3 bg-gray-700 text-gray-100 rounded-lg">
+            <option value="">Chọn danh mục</option>
+            <option value="Tiểu thuyết">Tiểu thuyết</option>
+            <option value="Khoa học">Khoa học</option>
+            <option value="Lịch sử">Lịch sử</option>
+          </select>
         </div>
 
         <div className="mb-6 relative">

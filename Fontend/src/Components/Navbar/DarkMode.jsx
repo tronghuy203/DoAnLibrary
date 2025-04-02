@@ -17,7 +17,7 @@ const DarkMode = () => {
     return (
         <>
             <div className="relative">
-                <img src="/light-mode.png" 
+                <img src="/light-mode-button-X4OXHFfW.png" 
                 alt="" 
                 className={`w-12 cursor-pointer drop-shadow-[1px_1px_1px_rgba(0,0,0,0.1)]
                     transition-all duration-300 absolute right-0 z-10
@@ -25,7 +25,7 @@ const DarkMode = () => {
                     `}
                 onClick={() => setTheme(theme === "dark" ? "light" : "dark")}
                 />
-                <img src="/dark-mode.png" 
+                <img src="/dark-mode-button-85jBkhOs.png" 
                 alt="" 
                 className="w-12 cursor-pointer drop-shadow-[1px_1px_1px_rgba(0,0,0,0.5)]
                     duration-300"

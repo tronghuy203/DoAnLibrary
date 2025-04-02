@@ -42,31 +42,30 @@ const Navbar = () => {
   };
 
   return (
-    <nav className="fixed top-0 left-0 right-0 z-50 bg-white/95 dark:bg-zinc-900/95 backdrop-blur-md shadow-sm">
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-zinc-900 backdrop-blur-md shadow-sm">
       <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-          {/* Logo Section */}
+
           <Link to="/" className="flex items-center space-x-3">
             <img 
               className="h-10 w-10 object-contain" 
               src="https://static.vecteezy.com/system/resources/previews/024/043/963/original/book-icon-clipart-transparent-background-free-png.png" 
               alt="BookLibrary"
             />
-            <span className="text-2xl font-bold text-gray-900 dark:text-white">BookLibrary</span>
+            <span className="text-2xl font-bold text-gray-900 dark:text-white">Books Library</span>
           </Link>
 
-          {/* Desktop Menu */}
           <div className="hidden lg:flex items-center space-x-1">
-            <NavItem to="/" icon={<BookOpenIcon className="w-5 h-5" />} text="Home" />
-            <NavItem to="/all-books" icon={<BookOpenIcon className="w-5 h-5" />} text="Books" />
-            <NavItem to="/cart" icon={<ShoppingCartIcon className="w-5 h-5" />} text="Cart" />
-            <NavItem to="/profile" icon={<UserIcon className="w-5 h-5" />} text="Profile" />
+            <NavItem to="/" icon={<BookOpenIcon className="w-5 h-5" />} text="Trang chủ" />
+            <NavItem to="/all-books" icon={<BookOpenIcon className="w-5 h-5" />} text="Sách" />
+            <NavItem to="/cart" icon={<ShoppingCartIcon className="w-5 h-5" />} text="Giỏ hàng" />
+            <NavItem to="/profile" icon={<UserIcon className="w-5 h-5" />} text="Hồ sơ" />
             
             <div className="flex items-center space-x-4 ml-4">
               <DarkMode />
               {user ? (
                 <>
-                  <span className="flex items-center text-sm text-gray-700 dark:text-gray-200">
+                  <span className="flex items-center text-sm text-gray-800 dark:text-gray-200">
                     {user?.avatar ? 
                       <img src={user.avatar} alt="Avatar" className="w-8 h-8 rounded-full object-cover mr-2" /> : 
                       <img src="/default-avatar.png" alt="Default Avatar" className="w-8 h-8 rounded-full object-cover mr-2" />
@@ -83,14 +82,12 @@ const Navbar = () => {
                 </>
               ) : (
                 <>
-                  <NavItem to="/login" icon={<ArrowLeftOnRectangleIcon className="w-5 h-5" />} text="Login" />
-                  <NavItem to="/register" icon={<UserIcon className="w-5 h-5" />} text="Register" />
+                  <><NavItem to="/login" icon={<ArrowLeftOnRectangleIcon className="w-5 h-5" />} text="Login" /><NavItem to="/register" icon={<UserIcon className="w-5 h-5" />} text="Register" /></>
                 </>
               )}
             </div>
           </div>
 
-          {/* Mobile Menu Button */}
           <button
             ref={toggleIconRef}
             onClick={handleToggleMenu}
@@ -102,7 +99,6 @@ const Navbar = () => {
           </button>
         </div>
 
-        {/* Mobile Menu */}
         {isMenuOpen && (
           <div 
             ref={topMenuRef}
@@ -145,7 +141,6 @@ const Navbar = () => {
   );
 };
 
-// Reusable NavItem component for desktop
 const NavItem = ({ to, icon, text }) => (
   <NavLink
     to={to}
@@ -162,7 +157,6 @@ const NavItem = ({ to, icon, text }) => (
   </NavLink>
 );
 
-// Reusable MobileNavItem component
 const MobileNavItem = ({ to, icon, text }) => (
   <NavLink
     to={to}

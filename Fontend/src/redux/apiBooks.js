@@ -1,4 +1,4 @@
-import axios from "axios";
+
 import {
   getBooksStart,
   getBooksSuccess,
@@ -12,6 +12,9 @@ import {
   deleteBookStart,
   deleteBookSuccess,
   deleteBookFailed,
+  getBookDetailStart,
+  getBookDetailSuccess,
+  getBookDetailFailed
 } from "./bookSlice";
 
 // GET ALL BOOKS
@@ -27,6 +30,21 @@ export const getAllBooks = async (accessToken, dispatch,axiosJWT) => {
     dispatch(getBooksFailed());
     console.error("Lỗi khi tải sách:", err);
     return [];
+  }
+};
+
+export const getBookDetail = async (bookId, accessToken, dispatch, axiosJWT) => {
+  dispatch(getBookDetailStart());
+  try {
+    const res = await axiosJWT.get(`http://localhost:8000/v1/books/${bookId}`, {
+      headers: { token: `Bearer ${accessToken}` },
+    });
+    dispatch(getBookDetailSuccess(res.data));
+    return res.data;
+  } catch (err) {
+    dispatch(getBookDetailFailed());
+    console.error("Lỗi khi lấy chi tiết sách:", err);
+    return null;
   }
 };
 
@@ -51,7 +69,9 @@ export const updateBook = async (bookId, updatedBook, accessToken, dispatch,axio
   dispatch(updateBookStart());
   try {
     const res = await axiosJWT.put(`http://localhost:8000/v1/books/${bookId}`, updatedBook, {
-      headers: { token: `Bearer ${accessToken}` },
+      headers: {  
+        "Content-Type": "multipart/form-data",
+        token: `Bearer ${accessToken}` },
     });
     dispatch(updateBookSuccess(res.data));
     return res.data;

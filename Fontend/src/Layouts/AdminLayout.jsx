@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { logOut } from "../redux/apiRequest";
 import { createAxios } from "../createInstance";
 import { logoutSuccess } from "../redux/authSlice";
-import { BookOpenIcon, PlusIcon, ListBulletIcon, ArrowLeftOnRectangleIcon } from "@heroicons/react/24/outline"; // Import icon từ @heroicons/react
+import { BookOpenIcon, PlusIcon, ListBulletIcon, ArrowLeftOnRectangleIcon, ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/24/outline"; 
 
 const AdminLayout = () => {
   const [isBookMenuOpen, setIsBookMenuOpen] = useState(false);
@@ -87,11 +87,11 @@ const AdminLayout = () => {
                   <BookOpenIcon className="w-5 h-5" /> 
                   <span>Quản lý sách</span>
                 </div>
-                <img
-                  src={isBookMenuOpen ? "/mtduoi.png" : "/mtphai.png"}
-                  alt="toggle menu"
-                  className="w-4 h-4 transition-transform duration-200"
-                />
+                {isBookMenuOpen ? (
+                  <ChevronDownIcon className="w-4 h-4 text-white transition-transform duration-200" />
+                ) : (
+                  <ChevronRightIcon className="w-4 h-4 text-white transition-transform duration-200" />
+                )}
               </div>
               {isBookMenuOpen && (
                 <ul className="pl-8 mt-2 space-y-2">
@@ -104,7 +104,7 @@ const AdminLayout = () => {
                           : "text-gray-400 hover:bg-gray-700 hover:text-white"
                       }`}
                     >
-                      <PlusIcon className="w-5 h-5" /> {/* Icon Thêm sách */}
+                      <PlusIcon className="w-5 h-5" />
                       <span>Thêm sách</span>
                     </Link>
                   </li>

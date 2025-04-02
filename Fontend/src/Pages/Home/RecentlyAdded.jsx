@@ -1,6 +1,40 @@
 import { Link } from "react-router-dom"; // Import Link để tạo nút "Xem chi tiết"
+import { useEffect, useMemo } from "react";
+import { useDispatch, useSelector } from "react-redux";
+import { useNavigate } from "react-router-dom";
+import { createAxios } from "../../createInstance";
+import { loginSuccess } from "../../redux/authSlice";
+import { getAllUsers } from "../../redux/apiRequest";
+import { getAllBooks } from "../../redux/apiBooks";
 
-const RecentlyAddedBooks = ({ books }) => {
+const RecentlyAddedBooks = () => {
+  // Lấy thông tin người dùng từ redux
+  const user = useSelector((state) => state.auth.login?.currentUser);
+  // Lấy danh sách sách từ redux (đã tạo ở bookSlice)
+  const books = useSelector((state) => state.books.allBooks);
+  const dispatch = useDispatch();
+  const navigate = useNavigate();
+  const axiosJWT = useMemo(() => {return createAxios(user, dispatch, loginSuccess);}, [user, dispatch]);
+
+  useEffect(() => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+  
+    const fetchData = async () => {
+      try {
+        await getAllUsers(user.accessToken, dispatch, axiosJWT);
+        await getAllBooks(user.accessToken, dispatch, axiosJWT);
+      } catch (error) {
+        console.error("Lỗi khi tải dữ liệu:", error);
+      }
+    };
+  
+    fetchData();
+  }, [user, dispatch, axiosJWT, navigate]);
+  
+
   return (
     <div className="p-4 lg:p-6">
       {/* Tiêu đề */}

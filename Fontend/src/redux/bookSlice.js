@@ -4,6 +4,7 @@ const bookSlice = createSlice({
   name: "books",
   initialState: {
     allBooks: [],
+    detailBook: null,
     isFetching: false,
     error: false,
     createBookStatus: "",
@@ -22,6 +23,21 @@ const bookSlice = createSlice({
       state.isFetching = false;
       state.error = true;
     },
+
+    // DETAIL BOOK
+    getBookDetailStart: (state) => {
+      state.isFetching = true;
+    },
+    getBookDetailSuccess: (state, action) => {
+      state.isFetching = false;
+      state.detailBook = action.payload;
+      state.error = false;
+    },
+    getBookDetailFailed: (state) => {
+      state.isFetching = false;
+      state.error = true;
+    },
+
 
     // CREATE BOOK
     createBookStart: (state) => {
@@ -76,6 +92,9 @@ export const {
   getBooksStart,
   getBooksSuccess,
   getBooksFailed,
+  getBookDetailStart,
+  getBookDetailSuccess,
+  getBookDetailFailed,
   createBookStart,
   createBookSuccess,
   createBookFailed,
@@ -85,6 +104,7 @@ export const {
   deleteBookStart,
   deleteBookSuccess,
   deleteBookFailed,
+
 } = bookSlice.actions;
 
 export default bookSlice.reducer;
