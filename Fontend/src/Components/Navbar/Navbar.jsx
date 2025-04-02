@@ -83,6 +83,16 @@ const Navbar = () => {
                 Profile
               </NavLink>
               <NavLink
+                to="/document-list"
+                className={({ isActive }) =>
+                  `min-w-[70px] text-center py-2 text-black lg:text-white ${
+                    isActive ? activeNavbar : ""
+                  }`
+                }
+              >
+                Document
+              </NavLink>
+              <NavLink
                 to="/all-books"
                 className={({ isActive }) =>
                   `min-w-[70px] text-center py-2 text-black lg:text-white ${
@@ -92,6 +102,7 @@ const Navbar = () => {
               >
                 AllBooks
               </NavLink>
+
               <NavLink
                 to="/cart"
                 className={({ isActive }) =>

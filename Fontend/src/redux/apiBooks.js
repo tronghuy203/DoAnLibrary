@@ -1,4 +1,3 @@
-import axios from "axios";
 import {
   getBooksStart,
   getBooksSuccess,
@@ -69,7 +68,9 @@ export const updateBook = async (bookId, updatedBook, accessToken, dispatch,axio
   dispatch(updateBookStart());
   try {
     const res = await axiosJWT.put(`http://localhost:8000/v1/books/${bookId}`, updatedBook, {
-      headers: { token: `Bearer ${accessToken}` },
+      headers: {  
+        "Content-Type": "multipart/form-data",
+        token: `Bearer ${accessToken}` },
     });
     dispatch(updateBookSuccess(res.data));
     return res.data;
