@@ -5,6 +5,8 @@ import { logOut } from "../../redux/apiRequest";
 import { createAxios } from "../../createInstance";
 import { logoutSuccess } from "../../redux/authSlice";
 import { Link } from "react-router-dom";
+import DarkMode from "./DarkMode";
+import {UserIcon, ShoppingCartIcon, BookOpenIcon, ArrowRightOnRectangleIcon, ArrowLeftOnRectangleIcon, DocumentTextIcon} from "@heroicons/react/24/outline";
 
 const Navbar = () => {
   const user = useSelector((state) => state.auth.login.currentUser);
@@ -12,170 +14,165 @@ const Navbar = () => {
   const navigate = useNavigate();
   const accessToken = user?.accessToken;
   const id = user?._id;
-  let axiosJWT = createAxios(user, dispatch, logoutSuccess);
+  const axiosJWT = createAxios(user, dispatch, logoutSuccess);
 
   const topMenuRef = useRef();
   const toggleIconRef = useRef();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
 
-  const handleClickOutside = (e) => {
-    if (topMenuRef.current &&!topMenuRef.current.contains(e.target) && toggleIconRef.current && !toggleIconRef.current.contains(e.target)) {
-      setIsMenuOpen(false);
-    }
-  };
-
   useEffect(() => {
-    document.addEventListener("click", handleClickOutside);
-    return () => {
-      document.removeEventListener("click", handleClickOutside);
+    const handleClickOutside = (e) => {
+      if (
+        topMenuRef.current &&
+        !topMenuRef.current.contains(e.target) &&
+        toggleIconRef.current &&
+        !toggleIconRef.current.contains(e.target)
+      ) {
+        setIsMenuOpen(false);
+      }
     };
+    document.addEventListener("click", handleClickOutside);
+    return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
-  const handleToggleMenu = () => {
-    setIsMenuOpen((prev) => !prev);
-  };
- 
-  const activeNavbar = "w-5 bg-[#003A57] text-white rounded-md mx-auto min-h-max";
-
+  const handleToggleMenu = () => setIsMenuOpen((prev) => !prev);
 
   const handleLogout = () => {
     logOut(dispatch, id, navigate, accessToken, axiosJWT);
   };
 
   return (
-    <div className="content-wrapper max-w-full text-base mx-auto px-8 z-50 relative bg-zinc-800 text-white">
-      <div className="">
-        <nav className="z-50 relative flex bg-zinc-800 text-white px-8 py-4 items-center justify-between">
-          <Link to="/" className="flex items-center">
-            <img className="h-10 me-4" src="https://static.vecteezy.com/system/resources/previews/024/043/963/original/book-icon-clipart-transparent-background-free-png.png" alt="Logo Book" />
-            <h1 className="text-2xl font-semibold">BookLibrary</h1>
+    <nav className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-zinc-900 backdrop-blur-md shadow-sm">
+      <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
+        <div className="flex items-center justify-between h-16">
+          <Link to="/" className="flex items-center space-x-3">
+            <img 
+              className="h-10 w-10 object-contain" 
+              src="https://static.vecteezy.com/system/resources/previews/024/043/963/original/book-icon-clipart-transparent-background-free-png.png" 
+              alt="BookLibrary"
+            />
+            <span className="text-2xl font-bold text-gray-900 dark:text-white">Books Library</span>
           </Link>
-          {/* thanh tìm kiếm */}
-          {/* {user && (
-          <div className="relative flex ml-auto mt-1 mr-6">
-            <input className="basis-1/6 rounded-2xl pl-7 h-8 w-28 lg:w-52" type="search" placeholder="Tìm kiếm"/>
-            <svg xmlns="http://www.w3.org/2000/svg"  className="size-6 absolute top-1 left-1" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor">
-              <path strokeLinecap="round" strokeLinejoin="round" d="m21 21-5.197-5.197m0 0A7.5 7.5 0 1 0 5.196 5.196a7.5 7.5 0 0 0 10.607 10.607Z" />
-            </svg>
-          </div>
-          )} */} 
 
-          <div>
-            <div id="top-menu" ref={topMenuRef} className={`basis-3/6 lg:flex lg:items-center lg:justify-end lg:gap-x-8 ${ isMenuOpen ? "topmenu-expanded" : "hidden lg:flex"}`}>
-              <NavLink
-                to="/"
-                className={({ isActive }) =>
-                  `min-w-[70px] text-center py-2 text-black lg:text-white${
-                    isActive ? activeNavbar : ""
-                  }`
-                }
-              >
-                Home
-              </NavLink>
-              <NavLink
-                to="/profile"
-                className={({ isActive }) =>
-                  `min-w-[70px] text-center py-2 text-black lg:text-white ${
-                    isActive ? activeNavbar : ""
-                  }`
-                }
-              >
-                Profile
-              </NavLink>
-              <NavLink
-                to="/document-list"
-                className={({ isActive }) =>
-                  `min-w-[70px] text-center py-2 text-black lg:text-white ${
-                    isActive ? activeNavbar : ""
-                  }`
-                }
-              >
-                Document
-              </NavLink>
-              <NavLink
-                to="/all-books"
-                className={({ isActive }) =>
-                  `min-w-[70px] text-center py-2 text-black lg:text-white ${
-                    isActive ? activeNavbar : ""
-                  }`
-                }
-              >
-                AllBooks
-              </NavLink>
+          <div className="hidden lg:flex items-center space-x-1">
+            <NavItem to="/" icon={<BookOpenIcon className="w-5 h-5" />} text="Trang chủ" />
+            <NavItem to="/all-books" icon={<BookOpenIcon className="w-5 h-5" />} text="Sách" />
+            <NavItem to="/document-list" icon={<DocumentTextIcon className="w-5 h-5" />} text="Tài liệu" />
+            <NavItem to="/cart" icon={<ShoppingCartIcon className="w-5 h-5" />} text="Giỏ hàng" />
+            <NavItem to="/profile" icon={<UserIcon className="w-5 h-5" />} text="Hồ sơ" />
+            
+            <div className="flex items-center space-x-4 ml-4">
+              <DarkMode />
 
-              <NavLink
-                to="/cart"
-                className={({ isActive }) =>
-                  `min-w-[70px] text-center py-2 text-black lg:text-white ${
-                    isActive ? activeNavbar : ""
-                  }`
-                }
-              >
-                Cart
-              </NavLink>
               {user ? (
                 <>
-                  <p className="font-bold min-w-[100px] text-center text-black lg:text-white ">
-                    Hi, <span>{user.username}</span>
-                  </p>
-                  <NavLink
-                    to="/logout"
-                    className="min-w-[70px] text-center py-2 text-black lg:text-white"
+                  <span className="flex items-center text-sm text-gray-800 dark:text-gray-200">
+                    {user?.avatar ? 
+                      <img src={user.avatar} alt="Avatar" className="w-8 h-8 rounded-full object-cover mr-2" /> : 
+                      <img src="/default-avatar.png" alt="Default Avatar" className="w-8 h-8 rounded-full object-cover mr-2" />
+                    }
+                    {user.username}
+                  </span>
+                  <button
                     onClick={handleLogout}
+                    className="flex items-center space-x-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/50 rounded-lg transition-colors"
                   >
-                    Log out
-                  </NavLink>
+                    <ArrowRightOnRectangleIcon className="w-5 h-5" />
+                    <span>Logout</span>
+                  </button>
                 </>
               ) : (
                 <>
-                  <NavLink
-                    to="/login"
-                    className={({ isActive }) =>
-                      `min-w-[70px] text-center items-center py-2 text-black lg:text-white${
-                        isActive ? activeNavbar : ""
-                      }`
-                    }
-                  >
-                    Login
-                  </NavLink>
-                  <NavLink
-                    to="/register"
-                    className={({ isActive }) =>
-                      `min-w-[70px] text-center py-2 text-black lg:text-white ${
-                        isActive ? activeNavbar : ""
-                      }`
-                    }
-                  >
-                    Register
-                  </NavLink>
+                  <><NavItem to="/login" icon={<ArrowLeftOnRectangleIcon className="w-5 h-5" />} text="Login" /><NavItem to="/register" icon={<UserIcon className="w-5 h-5" />} text="Register" /></>
                 </>
               )}
             </div>
+          </div>
 
-            <div className="basis-3/6 lg:hidden cursor-pointer">
-              <svg
-                id="toggle-top-menu-icon"
-                ref={toggleIconRef}
-                xmlns="http://www.w3.org/2000/svg"
-                fill="none"
-                viewBox="0 0 24 24"
-                strokeWidth={1.5}
-                stroke="currentColor"
-                className="size-6"
-                onClick={handleToggleMenu}
-              >
-                <path
-                  strokeLinecap="round"
-                  strokeLinejoin="round"
-                  d="M3.75 6.75h16.5M3.75 12h16.5m-16.5 5.25h16.5"
-                />
-              </svg>
+          <button
+            ref={toggleIconRef}
+            onClick={handleToggleMenu}
+            className="lg:hidden p-2 rounded-md text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800"
+          >
+            <svg className="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M4 6h16M4 12h16M4 18h16" />
+            </svg>
+          </button>
+        </div>
+
+        {isMenuOpen && (
+          <div 
+            ref={topMenuRef}
+            className="lg:hidden absolute top-16 left-1/2 transform -translate-x-1/2 w-full max-w-full bg-white dark:bg-zinc-900 border-t dark:border-zinc-800 shadow-lg animate-in slide-in-from-top-2 flex flex-col items-center"
+          >
+            <div className="px-2 pt-2 pb-3 space-y-1 text-center">
+              <MobileNavItem to="/" icon={<BookOpenIcon className="w-5 h-5" />} text="Home" />
+              <MobileNavItem to="/all-books" icon={<BookOpenIcon className="w-5 h-5" />} text="Books" />
+              <MobileNavItem to="/document-list" icon={<DocumentTextIcon className="w-5 h-5" />} text="Tài liệu" />
+              <MobileNavItem to="/cart" icon={<ShoppingCartIcon className="w-5 h-5" />} text="Cart" />
+              <MobileNavItem to="/profile" icon={<UserIcon className="w-5 h-5" />} text="Profile" />
+              
+              {user ? (
+                <>
+                  <div className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200 flex items-center">
+                  {user?.avatar ? 
+                      <img src={user.avatar} alt="Avatar" className="w-8 h-8 rounded-full object-cover mr-2" /> : 
+                      <img src="/default-avatar.png" alt="Default Avatar" className="w-8 h-8 rounded-full object-cover mr-2" />
+                    }
+                    {user.username}
+                  </div>
+                  <button
+                    onClick={handleLogout}
+                    className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/50"
+                  >
+                    <ArrowRightOnRectangleIcon className="w-5 h-5" />
+                    <span>Logout</span>
+                  </button>
+                </>
+              ) : (
+                <>
+                  <MobileNavItem to="/login" icon={<ArrowLeftOnRectangleIcon className="w-5 h-5" />} text="Login" />
+                  <MobileNavItem to="/register" icon={<UserIcon className="w-5 h-5" />} text="Register" />
+                </>
+              )}
             </div>
           </div>
-        </nav>
+        )}
       </div>
-    </div>
+    </nav>
   );
 };
+
+const NavItem = ({ to, icon, text }) => (
+  <NavLink
+    to={to}
+    className={({ isActive }) =>
+      `flex items-center space-x-2 px-4 py-2 text-sm rounded-lg transition-colors ${
+        isActive
+          ? "bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400"
+          : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800"
+      }`
+    }
+  >
+    {icon}
+    <span>{text}</span>
+  </NavLink>
+);
+
+const MobileNavItem = ({ to, icon, text }) => (
+  <NavLink
+    to={to}
+    className={({ isActive }) =>
+      `flex items-center space-x-2 px-4 py-2 text-sm rounded-lg w-full ${
+        isActive
+          ? "bg-blue-100 dark:bg-blue-900/50 text-blue-600 dark:text-blue-400"
+          : "text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800"
+      }`
+    }
+  >
+    {icon}
+    <span>{text}</span>
+  </NavLink>
+);
 
 export default Navbar;

@@ -61,7 +61,9 @@ const UploadDocument = () => {
   },[user,navigate])
 
   return (
-    <div>
+    <div className="py-10 bg-white mx-auto flex justify-center items-center dark:bg-zinc-900 dark:text-white duration-200 ">
+      <div className="">
+      <div>
       <h2>Tải lên tài liệu</h2>
 
       {message && (
@@ -124,6 +126,9 @@ const UploadDocument = () => {
         Quay lại danh sách tài liệu
       </button>
     </div>
+      </div>
+    </div>
+
   );
 };
 

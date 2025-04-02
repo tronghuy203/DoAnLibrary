@@ -1,16 +1,22 @@
-
 import Hero from "../Home/Hero";
-import RecentlyAddedBooks from "./RecentlyAdded";
-
+import BestBooks from "../Home/BestBooks";
+import Banner from "./Banner";
+import AppStoreBanner from "./AppStoreBanner";
+import TopBooks from "./TopBooks";
+import Testimonial from "./Testimonial";
+import Map from "./Map";
 
 const Home = () => {
   
   return (
-    <div className="">
-      <div className="bg-zinc-900 text-white px-10 py-8">
+    <div className="duration-200">  
         <Hero />
-        <RecentlyAddedBooks/>
-      </div>
+        <BestBooks />
+        <Banner />
+        <AppStoreBanner />
+        <TopBooks />
+        <Testimonial />
+        <Map />
     </div>
   );
 };

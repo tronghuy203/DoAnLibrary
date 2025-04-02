@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom"; 
+import { Link } from "react-router-dom";
 import { useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -33,44 +33,48 @@ const AllBooks = () => {
   }, [user, dispatch, axiosJWT, navigate]);
 
   return (
-    <div className="bg-zinc-900 text-white px-10 py-8">
-      {/* Tiêu đề */}
-      <h4 className="text-3xl sm:text-4xl font-bold text-yellow-100 mb-8 animate-fade-in">
-        Toàn bộ Sách
+    <div className="min-h-screen bg-gradient-to-b from-zinc-900 to-gray-800 text-white px-4 sm:px-10 py-12">
+      <h4 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-yellow-200 mb-10 mt-10 text-center tracking-tight animate-fade-in">
+        Thư viện sách
       </h4>
-
-      {/* Danh sách sách */}
       {books && books.length > 0 ? (
-        <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
+        <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6 max-w-7xl mx-auto">
           {books.map((book) => (
             <li
               key={book._id}
-              className="bg-gradient-to-br from-gray-800 to-gray-700 p-6 rounded-xl shadow-lg hover:shadow-2xl transform hover:-translate-y-1 transition-all duration-300 animate-fade-in"
+              className="bg-gray-800 rounded-xl shadow-lg overflow-hidden transform hover:scale-105 hover:shadow-2xl transition-all duration-300 animate-fade-in-up"
             >
-              {/* Hình ảnh sách */}
-              <img 
-                src={book.image && book.image.trim() !== "" ? book.image : "https://via.placeholder.com/150"} 
-                alt={book.title} 
-                className="w-full h-52 object-cover rounded-lg mb-4"
-              />
+              <div className="relative">
+                <img
+                  src={
+                    book.image && book.image.trim() !== ""
+                      ? book.image
+                      : "https://via.placeholder.com/150"
+                  }
+                  alt={book.title}
+                  className="w-full h-64 object-cover transition-transform duration-300 hover:scale-110"
+                />
+                <div className="absolute inset-0 bg-gradient-to-t from-gray-900/70 to-transparent opacity-0 hover:opacity-100 transition-opacity duration-300"></div>
+              </div>
 
-              {/* Giá sách */}
-              <p className="text-red-400 font-bold text-lg sm:text-xl mb-4 text-center">
-                {book.price.toLocaleString("vi-VN")} ₫
-              </p>
+              <div className="p-5">
+                <h5 className="text-lg font-semibold text-white mb-2 truncate">{book.title}</h5>
+                <p className="text-red-400 font-bold text-xl mb-4">
+                  {book.price.toLocaleString("vi-VN")} ₫
+                </p>
 
-              {/* Nút xem chi tiết */}
-              <Link to={`/books/${book._id}`}>
-                <button className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition duration-200 shadow-md hover:shadow-lg">
-                  Xem chi tiết
-                </button>
-              </Link>
+                <Link to={`/books/${book._id}`}>
+                  <button className="w-full bg-indigo-600 text-white py-2.5 rounded-lg font-medium hover:bg-indigo-700 transition-all duration-200 shadow-md hover:shadow-lg">
+                    Xem chi tiết
+                  </button>
+                </Link>
+              </div>
             </li>
           ))}
         </ul>
       ) : (
-        <p className="text-gray-400 text-center text-lg animate-fade-in">
-          Không có sách nào
+        <p className="text-gray-300 text-lg text-center italic animate-fade-in">
+          Hiện chưa có sách nào trong thư viện
         </p>
       )}
     </div>

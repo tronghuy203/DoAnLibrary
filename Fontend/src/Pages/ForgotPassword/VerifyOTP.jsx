@@ -25,7 +25,7 @@ const VerifyOTP = () => {
     };
     
     return (
-        <div>
+        <div className="min-h-screen flex items-center justify-center bg-gradient-to-b from-gray-50 to-gray-200 pt-20 pb-20">
             <h2>Xác minh OTP</h2>
             {error && <p style={{ color: "red" }}>{error}</p>}
             <form onSubmit={handleSubmit}>
