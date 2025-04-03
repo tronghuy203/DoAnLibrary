@@ -4,10 +4,11 @@ import { useDispatch, useSelector } from "react-redux";
 import { logOut } from "../redux/apiRequest";
 import { createAxios } from "../createInstance";
 import { logoutSuccess } from "../redux/authSlice";
-import { BookOpenIcon, PlusIcon, ListBulletIcon, ArrowLeftOnRectangleIcon, ChevronDownIcon, ChevronRightIcon } from "@heroicons/react/24/outline"; 
+import { BookOpenIcon, PlusIcon, ListBulletIcon, ArrowLeftOnRectangleIcon, ChevronDownIcon, ChevronRightIcon, DocumentPlusIcon, DocumentTextIcon } from "@heroicons/react/24/outline"; 
 
 const AdminLayout = () => {
   const [isBookMenuOpen, setIsBookMenuOpen] = useState(false);
+  const [isDocumentMenuOpen, setIsDocumentMenuOpen] = useState(false); // Thêm state cho dropdown tài liệu
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -36,7 +37,6 @@ const AdminLayout = () => {
         } lg:translate-x-0 border-r border-gray-700 shadow-lg`}
       >
         <div className="p-6 flex flex-col h-full">
-
           <div className="mb-8 flex items-center gap-3">
             <img
               src="https://static.vecteezy.com/system/resources/previews/024/043/963/original/book-icon-clipart-transparent-background-free-png.png"
@@ -84,7 +84,7 @@ const AdminLayout = () => {
                 onClick={() => setIsBookMenuOpen(!isBookMenuOpen)}
               >
                 <div className="flex items-center gap-3">
-                  <BookOpenIcon className="w-5 h-5" /> 
+                  <BookOpenIcon className="w-5 h-5" />
                   <span>Quản lý sách</span>
                 </div>
                 {isBookMenuOpen ? (
@@ -126,6 +126,57 @@ const AdminLayout = () => {
             </li>
 
             <li>
+              <div
+                className={`flex items-center justify-between py-3 px-4 rounded-lg cursor-pointer transition duration-200 ${
+                  location.pathname.startsWith("/admin/documents")
+                    ? "bg-blue-600 text-white shadow-md"
+                    : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                }`}
+                onClick={() => setIsDocumentMenuOpen(!isDocumentMenuOpen)}
+              >
+                <div className="flex items-center gap-3">
+                  <DocumentTextIcon className="w-5 h-5" />
+                  <span>Quản lý tài liệu</span>
+                </div>
+                {isDocumentMenuOpen ? (
+                  <ChevronDownIcon className="w-4 h-4 text-white transition-transform duration-200" />
+                ) : (
+                  <ChevronRightIcon className="w-4 h-4 text-white transition-transform duration-200" />
+                )}
+              </div>
+              {isDocumentMenuOpen && (
+                <ul className="pl-8 mt-2 space-y-2">
+                  <li>
+                    <Link
+                      to="/admin/documents/create"
+                      className={`flex items-center gap-3 py-2 px-4 rounded-lg transition duration-200 ${
+                        location.pathname === "/admin/documents/create"
+                          ? "bg-blue-600 text-white shadow-sm"
+                          : "text-gray-400 hover:bg-gray-700 hover:text-white"
+                      }`}
+                    >
+                      <DocumentPlusIcon className="w-5 h-5" />
+                      <span>Thêm tài liệu</span>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      to="/admin/documents/list"
+                      className={`flex items-center gap-3 py-2 px-4 rounded-lg transition duration-200 ${
+                        location.pathname === "/admin/documents/list"
+                          ? "bg-blue-600 text-white shadow-sm"
+                          : "text-gray-400 hover:bg-gray-700 hover:text-white"
+                      }`}
+                    >
+                      <ListBulletIcon className="w-5 h-5" />
+                      <span>Danh sách tài liệu</span>
+                    </Link>
+                  </li>
+                </ul>
+              )}
+            </li>
+
+            <li>
               <Link
                 to="/admin/users"
                 className={`flex items-center gap-3 py-3 px-4 rounded-lg transition duration-200 ${
@@ -151,37 +202,11 @@ const AdminLayout = () => {
                 <span>Quản lý người dùng</span>
               </Link>
             </li>
-            <li>
-              <Link
-                to="/admin/documents/list"
-                className={`flex items-center gap-3 py-3 px-4 rounded-lg transition duration-200 ${
-                  location.pathname === "/admin/documents/list"
-                    ? "bg-blue-600 text-white shadow-md"
-                    : "text-gray-300 hover:bg-gray-700 hover:text-white"
-                }`}
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
-                >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-                  />
-                </svg>
-                <span>Quản lý tài liệu</span>
-              </Link>
-            </li>
           </ul>
 
           <div className="mt-auto">
             <button
-              className="w-full flex items-center gap-3 py-3 mb-10 px-4 text-gray-300 hover:bg-red-600 hover:text-white rounded-lg transition duration-200"
+              className="w-full flex items-center gap-3 py-3 px-4 text-gray-300 hover:bg-red-600 hover:text-white rounded-lg transition duration-200"
               onClick={handleLogout}
             >
               <ArrowLeftOnRectangleIcon className="w-5 h-5" />

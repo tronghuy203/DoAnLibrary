@@ -1,4 +1,5 @@
 // src/layouts/UserLayout.jsx
+import Footer from "../Components/Footer/Footer";
 import Navbar from "../Components/Navbar/Navbar";
 
 const UserLayout = ({ children }) => {
@@ -6,6 +7,7 @@ const UserLayout = ({ children }) => {
     <>
       <Navbar />
       <main>{children}</main>
+      <Footer />
     </>
   );
 };

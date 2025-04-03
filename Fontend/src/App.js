@@ -2,16 +2,29 @@
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import UserRoutes from "./Routes/UserRoutes";
 import AdminRoutes from "./Routes/AdminRoutes";
-import Footer from "./Components/Footer/Footer"
+import React, {useEffect} from "react";
+// aos import
+import AOS from "aos";
+import "aos/dist/aos.css"
 
 const App = () => {
+
+    React.useEffect(() => {
+      AOS.init({
+        offset: 100,
+        duration: 800,
+        easing: "ease-in-sine",
+        delay: 100, 
+      });
+      AOS.refresh();
+    },[]); 
+
   return (
     <Router>
       <Routes>
         <Route path="/*" element={<UserRoutes />} />
         <Route path="/admin/*" element={<AdminRoutes />} />
       </Routes>
-      <Footer />
     </Router>
   );
 };
