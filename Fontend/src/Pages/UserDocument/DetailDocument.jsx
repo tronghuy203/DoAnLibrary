@@ -59,7 +59,7 @@ const DetailDocument = () => {
       <div className="container mx-auto px-6">
         {isLoading ? (
           <div className="flex justify-center items-center h-64">
-            <div className="w-16 h-16 border-4 border-t-purple-500 border-indigo-200 dark:border-indigo-700 rounded-full animate-spin animate-pulse"></div>
+            <div className="w-16 h-16 border-4 border-t-purple-500 border-indigo-200 dark:border-indigo-700 rounded-full"></div>
           </div>
         ) : error ? (
           <p className="text-red-500 dark:text-red-300 text-center text-xl font-medium animate-bounce-in">
