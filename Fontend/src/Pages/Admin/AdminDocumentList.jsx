@@ -1,6 +1,6 @@
 import React, { useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { getAllDocumentsAdmin, deleteDocument, viewDocument, downloadDocument } from "../../redux/apiDocument";
+import { getAllDocumentsAdmin, deleteDocument, viewDocument } from "../../redux/apiDocument";
 import { createAxios } from "../../createInstance";
 import { loginSuccess } from "../../redux/authSlice";
 import { Bar } from "react-chartjs-2";
@@ -9,7 +9,7 @@ import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Toolti
 // Đăng ký các thành phần của chart.js
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
-const AdminDocumentList = () => {
+const ListDocument = () => {
   const user = useSelector((state) => state.auth.login?.currentUser);
   const documents = useSelector((state) => state.document.documents);
   const isLoading = useSelector((state) => state.document.isFetching);
@@ -37,7 +37,6 @@ const AdminDocumentList = () => {
     viewDocument(documentId, user?.accessToken, dispatch, axiosJWT);
   };
 
-
   // Helper function to format date
   const formatDate = (date) => {
     const d = new Date(date);
@@ -46,8 +45,7 @@ const AdminDocumentList = () => {
 
   // Nhóm dữ liệu theo ngày (lượt xem và lượt tải theo ngày)
   const groupedData = documents.reduce((acc, doc) => {
-    // Sử dụng ngày cập nhật (updatedAt) để nhóm, có thể thay bằng createdAt nếu cần
-    const date = formatDate(doc.updatedAt || doc.createdAt); 
+    const date = formatDate(doc.updatedAt || doc.createdAt);
     if (!acc[date]) {
       acc[date] = { views: 0, downloads: 0 };
     }
@@ -63,43 +61,43 @@ const AdminDocumentList = () => {
 
   // Dữ liệu cho biểu đồ
   const chartData = {
-    labels: chartLabels, // Sử dụng ngày làm nhãn cho biểu đồ
+    labels: chartLabels,
     datasets: [
       {
         label: "Lượt xem",
-        data: chartViewsData, // Dữ liệu lượt xem theo ngày
-        backgroundColor: "rgba(75, 192, 192, 0.5)", // Màu nền cho cột "Lượt xem"
+        data: chartViewsData,
+        backgroundColor: "rgba(75, 192, 192, 0.5)",
       },
       {
         label: "Lượt tải",
-        data: chartDownloadsData, // Dữ liệu lượt tải theo ngày
-        backgroundColor: "rgba(153, 102, 255, 0.5)", // Màu nền cho cột "Lượt tải"
+        data: chartDownloadsData,
+        backgroundColor: "rgba(153, 102, 255, 0.5)",
       },
     ],
   };
 
   return (
     <div>
-      <h2>Quản lý tài liệu</h2>
+      <h2>Danh sách tài liệu</h2>
       {isLoading && <p>Đang tải...</p>}
 
       {/* Biểu đồ quản lý lượt xem và tải */}
       <div className="mb-8">
         <h3 className="text-xl font-semibold mb-4">Biểu đồ lượt xem và tải tài liệu</h3>
-        <Bar 
-          data={chartData} 
+        <Bar
+          data={chartData}
           options={{
             responsive: true,
             plugins: {
               legend: {
-                position: 'top',
+                position: "top",
               },
               tooltip: {
-                mode: 'index',
+                mode: "index",
                 intersect: false,
               },
             },
-          }} 
+          }}
         />
       </div>
 
@@ -124,14 +122,23 @@ const AdminDocumentList = () => {
                 <td>{doc.views}</td>
                 <td>{doc.downloads}</td>
                 <td>
-                  <a href={doc.fileUrl} target="_blank" rel="noopener noreferrer" onClick={() => handleView(doc._id)}>Xem</a>
+                  <a
+                    href={doc.fileUrl}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    onClick={() => handleView(doc._id)}
+                  >
+                    Xem
+                  </a>
                   <button onClick={() => handleDelete(doc._id)}>Xóa</button>
                 </td>
               </tr>
             ))
           ) : (
             <tr>
-              <td colSpan="6" className="text-center">Không có tài liệu nào</td>
+              <td colSpan="6" className="text-center">
+                Không có tài liệu nào
+              </td>
             </tr>
           )}
         </tbody>
@@ -140,4 +147,4 @@ const AdminDocumentList = () => {
   );
 };
 
-export default AdminDocumentList;
+export default ListDocument;
