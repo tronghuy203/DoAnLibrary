@@ -20,6 +20,12 @@ const documentSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
+    viewHistory: [
+      { date: Date, count: Number }
+    ],
+    downloadHistory: [
+      { date: Date, count: Number }
+    ],
     createdAt: {
       type: Date,
       default: Date.now,

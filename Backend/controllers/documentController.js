@@ -62,6 +62,15 @@ const documentController = {
       const document = await Document.findById(req.params.id);
       if (!document) return res.status(404).json({ message: "Tài liệu không tồn tại" });
 
+      const today = new Date().toISOString().split("T")[0];
+      const viewEntry = document.viewHistory.find(
+        (v) => v.date.toISOString().split("T")[0] === today
+      );
+      if (viewEntry) {
+        viewEntry.count += 1;
+      } else {
+        document.viewHistory.push({ date: new Date(), count: 1 });
+      }
       document.views += 1;
       await document.save();
 
@@ -76,7 +85,15 @@ const documentController = {
       const document = await Document.findById(req.params.id);
       if (!document) return res.status(404).json({ message: "Tài liệu không tồn tại" });
 
-  
+      const today = new Date().toISOString().split("T")[0];
+      const downloadEntry = document.downloadHistory.find(
+        (d) => d.date.toISOString().split("T")[0] === today
+      );
+      if (downloadEntry) {
+        downloadEntry.count += 1;
+      } else {
+        document.downloadHistory.push({ date: new Date(), count: 1 });
+      }
       document.downloads += 1;
       await document.save();
 
@@ -102,9 +119,9 @@ const documentController = {
           $group: {
             _id: null,
             totalViews: { $sum: "$views" },
-            totalDownloads: { $sum: "$downloads" }
-          }
-        }
+            totalDownloads: { $sum: "$downloads" },
+          },
+        },
       ]);
       res.status(200).json(stats[0] || { totalViews: 0, totalDownloads: 0 });
     } catch (err) {
