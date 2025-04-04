@@ -71,37 +71,48 @@ export const viewDocument = async (documentId, accessToken, dispatch, axiosJWT) 
     const res = await axiosJWT.get(`/v1/documents/view/${documentId}`, {
       headers: { token: `Bearer ${accessToken}` },
     });
-    const { id, views } = res.data;
-    dispatch(incrementViewSuccess({ id, views }));
+    const { _id, views, viewHistory } = res.data; // Lấy viewHistory từ response
+    dispatch(incrementViewSuccess({ id: _id, views, viewHistory }));
+    return res.data; // Trả về dữ liệu để component có thể sử dụng nếu cần
   } catch (err) {
     console.error("Lỗi khi xem tài liệu:", err);
+    throw err;
   }
 };
+
 
 // Tải tài liệu
 export const downloadDocument = async (documentId, accessToken, documentTitle, dispatch, axiosJWT) => {
   try {
-    // Gọi API để lấy dữ liệu file
     const response = await axiosJWT.get(`/v1/documents/download/${documentId}`, {
       headers: { token: `Bearer ${accessToken}` },
-      responseType: 'blob', // Quan trọng: để xử lý file binary
+      responseType: "blob",
     });
 
-    // Tạo URL từ blob
     const url = window.URL.createObjectURL(new Blob([response.data]));
-    const link = window.document.createElement('a');
+    const link = window.document.createElement("a");
     link.href = url;
-    link.download = `${documentTitle || 'document'}.pdf`; // Đặt tên file tải về
+    link.download = `${documentTitle || "document"}.pdf`;
     window.document.body.appendChild(link);
     link.click();
     window.document.body.removeChild(link);
-    window.URL.revokeObjectURL(url); // Giải phóng URL
+    window.URL.revokeObjectURL(url);
 
-    // Cập nhật số lượt tải xuống
-    dispatch(incrementDownloadSuccess({ id: documentId, downloads: response.data.downloads || 0 }));
+    // Gọi API để lấy thông tin cập nhật sau khi tải
+    const updatedDoc = await axiosJWT.get(`/v1/documents/${documentId}`, {
+      headers: { token: `Bearer ${accessToken}` },
+    });
+    dispatch(
+      incrementDownloadSuccess({
+        id: documentId,
+        downloads: updatedDoc.data.downloads,
+        downloadHistory: updatedDoc.data.downloadHistory,
+      })
+    );
+    return updatedDoc.data;
   } catch (err) {
     console.error("Lỗi khi tải tài liệu:", err);
-    throw err; // Ném lỗi để component có thể xử lý
+    throw err;
   }
 };
 

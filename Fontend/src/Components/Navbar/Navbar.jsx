@@ -18,7 +18,9 @@ const Navbar = () => {
 
   const topMenuRef = useRef();
   const toggleIconRef = useRef();
+  const dropdownRef = useRef();
   const [isMenuOpen, setIsMenuOpen] = useState(false);
+  const [isDropdownOpen, setIsDropdownOpen] = useState(false);
 
   useEffect(() => {
     const handleClickOutside = (e) => {
@@ -30,15 +32,22 @@ const Navbar = () => {
       ) {
         setIsMenuOpen(false);
       }
+      if (
+        dropdownRef.current &&
+        !dropdownRef.current.contains(e.target)
+      ) {
+        setIsDropdownOpen(false);
+      }
     };
     document.addEventListener("click", handleClickOutside);
     return () => document.removeEventListener("click", handleClickOutside);
   }, []);
 
   const handleToggleMenu = () => setIsMenuOpen((prev) => !prev);
-
+  const handleToggleDropdown = () => setIsDropdownOpen((prev) => !prev);
   const handleLogout = () => {
     logOut(dispatch, id, navigate, accessToken, axiosJWT);
+    setIsDropdownOpen(false);
   };
 
   return (
@@ -59,38 +68,60 @@ const Navbar = () => {
             </div>
           </div>
 
-          <div className="hidden lg:flex items-center space-x-1">
-         
-            <NavItem to="/" icon={<BookOpenIcon className="w-5 h-5" />} text="Trang chủ" />
 
+          <div className="hidden lg:flex items-center space-x-4">
+            <NavItem to="/" icon={<BookOpenIcon className="w-5 h-5" />} text="Trang chủ" />
+            
             <div className="flex items-center space-x-4 ml-4">
               {user ? (
                 <>
                   <NavItem to="/all-books" icon={<BookOpenIcon className="w-5 h-5" />} text="Sách" />
                   <NavItem to="/document-list" icon={<DocumentTextIcon className="w-5 h-5" />} text="Tài liệu" />
                   <NavItem to="/cart" icon={<ShoppingCartIcon className="w-5 h-5" />} text="Giỏ hàng" />
-                  <NavItem to="/profile" icon={<UserIcon className="w-5 h-5" />} text="Hồ sơ" />
-                  <span className="flex items-center text-sm text-gray-800 dark:text-gray-200">
-                    {user?.avatar ? 
-                      <img src={user.avatar} alt="Avatar" className="w-8 h-8 rounded-full object-cover mr-2" /> : 
-                      <img src="/default-avatar.png" alt="Default Avatar" className="w-8 h-8 rounded-full object-cover mr-2" />
-                    }
-                    {user.username}
-                  </span>
-                  <button
-                    onClick={handleLogout}
-                    className="flex items-center space-x-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/50 rounded-lg transition-colors"
-                  >
-                    <ArrowRightOnRectangleIcon className="w-5 h-5" />
-                    <span>Logout</span>
-                  </button>
+                  <div className="relative" ref={dropdownRef}>
+                    <button
+                      onClick={handleToggleDropdown}
+                      className="flex items-center space-x-2 p-2 rounded-full hover:bg-gray-100 dark:hover:bg-zinc-800"
+                    >
+                      {user?.avatar ? 
+                        <img src={user.avatar} alt="Avatar" className="w-8 h-8 rounded-full object-cover" /> : 
+                        <img src="/default-avatar.png" alt="Default Avatar" className="w-8 h-8 rounded-full object-cover" />
+                      }
+                    </button>
+                    {isDropdownOpen && (
+                      <div className="absolute right-0 mt-2 w-48 bg-white dark:bg-zinc-900 border dark:border-zinc-800 rounded-lg shadow-lg py-2 animate-in fade-in-0">
+                        <div className="px-4 py-2 border-b dark:border-zinc-800">
+                          <div className="flex items-center space-x-2">
+                            {user?.avatar ? 
+                              <img src={user.avatar} alt="Avatar" className="w-10 h-10 rounded-full object-cover" /> : 
+                              <img src="/default-avatar.png" alt="Default Avatar" className="w-10 h-10 rounded-full object-cover" />
+                            }
+                            <span className="text-sm text-gray-800 dark:text-gray-200">{user.username}</span>
+                          </div>
+                        </div>
+                        <NavLink
+                          to="/profile"
+                          className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800"
+                          onClick={() => setIsDropdownOpen(false)}
+                        >
+                          <UserIcon className="w-5 h-5" />
+                          <span>Hồ sơ</span>
+                        </NavLink>
+                        <button
+                          onClick={handleLogout}
+                          className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/50"
+                        >
+                          <ArrowRightOnRectangleIcon className="w-5 h-5" />
+                          <span>Logout</span>
+                        </button>
+                      </div>
+                    )}
+                  </div>
                 </>
               ) : (
                 <>
-                  <>
                   <NavItem to="/login" icon={<ArrowLeftOnRectangleIcon className="w-5 h-5" />} text="Login" />
                   <NavItem to="/register" icon={<UserIcon className="w-5 h-5" />} text="Register" />
-                  </>
                 </>
               )}
             </div>
@@ -118,12 +149,12 @@ const Navbar = () => {
               <MobileNavItem to="/all-books" icon={<BookOpenIcon className="w-5 h-5" />} text="Books" />
               <MobileNavItem to="/document-list" icon={<DocumentTextIcon className="w-5 h-5" />} text="Tài liệu" />
               <MobileNavItem to="/cart" icon={<ShoppingCartIcon className="w-5 h-5" />} text="Cart" />
-              <MobileNavItem to="/profile" icon={<UserIcon className="w-5 h-5" />} text="Profile" />
               
               {user ? (
                 <>
-                  <div className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200 flex items-center">
-                  {user?.avatar ? 
+                  <MobileNavItem to="/profile" icon={<UserIcon className="w-5 h-5" />} text="Profile" />
+                  <div className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200 flex items-center justify-center">
+                    {user?.avatar ? 
                       <img src={user.avatar} alt="Avatar" className="w-8 h-8 rounded-full object-cover mr-2" /> : 
                       <img src="/default-avatar.png" alt="Default Avatar" className="w-8 h-8 rounded-full object-cover mr-2" />
                     }

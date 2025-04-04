@@ -71,7 +71,7 @@ const Testimonial = () => {
         <div className="py-10 bg-white mx-auto flex justify-center items-center dark:bg-zinc-900 dark:text-white duration-200">
             <div className="container">
                 {/* header */}
-                <div className="text-center mb-24 max-w-[400px] mx-auto">
+                <div data-aos="slide-up" className="text-center mb-24 max-w-[400px] mx-auto">
                     <p className="text-sm bg-clip-text text-transparent bg-gradient-to-r from-sky-600 to-cyan-200">
                         Khách hàng của chúng tôi nói gì?
                     </p>
@@ -83,11 +83,11 @@ const Testimonial = () => {
                     </p>
                 </div>
                 {/* card section */}
-                <div className="">
+                <div data-aos="zoom-in" className="">
                     <div className="">
                         <Slider {...settings}>
-                            {testimoniaData.map((data) => (
-                                <div className="px-3">
+                            {testimoniaData.map((data,index) => (
+                                <div key={index} className="px-3">
                                     <div className="flex flex-col gap-4 shadow-lg py-8 px-6 rounded-xl dark:bg-gray-800 bg-sky-100 relative">
                                         <div className="my-6">
                                             <div className="">
