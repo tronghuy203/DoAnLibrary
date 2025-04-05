@@ -7,6 +7,7 @@ import { getDocumentDetail, downloadDocument } from "../../redux/apiDocument";
 import { Worker, Viewer } from "@react-pdf-viewer/core";
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import { pdfjs } from "react-pdf";
+import ReviewSection from "../ReviewSection/ReviewSection";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@3.0.279/build/pdf.worker.min.js`;
 
@@ -110,7 +111,10 @@ const DetailDocument = () => {
             )}
           </div>
         )}
-      </div>
+        {docData && (
+          <ReviewSection type="document" itemId={docData._id} user={user} />
+        )}
+      </div>   
     </div>
   );
 };
