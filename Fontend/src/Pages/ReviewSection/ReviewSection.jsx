@@ -71,7 +71,7 @@ const ReviewSection = ({ type, itemId, user }) => {
   const handleReplySubmit = async (reviewId) => {
     const comment = replyInput[reviewId];
     if (!comment) return;
-  
+
     try {
       if (editingReplyId) {
         await updateReply(editingReplyId, { comment, userId: user._id }, user.accessToken, dispatch, axiosJWT);
@@ -96,7 +96,9 @@ const ReviewSection = ({ type, itemId, user }) => {
       }
     }
   };
-    
+
+  const isAdmin = user.admin === true; // Assuming role property indicates if the user is an admin
+
   return (
     <div className="mt-6">
       <h3 className="text-xl font-bold mb-3">Đánh giá & Bình luận</h3>
@@ -117,7 +119,7 @@ const ReviewSection = ({ type, itemId, user }) => {
           <p>⭐ {review.rating} / 5</p>
           <p>{review.comment}</p>
 
-          {user?._id === review.userId?._id && (
+          {(user?._id === review.userId?._id || isAdmin) && (
             <div className="flex gap-2 text-sm mt-1">
               <button
                 onClick={() => {
@@ -146,7 +148,7 @@ const ReviewSection = ({ type, itemId, user }) => {
                   <span className="font-semibold">{reply.userId?.username || "Ẩn danh"}:</span>{" "}
                   {reply.comment}
                 </p>
-                {user?._id === reply.userId?._id && (
+                {(user?._id === reply.userId?._id || isAdmin) && (
                   <div className="flex gap-2 text-xs mt-1">
                     <button
                       onClick={() => {
