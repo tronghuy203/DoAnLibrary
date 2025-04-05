@@ -5,6 +5,7 @@ import { getBookDetail } from "../../redux/apiBooks";
 import { createAxios } from "../../createInstance";
 import { loginSuccess } from "../../redux/authSlice";
 import { FaShareAlt, FaFacebook, FaInstagram, FaComment } from "react-icons/fa";
+import ReviewSection from "../ReviewSection/ReviewSection";
 
 const DetailBook = () => {
   const { id } = useParams();
@@ -14,10 +15,16 @@ const DetailBook = () => {
   const book = useSelector((state) => state.books.detailBook);
   const axiosJWT = createAxios(user, dispatch, loginSuccess);
 
-  // State để quản lý tab hiện tại
   const [activeTab, setActiveTab] = useState("Mô tả");
-  // State để quản lý trạng thái hiển thị dropdown chia sẻ
   const [showShareOptions, setShowShareOptions] = useState(false);
+  const [averageRating, setAverageRating] = useState(0);
+  const [reviewCount, setReviewCount] = useState(0);
+
+  const calculateAverageRating = (reviews) => {
+    if (!reviews || reviews.length === 0) return 0;
+    const total = reviews.reduce((sum, review) => sum + review.rating, 0);
+    return (total / reviews.length).toFixed(1);
+  };
 
   useEffect(() => {
     if (!user) {
@@ -27,7 +34,6 @@ const DetailBook = () => {
     getBookDetail(id, user.accessToken, dispatch, axiosJWT);
   }, [id, user, dispatch, axiosJWT, navigate]);
 
-  // Hàm chia sẻ lên các mạng xã hội
   const shareToSocialMedia = (platform) => {
     const url = encodeURIComponent(window.location.href);
     const title = encodeURIComponent(book.title);
@@ -50,6 +56,25 @@ const DetailBook = () => {
 
     window.open(shareUrl, "_blank", "width=600,height=400");
     setShowShareOptions(false);
+  };
+
+  const scrollToReviewForm = () => {
+    const reviewForm = document.querySelector("#review-section form");
+    if (reviewForm) {
+      reviewForm.scrollIntoView({ behavior: "smooth" });
+    }
+  };
+
+  // Hàm định dạng ngày giờ
+  const formatDate = (dateString) => {
+    const date = new Date(dateString);
+    return date.toLocaleString("vi-VN", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric",
+      hour: "2-digit",
+      minute: "2-digit",
+    });
   };
 
   if (!book) {
@@ -99,7 +124,9 @@ const DetailBook = () => {
                 {[...Array(5)].map((_, i) => (
                   <svg
                     key={i}
-                    className="w-6 h-6 fill-current"
+                    className={`w-6 h-6 ${
+                      i < Math.round(averageRating) ? "fill-current" : "fill-none stroke-current"
+                    }`}
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
                   >
@@ -107,6 +134,9 @@ const DetailBook = () => {
                   </svg>
                 ))}
               </div>
+              <span className="text-gray-600 dark:text-gray-400">
+                ({averageRating}/5) - {reviewCount} đánh giá
+              </span>
               <span className="text-orange-500 font-semibold text-2xl">
                 {book.price.toLocaleString("vi-VN")} ₫
               </span>
@@ -119,6 +149,10 @@ const DetailBook = () => {
               <span>
                 <span className="font-semibold">Đã bán:</span>{" "}
                 {book.sold || "0"} bản
+              </span>
+              <span>
+                <span className="font-semibold">Đăng ngày:</span>{" "}
+                {book.createdAt ? formatDate(book.createdAt) : "Không rõ"}
               </span>
             </div>
             <div className="flex flex-col sm:flex-row gap-4 relative">
@@ -171,10 +205,23 @@ const DetailBook = () => {
           className="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700"
         >
           <div className="flex border-b border-gray-200 dark:border-gray-700">
-            {["Mô tả", "Nội dung", "Đánh giá", "Đề xuất"].map((tab) => (
+            {["Mô tả", "Nội dung đánh giá", "Đánh giá", "Đề xuất"].map((tab) => (
               <button
                 key={tab}
-                onClick={() => setActiveTab(tab)}
+                onClick={() => {
+                  setActiveTab(tab);
+                  if (tab === "Đánh giá") {
+                    setTimeout(() => {
+                      scrollToReviewForm();
+                    }, 100);
+                  } else if (tab === "Nội dung đánh giá") {
+                    setTimeout(() => {
+                      document.getElementById("review-section")?.scrollIntoView({
+                        behavior: "smooth",
+                      });
+                    }, 100);
+                  }
+                }}
                 className={`px-4 py-2 text-base font-semibold transition-all duration-300 ${
                   activeTab === tab
                     ? "text-green-500 border-b-2 border-green-500"
@@ -195,38 +242,8 @@ const DetailBook = () => {
                 </p>
               </div>
             )}
-            {activeTab === "Nội dung" && (
-              <div data-aos="fade-in">
-                <p className="leading-relaxed">
-                  Sách bao gồm các chương chính sau:
-                </p>
-                <ul className="list-disc list-inside mt-2 space-y-1">
-                  <li>Chương 1: Số học cơ bản</li>
-                  <li>Chương 2: Hình học và đo lường</li>
-                  <li>Chương 3: Bài toán thực tế</li>
-                  <li>Chương 4: Ôn tập và kiểm tra</li>
-                </ul>
-              </div>
-            )}
-            {activeTab === "Đánh giá" && (
-              <div data-aos="fade-in">
-                <p className="leading-relaxed">Đánh giá từ người dùng:</p>
-                <div className="mt-4 space-y-4">
-                  <div className="border-l-4 border-green-500 pl-4">
-                    <p className="font-semibold">Nguyễn Văn A</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      5 sao - Sách rất hay, nội dung dễ hiểu, phù hợp với học sinh.
-                    </p>
-                  </div>
-                  <div className="border-l-4 border-green-500 pl-4">
-                    <p className="font-semibold">Trần Thị B</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      4 sao - Sách tốt, nhưng cần thêm nhiều bài tập nâng cao hơn.
-                    </p>
-                  </div>
-                </div>
-              </div>
-            )}
+            {activeTab === "Nội dung" && null}
+            {activeTab === "Nội dung đánh giá" && null}
             {activeTab === "Đề xuất" && (
               <div data-aos="fade-in">
                 <p className="leading-relaxed">
@@ -240,6 +257,18 @@ const DetailBook = () => {
               </div>
             )}
           </div>
+        </div>
+
+        <div id="review-section">
+          <ReviewSection
+            type="book"
+            itemId={book._id}
+            user={user}
+            onReviewsUpdate={(reviews) => {
+              setAverageRating(calculateAverageRating(reviews));
+              setReviewCount(reviews.length);
+            }}
+          />
         </div>
       </div>
     </div>
