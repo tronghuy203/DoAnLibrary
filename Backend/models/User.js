@@ -9,12 +9,6 @@ const userSchema = new mongoose.Schema(
       maxlength: 20,
       unique: true,
     },
-    fullName: { 
-      type: String,
-      required: false, 
-      minlength: 3,
-      maxlength: 50,
-    },
     dob: { 
       type: Date, 
       required: false 

@@ -4,6 +4,7 @@ import { useParams, useNavigate } from "react-router-dom";
 import { getBookDetail } from "../../redux/apiBooks";
 import { createAxios } from "../../createInstance";
 import { loginSuccess } from "../../redux/authSlice";
+import ReviewSection from "../ReviewSection/ReviewSection";
 
 const DetailBook = () => {
   const { id } = useParams();
@@ -71,8 +72,11 @@ const DetailBook = () => {
               Mua ngay
             </button>
           </div>
+         
         </div>
+        <ReviewSection type="book" itemId={book._id} user={user} />
       </div>
+      
     </div>
   );
 };
