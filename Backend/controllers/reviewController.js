@@ -8,9 +8,18 @@ const reviewController = {
     try {
       const { type, itemId } = req.params;
 
-      const reviews = await Review.find({ type, itemId })
-        .populate("userId", "username avatar")
-        .lean();
+      let reviews;
+      if (itemId === "all") {
+        // Lấy tất cả đánh giá theo type
+        reviews = await Review.find({ type })
+          .populate("userId", "username avatar")
+          .lean();
+      } else {
+        // Lấy đánh giá theo type và itemId cụ thể
+        reviews = await Review.find({ type, itemId })
+          .populate("userId", "username avatar")
+          .lean();
+      }
 
       const reviewIds = reviews.map((r) => r._id);
       const replies = await Reply.find({ reviewId: { $in: reviewIds } })
@@ -68,12 +77,13 @@ const reviewController = {
   updateReview: async (req, res) => {
     try {
       const { id } = req.params;
-      const { userId, rating, comment, isAdmin } = req.body;
+      const { userId, rating, comment } = req.body;
+      const { admin } = req.user;
 
       const review = await Review.findById(id);
       if (!review) return res.status(404).json({ message: "Đánh giá không tồn tại" });
 
-      if (!isAdmin && review.userId.toString() !== userId) {
+      if (!admin && review.userId.toString() !== userId) {
         return res.status(403).json({ message: "Không có quyền chỉnh sửa đánh giá này" });
       }
 
@@ -92,11 +102,12 @@ const reviewController = {
     try {
       const { id } = req.params;
       const { userId, isAdmin } = req.body;
+      const { admin } = req.user;
 
       const review = await Review.findById(id);
       if (!review) return res.status(404).json({ message: "Đánh giá không tồn tại" });
 
-      if (!isAdmin && review.userId.toString() !== userId) {
+      if (!admin && review.userId.toString() !== userId) {
         return res.status(403).json({ message: "Không có quyền xóa đánh giá này" });
       }
 
@@ -134,11 +145,12 @@ const reviewController = {
     try {
       const { id } = req.params;
       const { userId, comment, isAdmin } = req.body;
+      const { admin } = req.user;
 
       const reply = await Reply.findById(id);
       if (!reply) return res.status(404).json({ message: "Phản hồi không tồn tại" });
 
-      if (!isAdmin && reply.userId.toString() !== userId) {
+      if (!admin && reply.userId.toString() !== userId) {
         return res.status(403).json({ message: "Không có quyền sửa phản hồi này" });
       }
 
@@ -155,14 +167,13 @@ const reviewController = {
   deleteReply: async (req, res) => {
     try {
       const { id } = req.params;
-      const { id: userId, isAdmin } = req.user
-      console.log("Received:", { id, userId, isAdmin }); // Kiểm tra dữ liệu nhận được
+      const { id: userId, admin } = req.user
   
       const reply = await Reply.findById(id);
       if (!reply) return res.status(404).json({ message: "Phản hồi không tồn tại" });
   
       console.log("Reply userId:", reply.userId.toString()); // In userId của reply
-      if (!isAdmin && reply.userId.toString() !== userId) {
+      if (!admin && reply.userId.toString() !== userId) {
         return res.status(403).json({ message: "Không có quyền xóa phản hồi này" });
       }
   

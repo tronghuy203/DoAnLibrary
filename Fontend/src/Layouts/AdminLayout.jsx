@@ -4,11 +4,22 @@ import { useDispatch, useSelector } from "react-redux";
 import { logOut } from "../redux/apiRequest";
 import { createAxios } from "../createInstance";
 import { logoutSuccess } from "../redux/authSlice";
-import { BookOpenIcon, PlusIcon, ListBulletIcon, ArrowLeftOnRectangleIcon, ChevronDownIcon, ChevronRightIcon, DocumentPlusIcon, DocumentTextIcon } from "@heroicons/react/24/outline"; 
+import { 
+  BookOpenIcon, 
+  PlusIcon, 
+  ListBulletIcon, 
+  ArrowLeftOnRectangleIcon, 
+  ChevronDownIcon, 
+  ChevronRightIcon, 
+  DocumentPlusIcon, 
+  DocumentTextIcon,
+  ChatBubbleLeftRightIcon // Icon mới cho đánh giá
+} from "@heroicons/react/24/outline"; 
 
 const AdminLayout = () => {
   const [isBookMenuOpen, setIsBookMenuOpen] = useState(false);
-  const [isDocumentMenuOpen, setIsDocumentMenuOpen] = useState(false); // Thêm state cho dropdown tài liệu
+  const [isDocumentMenuOpen, setIsDocumentMenuOpen] = useState(false);
+  const [isReviewMenuOpen, setIsReviewMenuOpen] = useState(false); // State cho dropdown đánh giá
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -170,6 +181,58 @@ const AdminLayout = () => {
                     >
                       <ListBulletIcon className="w-5 h-5" />
                       <span>Danh sách tài liệu</span>
+                    </Link>
+                  </li>
+                </ul>
+              )}
+            </li>
+
+            {/* Thêm mục Quản lý đánh giá và bình luận */}
+            <li>
+              <div
+                className={`flex items-center justify-between py-3 px-4 rounded-lg cursor-pointer transition duration-200 ${
+                  location.pathname.startsWith("/admin/reviews")
+                    ? "bg-blue-600 text-white shadow-md"
+                    : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                }`}
+                onClick={() => setIsReviewMenuOpen(!isReviewMenuOpen)}
+              >
+                <div className="flex items-center gap-3">
+                  <ChatBubbleLeftRightIcon className="w-5 h-5" />
+                  <span>Quản lý đánh giá</span>
+                </div>
+                {isReviewMenuOpen ? (
+                  <ChevronDownIcon className="w-4 h-4 text-white transition-transform duration-200" />
+                ) : (
+                  <ChevronRightIcon className="w-4 h-4 text-white transition-transform duration-200" />
+                )}
+              </div>
+              {isReviewMenuOpen && (
+                <ul className="pl-8 mt-2 space-y-2">
+                  <li>
+                    <Link
+                      to="/admin/reviews/books"
+                      className={`flex items-center gap-3 py-2 px-4 rounded-lg transition duration-200 ${
+                        location.pathname === "/admin/reviews/books"
+                          ? "bg-blue-600 text-white shadow-sm"
+                          : "text-gray-400 hover:bg-gray-700 hover:text-white"
+                      }`}
+                    >
+                      <BookOpenIcon className="w-5 h-5" />
+                      <span>Book</span>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
+                      to="/admin/reviews/documents"
+                      className={`flex items-center gap-3 py-2 px-4 rounded-lg transition duration-200 ${
+                        location.pathname === "/admin/reviews/documents"
+                          ? "bg-blue-600 text-white shadow-sm"
+                          : "text-gray-400 hover:bg-gray-700 hover:text-white"
+                      }`}
+                    >
+                      <DocumentTextIcon className="w-5 h-5" />
+                      <span>Document</span>
                     </Link>
                   </li>
                 </ul>
