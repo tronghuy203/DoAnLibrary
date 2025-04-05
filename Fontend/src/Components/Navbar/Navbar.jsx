@@ -68,6 +68,7 @@ const Navbar = () => {
             </div>
           </div>
 
+
           <div className="hidden lg:flex items-center space-x-4">
             <NavItem to="/" icon={<BookOpenIcon className="w-5 h-5" />} text="Trang chủ" />
             

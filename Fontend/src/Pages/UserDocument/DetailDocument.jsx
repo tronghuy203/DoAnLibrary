@@ -55,53 +55,52 @@ const DetailDocument = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-tr from-indigo-50 via-blue-100 to-purple-100 dark:from-gray-900 dark:via-zinc-800 dark:to-indigo-900 flex justify-center items-start py-20 transition-colors duration-700">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex justify-center items-start py-20 transition-colors duration-500">
       <div className="container mx-auto px-6">
         {isLoading ? (
           <div className="flex justify-center items-center h-64">
-            <div className="w-16 h-16 border-4 border-t-purple-500 border-indigo-200 dark:border-indigo-700 rounded-full"></div>
+            <div className="w-16 h-16 border-4 border-t-indigo-500 dark:border-t-indigo-400 border-gray-300 dark:border-gray-700 rounded-full animate-spin"></div>
           </div>
         ) : error ? (
-          <p className="text-red-500 dark:text-red-300 text-center text-xl font-medium animate-bounce-in">
+          <p className="text-red-500 dark:text-red-400 text-center text-xl font-medium animate-fade">
             {error}
           </p>
         ) : !docData ? (
-          <p className="text-gray-600 dark:text-gray-400 text-center text-xl font-medium animate-bounce-in">
+          <p className="text-gray-600 dark:text-gray-400 text-center text-xl font-medium animate-fade">
             Không tìm thấy tài liệu.
           </p>
         ) : (
           <div className="max-w-4xl mx-auto space-y-8">
             {/* Header Section */}
-            <div className="relative bg-white/90 dark:bg-gray-800/90 backdrop-blur-lg p-8 rounded-3xl shadow-2xl hover:shadow-3xl transform hover:-translate-y-2 transition-all duration-500 animate-slide-in-down">
-              <div className="absolute inset-0 bg-gradient-to-r from-indigo-200/20 to-purple-200/20 dark:from-indigo-900/20 dark:to-purple-900/20 rounded-3xl -z-10"></div>
-              <h2 className="text-4xl font-extrabold text-gray-900 dark:text-white tracking-wide bg-clip-text text-transparent bg-gradient-to-r from-indigo-600 to-purple-600">
+            <div data-aos="slide-up" className="relative bg-white dark:bg-gray-800/90 backdrop-blur-lg p-8 rounded-xl shadow-lg">
+              <div data-aos="slide-up" className="absolute inset-0 bg-gradient-to-r from-gray-200/20 dark:from-gray-700/20 to-gray-100/20 dark:to-gray-600/20 rounded-xl -z-10"></div>
+              <h2 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight">
                 {docData.title}
               </h2>
-              <p className="text-gray-700 dark:text-gray-200 mt-3 text-lg leading-relaxed">
+              <p className="text-gray-600 dark:text-gray-300 mt-2 text-base leading-relaxed">
                 {docData.description}
               </p>
               <button
                 onClick={handleDownload}
-                className="mt-6 px-8 py-3 bg-gradient-to-r from-purple-500 to-indigo-600 text-white font-semibold rounded-full shadow-lg hover:shadow-xl hover:from-purple-600 hover:to-indigo-700 transform hover:scale-110 transition-all duration-300 relative overflow-hidden"
+                className="mt-6 px-6 py-2 bg-indigo-600 dark:bg-indigo-500 text-white font-medium rounded-lg shadow-md hover:bg-indigo-700 dark:hover:bg-indigo-600 hover:shadow-lg transform hover:scale-105 transition-all duration-300"
               >
-                <span className="relative z-10">Tải xuống tài liệu</span>
-                <div className="absolute inset-0 bg-white opacity-25 transform -skew-x-12 animate-shimmer"></div>
+                Tải xuống tài liệu
               </button>
             </div>
 
             {/* PDF Viewer Section */}
             {docData.fileUrl && (
-              <div className="relative bg-white/70 dark:bg-gray-800/70 backdrop-blur-lg p-6 rounded-3xl shadow-xl animate-fade-in-up">
-                <div className="absolute inset-0 bg-gradient-to-br from-indigo-100/20 to-purple-100/20 dark:from-indigo-800/20 dark:to-purple-800/20 rounded-3xl -z-10"></div>
+              <div className="relative bg-white dark:bg-gray-800/90 backdrop-blur-lg p-6 rounded-2xl shadow-lg animate-fade">
+                <div className="absolute inset-0 bg-gradient-to-br from-gray-200 dark:from-gray-700/20 to-gray-100/20 dark:to-gray-600/20 rounded-2xl -z-10"></div>
                 <div
-                  className="border border-gray-200 dark:border-gray-700 rounded-xl overflow-y-auto scrollbar-thin scrollbar-thumb-indigo-500 scrollbar-track-gray-100 dark:scrollbar-thumb-indigo-400 dark:scrollbar-track-gray-800"
+                  className="border border-gray-300 dark:border-gray-700 rounded-lg overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 dark:scrollbar-thumb-gray-500 scrollbar-track-gray-200 dark:scrollbar-track-gray-800"
                   style={{ height: "600px" }}
                 >
                   <Worker workerUrl={pdfjs.GlobalWorkerOptions.workerSrc}>
                     <Viewer
                       fileUrl={docData.fileUrl}
                       defaultScale={1.0}
-                      theme={{ theme: "auto" }}
+                      theme={{ theme: "auto" }} 
                       scrollMode="vertical"
                     />
                   </Worker>

@@ -121,7 +121,7 @@ const CreateBook = () => {
               id="author"
               name="author"
               value={book.author}
-              on BackgroundImageChange={handleChange}
+              onChange={handleChange}
               required
               className="w-full pl-10 pr-4 py-3 bg-gray-800 text-gray-100 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-gray-500 transition-all duration-200"
               placeholder="Nhập tên tác giả"

@@ -5,6 +5,7 @@ import { createAxios } from "../../createInstance";
 import { loginSuccess } from "../../redux/authSlice";
 import { Bar } from "react-chartjs-2";
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from "chart.js";
+import { useNavigate } from "react-router-dom";
 
 // Đăng ký các thành phần của chart.js
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
@@ -14,6 +15,7 @@ const ListDocument = () => {
   const documents = useSelector((state) => state.document.documents);
   const isLoading = useSelector((state) => state.document.isFetching);
   const dispatch = useDispatch();
+  const navigate = useNavigate();
 
   const axiosJWT = useMemo(() => createAxios(user, dispatch, loginSuccess), [user, dispatch]);
 
@@ -29,8 +31,11 @@ const ListDocument = () => {
     }
   };
 
-  const handleView = (documentId) => {
-    viewDocument(documentId, user?.accessToken, dispatch, axiosJWT);
+  const handleDetailClick = (id) => {
+    if (user?.accessToken) {
+      viewDocument(id, user?.accessToken, dispatch, axiosJWT);
+    }
+    window.open(`/document/${id}`, "_blank");
   };
 
   const formatDate = (date) => {
@@ -39,18 +44,28 @@ const ListDocument = () => {
   };
 
   const groupedData = documents.reduce((acc, doc) => {
-    const date = formatDate(doc.updatedAt || doc.createdAt);
-    if (!acc[date]) {
-      acc[date] = { views: 0, downloads: 0 };
-    }
-    acc[date].views += doc.views || 0;
-    acc[date].downloads += doc.downloads || 0;
+    doc.viewHistory.forEach((v) => {
+      const date = formatDate(v.date);
+      acc[date] = acc[date] || { views: 0, downloads: 0 };
+      acc[date].views += v.count;
+    });
+    doc.downloadHistory.forEach((d) => {
+      const date = formatDate(d.date);
+      acc[date] = acc[date] || { views: 0, downloads: 0 };
+      acc[date].downloads += d.count;
+    });
     return acc;
   }, {});
 
-  const chartLabels = Object.keys(groupedData);
-  const chartViewsData = chartLabels.map((date) => groupedData[date].views);
-  const chartDownloadsData = chartLabels.map((date) => groupedData[date].downloads);
+  const today = new Date();
+  const chartLabels = Array.from({ length: 7 }, (_, i) => {
+    const date = new Date(today);
+    date.setDate(today.getDate() - i);
+    return formatDate(date);
+  }).reverse();
+
+  const chartViewsData = chartLabels.map((date) => groupedData[date]?.views || 0);
+  const chartDownloadsData = chartLabels.map((date) => groupedData[date]?.downloads || 0);
 
   const chartData = {
     labels: chartLabels,
@@ -58,12 +73,12 @@ const ListDocument = () => {
       {
         label: "Lượt xem",
         data: chartViewsData,
-        backgroundColor: "rgba(75, 192, 192, 0.7)", // Tăng opacity cho nổi bật
+        backgroundColor: "rgba(75, 192, 192, 0.7)",
       },
       {
         label: "Lượt tải",
         data: chartDownloadsData,
-        backgroundColor: "rgba(153, 102, 255, 0.7)", // Tăng opacity
+        backgroundColor: "rgba(153, 102, 255, 0.7)",
       },
     ],
   };
@@ -73,15 +88,11 @@ const ListDocument = () => {
       <div className="max-w-7xl mx-auto">
         <h2 className="text-3xl font-bold text-white mb-6">Danh sách tài liệu</h2>
 
-        {/* Thông báo đang tải */}
-        {isLoading && (
-          <p className="text-gray-400 text-center mb-6">Đang tải...</p>
-        )}
+        {isLoading && <p className="text-gray-400 text-center mb-6">Đang tải...</p>}
 
-        {/* Biểu đồ */}
         <div className="mb-12 bg-gray-800 rounded-lg shadow-lg p-6">
           <h3 className="text-xl font-semibold text-white mb-4">
-            Biểu đồ lượt xem và tải tài liệu
+            Biểu đồ lượt xem và tải tài liệu (7 ngày gần nhất)
           </h3>
           <div className="max-w-4xl mx-auto">
             <Bar
@@ -89,33 +100,18 @@ const ListDocument = () => {
               options={{
                 responsive: true,
                 plugins: {
-                  legend: {
-                    position: "top",
-                    labels: {
-                      color: "#fff", // Chữ trắng cho legend
-                    },
-                  },
-                  tooltip: {
-                    mode: "index",
-                    intersect: false,
-                  },
+                  legend: { position: "top", labels: { color: "#fff" } },
+                  tooltip: { mode: "index", intersect: false },
                 },
                 scales: {
-                  x: {
-                    ticks: { color: "#fff" }, // Chữ trắng cho trục X
-                    grid: { color: "rgba(255, 255, 255, 0.1)" }, // Lưới nhạt
-                  },
-                  y: {
-                    ticks: { color: "#fff" }, // Chữ trắng cho trục Y
-                    grid: { color: "rgba(255, 255, 255, 0.1)" },
-                  },
+                  x: { ticks: { color: "#fff" }, grid: { color: "rgba(255, 255, 255, 0.1)" } },
+                  y: { ticks: { color: "#fff" }, grid: { color: "rgba(255, 255, 255, 0.1)" } },
                 },
               }}
             />
           </div>
         </div>
 
-        {/* Bảng danh sách tài liệu */}
         <div className="bg-gray-800 rounded-lg shadow-lg overflow-hidden">
           <table className="w-full text-left">
             <thead className="bg-gray-700">
@@ -143,15 +139,13 @@ const ListDocument = () => {
                     <td className="px-6 py-4 text-gray-300">{doc.views}</td>
                     <td className="px-6 py-4 text-gray-300">{doc.downloads}</td>
                     <td className="px-6 py-4 flex gap-2">
-                      <a
-                        href={doc.fileUrl}
-                        target="_blank"
-                        rel="noopener noreferrer"
-                        onClick={() => handleView(doc._id)}
+
+                      <button
+                        onClick={() => handleDetailClick(doc._id)}
                         className="text-blue-400 hover:text-blue-300 font-medium transition duration-200"
                       >
                         Xem
-                      </a>
+                      </button>
                       <button
                         onClick={() => handleDelete(doc._id)}
                         className="text-red-400 hover:text-red-300 font-medium transition duration-200"
