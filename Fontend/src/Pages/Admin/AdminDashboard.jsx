@@ -4,7 +4,7 @@ const AdminDashboard = () => {
   return (
     <div className="min-h-screen bg-gray-900 text-gray-100 p-6 lg:p-8">
       <div className="animate-fade-in">
-        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-blue-400 mb-4">
+        <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-blue-400 mb-4 mt-5">
           Admin Dashboard
         </h1>
         <p className="text-gray-300 text-lg sm:text-xl mb-8">
