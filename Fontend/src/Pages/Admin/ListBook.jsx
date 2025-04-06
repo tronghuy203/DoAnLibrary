@@ -44,7 +44,8 @@ const ListBook = () => {
   const filteredBooks = books.filter(
     (book) =>
       book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      book.author.toLowerCase().includes(searchTerm.toLowerCase())
+      book.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      (book.category && book.category.toLowerCase().includes(searchTerm.toLowerCase()))
   );
 
   const totalPages = Math.ceil(filteredBooks.length / booksPerPage);
@@ -57,113 +58,112 @@ const ListBook = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-black text-gray-100 flex flex-col items-center py-12 px-4 sm:px-6 lg:px-8">
-      {/* Tiêu đề */}
-      <h2 className="text-3xl sm:text-4xl md:text-5xl font-extrabold text-center text-cyan-400 mb-10 tracking-tight drop-shadow-lg animate-fade-in">
-        Danh sách sách
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-950 text-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+      <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center text-cyan-400 mb-10 tracking-wide drop-shadow-md animate-fade-in-up">
+        Danh Sách Sách
       </h2>
 
       {/* Thanh tìm kiếm */}
-      <div className="w-full max-w-4xl mb-8 px-4 sm:px-0">
+      <div className="w-full max-w-2xl mx-auto mb-8">
         <div className="relative">
-          <MagnifyingGlassIcon className="absolute left-4 top-1/2 transform -translate-y-1/2 w-6 h-6 text-cyan-400" />
+          <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
           <input
             type="text"
-            placeholder="Tìm kiếm theo tiêu đề hoặc tác giả..."
+            placeholder="Tìm kiếm sách theo dạng tiêu đề, tác giả hoặc danh mục..."
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-full pl-12 pr-4 py-3 bg-gray-800 text-gray-100 border border-gray-700 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-gray-500 transition-all duration-300 shadow-md hover:shadow-lg"
+            className="w-full pl-10 pr-4 py-2 bg-gray-700 text-gray-100 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-all duration-200 hover:border-cyan-500/50"
           />
         </div>
       </div>
 
       {/* Danh sách sách */}
-      <div className="w-full max-w-4xl px-4 sm:px-0">
+      <div className="w-full max-w-5xl mx-auto">
         {filteredBooks.length === 0 ? (
-          <p className="text-gray-400 text-lg text-center italic animate-fade-in">
+          <div className="text-center text-gray-400 py-10 animate-slide-in text-lg">
             Không tìm thấy sách nào
-          </p>
+          </div>
         ) : (
-          <div className="animate-fade-in">
-            <div className="overflow-x-auto rounded-xl shadow-2xl bg-gray-800 border border-gray-700">
-              <table className="w-full text-left">
-                <thead>
-                  <tr className="bg-gradient-to-r from-gray-700 to-gray-600 text-gray-200 text-xs sm:text-sm uppercase tracking-wider">
-                    <th className="py-4 px-4 sm:px-6 font-semibold">Ảnh</th>
-                    <th className="py-4 px-4 sm:px-6 font-semibold">Tiêu đề</th>
-                    <th className="py-4 px-4 sm:px-6 font-semibold hidden sm:table-cell">Tác giả</th>
-                    <th className="py-4 px-4 sm:px-6 font-semibold hidden md:table-cell">Danh mục</th>
-                    <th className="py-4 px-4 sm:px-6 font-semibold hidden lg:table-cell">Giá (VND)</th>
-                    <th className="py-4 px-4 sm:px-6 font-semibold">Hành động</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {currentBooks.map((book) => (
-                    <tr
-                      key={book._id}
-                      className="border-t border-gray-700 hover:bg-gray-700 transition-all duration-200"
-                    >
-                      <td className="py-4 px-4 sm:px-6">
-                        <img
-                          src={book.image || "https://via.placeholder.com/100"}
-                          alt={book.title}
-                          className="w-12 h-12 sm:w-16 sm:h-16 object-cover rounded-lg shadow-md transform hover:scale-105 transition-transform duration-300"
-                        />
-                      </td>
-                      <td className="py-4 px-4 sm:px-6 text-gray-100 font-medium truncate max-w-[150px] sm:max-w-xs">
-                        {book.title}
-                      </td>
-                      <td className="py-4 px-4 sm:px-6 text-gray-100 font-medium hidden sm:table-cell truncate max-w-[150px]">
-                        {book.author}
-                      </td>
-                      <td className="py-4 px-4 sm:px-6 text-gray-100 font-medium hidden md:table-cell">
-                        {book.category || "Chưa có"}
-                      </td>
-                      <td className="py-4 px-4 sm:px-6 text-gray-100 font-medium hidden lg:table-cell">
-                        {book.price.toLocaleString("vi-VN")}
-                      </td>
-                      <td className="py-4 px-4 sm:px-6 flex flex-col sm:flex-row gap-2 sm:gap-3">
-                        <Link to={`/admin/books/update/${book._id}`}>
-                          <button className="flex items-center justify-center gap-1 bg-amber-500 hover:bg-amber-600 text-white font-semibold py-1.5 px-3 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg w-full sm:w-auto">
-                            <PencilIcon className="w-4 h-4 sm:w-5 sm:h-5" />
-                            <span className="text-xs sm:text-sm">Cập nhật</span>
-                          </button>
-                        </Link>
-                        <button
-                          onClick={() => handleDelete(book._id)}
-                          className="flex items-center justify-center gap-1 bg-red-500 hover:bg-red-600 text-white font-semibold py-1.5 px-3 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg w-full sm:w-auto"
-                        >
-                          <TrashIcon className="w-4 h-4 sm:w-5 sm:h-5" />
-                          <span className="text-xs sm:text-sm">Xóa</span>
-                        </button>
-                      </td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+          <div className="bg-gray-800 rounded-xl shadow-md border border-gray-700/50 overflow-hidden">
+            <div className="hidden sm:grid sm:grid-cols-[0.5fr_1fr_1fr_1fr_1fr_1fr] bg-gray-700 text-gray-200 font-semibold p-4">
+              <div className="text-base">Ảnh</div>
+              <div className="text-base">Tiêu đề</div>
+              <div className="text-base">Tác giả</div>
+              <div className="text-base">Danh mục</div>
+              <div className="text-base">Giá (VND)</div>
+              <div className="text-base">Hành động</div>
             </div>
 
-            {/* Phân trang */}
-            {totalPages > 1 && (
-              <div className="flex flex-wrap justify-center mt-8 gap-2">
-                {Array.from({ length: totalPages }, (_, index) => (
-                  <button
-                    key={index + 1}
-                    onClick={() => handlePageChange(index + 1)}
-                    className={`px-3 py-2 rounded-full font-medium transition-all duration-300 shadow-md text-sm sm:text-base ${
-                      currentPage === index + 1
-                        ? "bg-cyan-500 text-white scale-105"
-                        : "bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white"
-                    }`}
-                  >
-                    {index + 1}
-                  </button>
-                ))}
-              </div>
-            )}
+            <div className="divide-y divide-gray-700">
+              {currentBooks.map((book) => (
+                <div
+                  key={book._id}
+                  className="flex flex-col sm:grid sm:grid-cols-[0.5fr_1fr_1fr_1fr_1fr_1fr] p-4 hover:bg-gray-750 hover:-translate-y-1 transition-all duration-300 animate-slide-in"
+                >
+                  <div className="py-2 flex items-center">
+                    <span className="sm:hidden font-semibold text-cyan-400 mr-2">Ảnh:</span>
+                    <img
+                      src={book.image || "https://via.placeholder.com/100"}
+                      alt={book.title}
+                      className="w-12 h-15 object-cover rounded-md"
+                    />
+                  </div>
+                  <div className="py-2 text-gray-200 flex items-center">
+                    <span className="sm:hidden font-semibold text-cyan-400 mr-2">Tiêu đề:</span>
+                    <span className="text-base break-words">{book.title}</span>
+                  </div>
+                  <div className="py-2 text-gray-200 flex items-center">
+                    <span className="sm:hidden font-semibold text-cyan-400 mr-2">Tác giả:</span>
+                    <span className="text-base break-words">{book.author}</span>
+                  </div>
+                  <div className="py-2 text-gray-200 flex items-center">
+                    <span className="sm:hidden font-semibold text-cyan-400 mr-2">Danh mục:</span>
+                    <span className="text-base">{book.category || "Chưa có"}</span>
+                  </div>
+                  <div className="py-2 text-gray-200 flex items-center">
+                    <span className="sm:hidden font-semibold text-cyan-400 mr-2">Giá:</span>
+                    <span className="text-base">{book.price.toLocaleString("vi-VN")}</span>
+                  </div>
+                  <div className="py-2 flex items-center gap-2">
+                    <Link to={`/admin/books/update/${book._id}`}>
+                      <button className="bg-amber-500 hover:bg-amber-600 text-white font-semibold py-1 px-3 rounded-md transition-all duration-200 hover:shadow-md flex items-center gap-1 text-sm">
+                        <PencilIcon className="w-4 h-4" />
+                        Cập nhật
+                      </button>
+                    </Link>
+                    <button
+                      onClick={() => handleDelete(book._id)}
+                      className="bg-red-500 hover:bg-red-600 text-white font-semibold py-1 px-3 rounded-md transition-all duration-200 hover:shadow-md flex items-center gap-1 text-sm"
+                    >
+                      <TrashIcon className="w-4 h-4" />
+                      Xóa
+                    </button>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+
+        {/* Phân trang */}
+        {totalPages > 1 && (
+          <div className="flex flex-wrap justify-center mt-8 gap-2">
+            {Array.from({ length: totalPages }, (_, index) => (
+              <button
+                key={index + 1}
+                onClick={() => handlePageChange(index + 1)}
+                className={`px-3 py-1 rounded-full font-medium text-sm transition-all duration-300 shadow-md ${
+                  currentPage === index + 1
+                    ? "bg-cyan-500 text-white scale-105"
+                    : "bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white"
+                }`}
+              >
+                {index + 1}
+              </button>
+            ))}
           </div>
         )}
       </div>

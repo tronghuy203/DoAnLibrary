@@ -29,16 +29,12 @@ const AdminUserManagement = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (editUserId) {
-        await updateUser(editUserId, formData, user.accessToken, dispatch, axiosJWT);
-        
-        // ✅ Gọi lại API lấy danh sách mới sau khi cập nhật
-        getAllUsers(user?.accessToken, dispatch, axiosJWT); 
-        
-        setFormData({ username: "", email: "", admin: false });
-        setEditUserId(null);
+      await updateUser(editUserId, formData, user.accessToken, dispatch, axiosJWT);
+      getAllUsers(user?.accessToken, dispatch, axiosJWT);
+      setFormData({ username: "", email: "", admin: false });
+      setEditUserId(null);
     }
-};
-
+  };
 
   const handleEdit = (user) => {
     setFormData({ username: user.username, email: user.email, admin: user.admin });
@@ -46,21 +42,18 @@ const AdminUserManagement = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-900 text-gray-100 flex flex-col items-center py-8 px-4 lg:px-8">
-      <h2 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-center text-blue-400 mb-8 animate-fade-in">
-        Quản lý người dùng
+    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-950 text-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+      <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center text-cyan-400 mb-10 tracking-wide drop-shadow-md animate-fade-in-up">
+        Quản Lý Người Dùng
       </h2>
 
       {editUserId && (
         <form
           onSubmit={handleSubmit}
-          className="w-full max-w-xl bg-gradient-to-br from-gray-800 to-gray-700 p-6 rounded-xl shadow-lg mb-8 transform transition-all duration-300 animate-fade-in"
+          className="w-full max-w-md mx-auto bg-gray-800 p-6 rounded-xl shadow-md mb-12 border border-gray-700/50 animate-slide-in"
         >
-          <div className="mb-4 relative">
-            <label
-              className="block text-gray-300 text-sm font-semibold mb-2"
-              htmlFor="username"
-            >
+          <div className="mb-5">
+            <label className="block text-gray-300 text-sm font-semibold mb-2" htmlFor="username">
               Tên người dùng
             </label>
             <div className="relative">
@@ -72,16 +65,13 @@ const AdminUserManagement = () => {
                 value={formData.username}
                 onChange={(e) => setFormData({ ...formData, username: e.target.value })}
                 required
-                className="w-full pl-10 pr-4 py-2 bg-gray-700 text-gray-100 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
+                className="w-full pl-10 pr-4 py-2 bg-gray-700 text-gray-100 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-all duration-200 hover:border-cyan-500/50"
               />
             </div>
           </div>
 
-          <div className="mb-4 relative">
-            <label
-              className="block text-gray-300 text-sm font-semibold mb-2"
-              htmlFor="email"
-            >
+          <div className="mb-5">
+            <label className="block text-gray-300 text-sm font-semibold mb-2" htmlFor="email">
               Email
             </label>
             <div className="relative">
@@ -93,74 +83,77 @@ const AdminUserManagement = () => {
                 value={formData.email}
                 onChange={(e) => setFormData({ ...formData, email: e.target.value })}
                 required
-                className="w-full pl-10 pr-4 py-2 bg-gray-700 text-gray-100 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition duration-200"
+                className="w-full pl-10 pr-4 py-2 bg-gray-700 text-gray-100 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-all duration-200 hover:border-cyan-500/50"
               />
             </div>
           </div>
 
-          <div className="mb-6 flex items-center">
+          <div className="mb-5 flex items-center gap-3">
             <label className="flex items-center text-gray-300 text-sm font-semibold cursor-pointer">
               <input
                 type="checkbox"
                 checked={formData.admin}
                 onChange={(e) => setFormData({ ...formData, admin: e.target.checked })}
-                className="mr-2 h-5 w-5 text-blue-500 focus:ring-blue-500 border-gray-600 rounded cursor-pointer"
+                className="mr-2 h-4 w-4 text-cyan-500 focus:ring-cyan-500 border-gray-600 rounded cursor-pointer"
               />
-              <span className="relative inline-block w-10 h-5 bg-gray-600 rounded-full transition duration-200">
-                <span
-                  className={`absolute left-0 top-0 w-5 h-5 bg-white rounded-full transform transition duration-200 ${
-                    formData.admin ? "translate-x-5 bg-blue-500" : "translate-x-0"
-                  }`}
-                />
-              </span>
-              <span className="ml-2">Admin</span>
+              Vai trò Admin
             </label>
           </div>
 
           <button
             type="submit"
-            className="w-full bg-blue-600 hover:bg-blue-700 text-white font-semibold py-2 rounded-lg transition duration-200 shadow-md hover:shadow-lg"
+            className="w-full bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-2 rounded-lg transition-all duration-200 hover:shadow-md"
           >
             Cập nhật
           </button>
         </form>
       )}
 
-      <div className="w-full max-w-6xl overflow-x-auto animate-fade-in">
-        <table className="w-full bg-gray-800 rounded-xl shadow-lg">
-          <thead>
-            <tr className="bg-gradient-to-r from-gray-700 to-gray-600 text-gray-300 text-left text-sm sm:text-base">
-              <th className="py-4 px-6 font-semibold rounded-tl-xl">ID</th>
-              <th className="py-4 px-6 font-semibold">Tên người dùng</th>
-              <th className="py-4 px-6 font-semibold">Email</th>
-              <th className="py-4 px-6 font-semibold">Vai trò</th>
-              <th className="py-4 px-6 font-semibold rounded-tr-xl">Hành động</th>
-            </tr>
-          </thead>
-          <tbody>
-            {userList?.length > 0 ? (
-              userList.map((u) => (
-                <tr
+      <div className="w-full max-w-5xl mx-auto">
+        {userList?.length > 0 ? (
+          <div className="bg-gray-800 rounded-xl shadow-md border border-gray-700/50 overflow-hidden">
+            <div className="hidden sm:grid sm:grid-cols-[1fr_1fr_1.5fr_1fr_1fr] bg-gray-700 text-gray-200 font-semibold p-4">
+              <div className="text-base">ID</div>
+              <div className="text-base">Tên</div>
+              <div className="text-base">Email</div>
+              <div className="text-base">Vai trò</div>
+              <div className="text-base">Hành động</div>
+            </div>
+
+            <div className="divide-y divide-gray-700">
+              {userList.map((u) => (
+                <div
                   key={u._id}
-                  className="border-t border-gray-700 hover:bg-gray-700 transition duration-200"
+                  className="flex flex-col sm:grid sm:grid-cols-[1fr_1fr_1.5fr_1fr_1fr] p-4 hover:bg-gray-750 hover:-translate-y-1 transition-all duration-300 animate-slide-in"
                 >
-                  <td className="py-4 px-6 text-gray-200 text-sm sm:text-base">{u._id}</td>
-                  <td className="py-4 px-6 text-gray-200 text-sm sm:text-base">{u.username}</td>
-                  <td className="py-4 px-6 text-gray-200 text-sm sm:text-base">{u.email}</td>
-                  <td className="py-4 px-6 text-gray-200 text-sm sm:text-base">
+                  <div className="py-2 text-gray-200 flex items-center">
+                    <span className="sm:hidden font-semibold text-cyan-400 mr-2">ID:</span>
+                    <span className="text-base break-all">{u._id.slice(-6)}</span>
+                  </div>
+                  <div className="py-2 text-gray-200 flex items-center">
+                    <span className="sm:hidden font-semibold text-cyan-400 mr-2">Tên:</span>
+                    <span className="text-base">{u.username}</span>
+                  </div>
+                  <div className="py-2 text-gray-200 flex items-center">
+                    <span className="sm:hidden font-semibold text-cyan-400 mr-2">Email:</span>
+                    <span className="text-base break-words">{u.email}</span>
+                  </div>
+                  <div className="py-2 text-gray-200 flex items-center">
+                    <span className="sm:hidden font-semibold text-cyan-400 mr-2">Vai trò:</span>
                     <span
-                      className={`inline-block px-2 py-1 rounded-full text-xs font-semibold ${
-                        u.admin ? "bg-blue-600 text-white" : "bg-gray-600 text-gray-200"
+                      className={`inline-flex items-center px-3 py-1 rounded-full text-sm font-medium transition-all duration-200 hover:scale-105 ${
+                        u.admin ? "bg-cyan-500 text-white" : "bg-gray-500 text-gray-200"
                       }`}
                     >
                       {u.admin ? "Admin" : "User"}
                     </span>
-                  </td>
-                  <td className="py-4 px-6 flex gap-2">
+                  </div>
+                  <div className="py-2 flex items-center gap-2">
                     {!u.admin && (
+                      
                       <button
                         onClick={() => handleDelete(u._id)}
-                        className="flex items-center gap-1 bg-red-600 hover:bg-red-700 text-white text-sm font-semibold py-1 px-3 rounded-lg transition duration-200 shadow-md hover:shadow-lg"
+                        className="bg-red-500 hover:bg-red-600 text-white font-semibold py-1 px-3 rounded-md transition-all duration-200 hover:shadow-md flex items-center gap-1 text-sm"
                       >
                         <TrashIcon className="w-4 h-4" />
                         Xóa
@@ -168,23 +161,21 @@ const AdminUserManagement = () => {
                     )}
                     <button
                       onClick={() => handleEdit(u)}
-                      className="flex items-center gap-1 bg-yellow-600 hover:bg-yellow-700 text-white text-sm font-semibold py-1 px-3 rounded-lg transition duration-200 shadow-md hover:shadow-lg"
+                      className="bg-amber-500 hover:bg-amber-600 text-white font-semibold py-1 px-3 rounded-md transition-all duration-200 hover:shadow-md flex items-center gap-1 text-sm"
                     >
                       <PencilIcon className="w-4 h-4" />
-                      Chỉnh sửa
+                      Sửa
                     </button>
-                  </td>
-                </tr>
-              ))
-            ) : (
-              <tr>
-                <td colSpan="5" className="py-4 px-6 text-center text-gray-400">
-                  Không có người dùng nào
-                </td>
-              </tr>
-            )}
-          </tbody>
-        </table>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        ) : (
+          <div className="text-center text-gray-400 py-10 animate-slide-in text-lg">
+            Không có người dùng nào
+          </div>
+        )}
       </div>
     </div>
   );
