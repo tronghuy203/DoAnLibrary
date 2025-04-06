@@ -11,6 +11,8 @@ const UpdateBook = lazy(() => import("../Pages/Admin/UpdateBook"));
 const AdminUserManagement = lazy(() => import("../Pages/Admin/AdminUserManagement"));
 const CreateDocument = lazy(() => import("../Pages/Admin/CreateDocument"));
 const ListDocument = lazy(() => import("../Pages/Admin/ListDocument"));
+const BookReview = lazy(() => import("../Pages/Admin/BookReview"));
+const DocumentReview = lazy(() => import("../Pages/Admin/DocumentReview"));
 
 const AdminRoutes = () => {
   return (
@@ -25,6 +27,8 @@ const AdminRoutes = () => {
             <Route path="users" element={<AdminUserManagement />} />
             <Route path="documents/create" element={<CreateDocument />} />
             <Route path="documents/list" element={<ListDocument />} />
+            <Route path="reviews/books" element={<BookReview />} />
+            <Route path="reviews/documents" element={<DocumentReview />} />
           </Route>
         </Routes>
       </Suspense>

@@ -26,7 +26,8 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
   const [ratingStats, setRatingStats] = useState({});
   const [selectedRatingFilter, setSelectedRatingFilter] = useState(null);
   const [visibleReviews, setVisibleReviews] = useState(3);
-  const [visibleReplies, setVisibleReplies] = useState({});
+  const [visibleReplies, setVisibleReplies] = useState({}); // Default to 1 reply when toggled
+  const [showRepliesForReview, setShowRepliesForReview] = useState({});
 
   let axiosJWT = createAxios(user, dispatch, loginSuccess);
 
@@ -93,7 +94,6 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
   const handleReplySubmit = async (reviewId) => {
     const comment = replyInput[reviewId];
     if (!comment) return;
-
     try {
       if (editingReplyId) {
         await updateReply(editingReplyId, { comment, userId: user._id }, user.accessToken, dispatch, axiosJWT);
@@ -133,14 +133,25 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
     }));
   };
 
-  // Sắp xếp đánh giá: 5 sao xuống 1 sao, trong cùng số sao thì theo ngày mới nhất
+  const toggleShowReplies = (reviewId) => {
+    setShowRepliesForReview((prev) => ({
+      ...prev,
+      [reviewId]: !prev[reviewId],
+    }));
+    // Set default to 1 reply when toggling on
+    if (!showRepliesForReview[reviewId]) {
+      setVisibleReplies((prev) => ({
+        ...prev,
+        [reviewId]: 1,
+      }));
+    }
+  };
+
   const sortedReviews = reviews
     ? [...reviews].sort((a, b) => {
-        // Sắp xếp theo rating giảm dần
         if (b.rating !== a.rating) {
           return b.rating - a.rating;
         }
-        // Trong cùng rating, sắp xếp theo ngày mới nhất
         return new Date(b.createdAt) - new Date(a.createdAt);
       })
     : [];
@@ -169,7 +180,7 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
   const handleCollapseReplies = (reviewId) => {
     setVisibleReplies((prev) => ({
       ...prev,
-      [reviewId]: 3,
+      [reviewId]: 1, // Collapse back to 1 reply
     }));
   };
 
@@ -183,6 +194,7 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
       minute: "2-digit",
     });
   };
+  const isAdmin = user?.admin === true;
 
   return (
     <div className="mt-6">
@@ -247,7 +259,7 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
                 </span>
               </div>
             </div>
-            {user?._id === review.userId?._id && (
+            {(user?._id === review.userId?._id || isAdmin) && (
               <div className="relative">
                 <button
                   onClick={() => toggleOptions(review._id)}
@@ -302,103 +314,125 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
             })}
           </div>
           <p className="text-gray-700 dark:text-gray-300">{review.comment}</p>
-          <div className="mt-2 h-px bg-gradient-to-r from-gray-200 via-gray-300 dark:from-gray-700 dark:via-gray-600 to-transparent" />
 
-          {/* Reply Section */}
-          <div className="ml-6 mt-3">
-            {(review.replies || []).slice(0, visibleReplies[review._id] || 3).map((reply) => (
-              <div
-                key={reply._id}
-                className="pl-3 mb-3 relative border-l-2 border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900/50 rounded-r-lg py-2 px-3 transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800/70 animate-fade-in"
-              >
-                <div className="flex items-center justify-between">
-                  <div>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      <span className="font-semibold text-gray-800 dark:text-gray-200">
-                        {reply.userId?.username || "Ẩn danh"}:
-                      </span>{" "}
-                      {reply.comment}
-                    </p>
-                    <span className="text-xs text-gray-500 dark:text-gray-400 block mt-1">
-                      {reply.createdAt ? formatDate(reply.createdAt) : "Ngày không xác định"}
-                    </span>
-                  </div>
-                  {user?._id === reply.userId?._id && (
-                    <div className="relative">
-                      <button
-                        onClick={() => toggleReplyOptions(reply._id)}
-                        className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-all duration-200 transform hover:scale-110"
-                      >
-                        ⋮
-                      </button>
-                      {showReplyOptions[reply._id] && (
-                        <div className="absolute right-0 mt-2 w-36 bg-white dark:bg-gray-800 rounded-lg shadow-lg z-10 border border-gray-200 dark:border-gray-700 animate-slide-down">
-                          <button
-                            onClick={() => {
-                              setReplyInput({ ...replyInput, [review._id]: reply.comment });
-                              setEditingReplyId(reply._id);
-                              setShowReplyOptions({});
-                            }}
-                            className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
-                          >
-                            Sửa
-                          </button>
-                          <button
-                            onClick={() => {
-                              handleDeleteReply(reply._id, review._id);
-                              setShowReplyOptions({});
-                            }}
-                            className="block w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
-                          >
-                            Xóa
-                          </button>
-                        </div>
-                      )}
-                    </div>
-                  )}
-                </div>
-              </div>
-            ))}
-            {review.replies && review.replies.length > 3 && (
-              <div className="text-sm mt-2 flex items-center gap-1">
-                {(visibleReplies[review._id] || 3) < review.replies.length ? (
-                  <button
-                    onClick={() => handleShowMoreReplies(review._id)}
-                    className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center gap-1 transition-all duration-200 transform hover:scale-105"
-                  >
-                    <span>Xem thêm phản hồi</span>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-                    </svg>
-                  </button>
-                ) : (
-                  <button
-                    onClick={() => handleCollapseReplies(review._id)}
-                    className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center gap-1 transition-all duration-200 transform hover:scale-105"
-                  >
-                    <span>Thu gọn</span>
-                    <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                      <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 15l7-7 7 7" />
-                    </svg>
-                  </button>
-                )}
-              </div>
-            )}
-
-            {/* Add reply input */}
-            <textarea
-              placeholder="Trả lời đánh giá..."
-              className="border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 w-full mt-2 p-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-all duration-300"
-              value={replyInput[review._id] || ""}
-              onChange={(e) => setReplyInput({ ...replyInput, [review._id]: e.target.value })}
-            />
+          {/* Toggle Replies Button */}
+          <div className="mt-2">
             <button
-              onClick={() => handleReplySubmit(review._id)}
-              className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm mt-1 font-medium transition-all duration-200 transform hover:scale-105"
+              onClick={() => toggleShowReplies(review._id)}
+              className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center gap-1 transition-all duration-200 transform hover:scale-105"
             >
-              {editingReplyId ? "Cập nhật phản hồi" : "Gửi phản hồi"}
+              <span>
+                {showRepliesForReview[review._id] ? "Ẩn phản hồi" : `Xem tất cả phản hồi (${review.replies?.length || 0})`}
+              </span>
+              <svg
+                className={`w-4 h-4 transition-transform duration-200 ${showRepliesForReview[review._id] ? "rotate-180" : ""}`}
+                fill="none"
+                stroke="currentColor"
+                viewBox="0 0 24 24"
+              >
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+              </svg>
             </button>
           </div>
+
+          {/* Replies Section (Shown only when toggled) */}
+          {showRepliesForReview[review._id] && (
+            <div className="ml-6 mt-3 animate-fade-in">
+              {(review.replies || []).slice(0, visibleReplies[review._id] || 1).map((reply) => (
+                <div
+                  key={reply._id}
+                  className="pl-3 mb-3 relative border-l-2 border-gray-300 dark:border-gray-600 bg-gray-50 dark:bg-gray-900/50 rounded-r-lg py-2 px-3 transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-800/70"
+                >
+                  <div className="flex items-center justify-between">
+                    <div>
+                      <p className="text-sm text-gray-600 dark:text-gray-400">
+                        <span className="font-semibold text-gray-800 dark:text-gray-200">
+                          {reply.userId?.username || "Ẩn danh"}:
+                        </span>{" "}
+                        {reply.comment}
+                      </p>
+                      <span className="text-xs text-gray-500 dark:text-gray-400 block mt-1">
+                        {reply.createdAt ? formatDate(reply.createdAt) : "Ngày không xác định"}
+                      </span>
+                    </div>
+                    {(user?._id === reply.userId?._id || isAdmin) && (
+                      <div className="relative">
+                        <button
+                          onClick={() => toggleReplyOptions(reply._id)}
+                          className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-all duration-200 transform hover:scale-110"
+                        >
+                          ⋮
+                        </button>
+                        {showReplyOptions[reply._id] && (
+                          <div className="absolute right-0 mt-2 w-36 bg-white dark:bg-gray-800 rounded-lg shadow-lgA z-10 border border-gray-200 dark:border-gray-700 animate-slide-down">
+                            <button
+                              onClick={() => {
+                                setReplyInput({ ...replyInput, [review._id]: reply.comment });
+                                setEditingReplyId(reply._id);
+                                setShowReplyOptions({});
+                              }}
+                              className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+                            >
+                              Sửa
+                            </button>
+                            <button
+                              onClick={() => {
+                                handleDeleteReply(reply._id, review._id);
+                                setShowReplyOptions({});
+                              }}
+                              className="block w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+                            >
+                              Xóa
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                    )}
+                  </div>
+                </div>
+              ))}
+
+              {review.replies && review.replies.length > 1 && (
+                <div className="text-sm mt-2 flex items-center gap-1">
+                  {(visibleReplies[review._id] || 1) < review.replies.length ? (
+                    <button
+                      onClick={() => handleShowMoreReplies(review._id)}
+                      className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center gap-1 transition-all duration-200 transform hover:scale-105"
+                    >
+                      <span>Xem thêm phản hồi</span>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                      </svg>
+                    </button>
+                  ) : (
+                    <button
+                      onClick={() => handleCollapseReplies(review._id)}
+                      className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center gap-1 transition-all duration-200 transform hover:scale-105"
+                    >
+                      <span>Thu gọn</span>
+                      <svg className="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M5 15l7-7 7 7" />
+                      </svg>
+                    </button>
+                  )}
+                </div>
+              )}
+
+              {/* Add reply input */}
+              <textarea
+                placeholder="Trả lời đánh giá..."
+                className="border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 w-full mt-2 p-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-all duration-300"
+                value={replyInput[review._id] || ""}
+                onChange={(e) => setReplyInput({ ...replyInput, [review._id]: e.target.value })}
+              />
+              <button
+                onClick={() => handleReplySubmit(review._id)}
+                className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 text-sm mt-1 font-medium transition-all duration-200 transform hover:scale-105"
+              >
+                {editingReplyId ? "Cập nhật phản hồi" : "Gửi phản hồi"}
+              </button>
+            </div>
+          )}
         </div>
       ))}
 

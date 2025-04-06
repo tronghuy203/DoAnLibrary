@@ -3,18 +3,18 @@ import { createBook } from "../../redux/apiBooks";
 import { useDispatch, useSelector } from "react-redux";
 import { createAxios } from "../../createInstance";
 import { loginSuccess } from "../../redux/authSlice";
-import { BookOpenIcon, UserIcon, DocumentTextIcon, CurrencyDollarIcon, CheckCircleIcon, ExclamationCircleIcon, PhotoIcon, TagIcon } from "@heroicons/react/24/outline";
+import { BookOpenIcon, UserIcon, DocumentTextIcon, CurrencyDollarIcon, CheckCircleIcon, ExclamationCircleIcon, PhotoIcon, TagIcon, ChevronUpIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
 
 const CreateBook = () => {
   const [book, setBook] = useState({
     title: "",
     author: "",
     description: "",
-    price: 0,
+    price: "0",
     category: "",
     image: null,
   });
-  const [previewImage, setPreviewImage] = useState(null); // State để hiển thị preview ảnh
+  const [previewImage, setPreviewImage] = useState(null);
   const [message, setMessage] = useState("");
 
   const dispatch = useDispatch();
@@ -22,15 +22,38 @@ const CreateBook = () => {
   const accessToken = user?.accessToken;
   const axiosJWT = useMemo(() => createAxios(user, dispatch, loginSuccess), [user, dispatch]);
 
+  const formatPrice = (value) => {
+    const num = parseInt(value.replace(/\./g, "")) || 0;
+    return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
+  };
+
   const handleChange = (e) => {
-    setBook({ ...book, [e.target.name]: e.target.value });
+    if (e.target.name === "price") {
+      const rawValue = e.target.value.replace(/\./g, "");
+      const formattedValue = formatPrice(rawValue);
+      setBook({ ...book, price: formattedValue });
+    } else {
+      setBook({ ...book, [e.target.name]: e.target.value });
+    }
+  };
+
+  const handleIncrease = () => {
+    const rawValue = parseInt(book.price.replace(/\./g, "")) || 0;
+    const newValue = rawValue + 1000;
+    setBook({ ...book, price: formatPrice(newValue.toString()) });
+  };
+
+  const handleDecrease = () => {
+    const rawValue = parseInt(book.price.replace(/\./g, "")) || 0;
+    const newValue = Math.max(0, rawValue - 1000); // Không cho giảm dưới 0
+    setBook({ ...book, price: formatPrice(newValue.toString()) });
   };
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
     if (file) {
       setBook({ ...book, image: file });
-      setPreviewImage(URL.createObjectURL(file)); // Tạo URL tạm để preview ảnh
+      setPreviewImage(URL.createObjectURL(file));
     }
   };
 
@@ -44,7 +67,11 @@ const CreateBook = () => {
 
       const formData = new FormData();
       Object.keys(book).forEach((key) => {
-        formData.append(key, book[key]);
+        if (key === "price") {
+          formData.append(key, book[key].replace(/\./g, ""));
+        } else {
+          formData.append(key, book[key]);
+        }
       });
 
       const data = await createBook(formData, accessToken, dispatch, axiosJWT);
@@ -55,11 +82,11 @@ const CreateBook = () => {
         title: "",
         author: "",
         description: "",
-        price: 0,
+        price: "0",
         category: "",
         image: null,
       });
-      setPreviewImage(null); // Reset preview ảnh
+      setPreviewImage(null);
     } catch (err) {
       setMessage("Có lỗi xảy ra khi tạo sách!");
       console.error(err);
@@ -151,19 +178,39 @@ const CreateBook = () => {
           <label className="block text-gray-200 text-sm font-medium mb-2" htmlFor="price">
             Giá
           </label>
-          <div className="relative">
-            <CurrencyDollarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-cyan-400" />
+          <div className="relative flex items-center">
+            <CurrencyDollarIcon className="absolute left-3 w-5 h-5 text-cyan-400" />
             <input
-              type="number"
+              type="text"
               id="price"
               name="price"
               value={book.price}
               onChange={handleChange}
               required
-              className="w-full pl-10 pr-4 py-3 bg-gray-800 text-gray-100 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-gray-500 transition-all duration-200"
+              className="w-full pl-10 pr-16 py-3 bg-gray-800 text-gray-100 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-gray-500 transition-all duration-200"
               placeholder="Nhập giá sách"
-              min="0"
+              onKeyPress={(e) => {
+                if (!/[0-9]/.test(e.key)) {
+                  e.preventDefault();
+                }
+              }}
             />
+            <div className="absolute right-2 flex flex-col">
+              <button
+                type="button"
+                onClick={handleIncrease}
+                className="p-0.5 text-cyan-400 hover:text-cyan-300 transition-colors duration-200"
+              >
+                <ChevronUpIcon className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={handleDecrease}
+                className="p-0.5 text-cyan-400 hover:text-cyan-300 transition-colors duration-200"
+              >
+                <ChevronDownIcon className="w-4 h-4" />
+              </button>
+            </div>
           </div>
         </div>
 
