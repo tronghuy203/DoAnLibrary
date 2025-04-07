@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { getAllBooks, deleteBook } from "../../redux/apiBooks";
+import { getCategory } from "../../redux/apiCategory";
 import { useDispatch, useSelector } from "react-redux";
 import { Link } from "react-router-dom";
 import { createAxios } from "../../createInstance";
@@ -10,6 +11,7 @@ const ListBook = () => {
   const [books, setBooks] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
+  const [categories, setCategories] = useState([]);
   const booksPerPage = 5;
 
   const dispatch = useDispatch();
@@ -17,6 +19,16 @@ const ListBook = () => {
   const axiosJWT = useMemo(() => createAxios(user, dispatch, loginSuccess), [user, dispatch]);
 
   useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const categoriesData = await getCategory(user.accessToken, dispatch, axiosJWT);
+        setCategories(categoriesData);
+      } catch (err) {
+        console.error("Error fetching categories:", err);
+      }
+    };
+  
+    fetchCategories();
     const fetchBooks = async () => {
       if (!user?.accessToken) return;
       try {
@@ -121,7 +133,13 @@ const ListBook = () => {
                   </div>
                   <div className="py-2 text-gray-200 flex items-center">
                     <span className="sm:hidden font-semibold text-cyan-400 mr-2">Danh mục:</span>
-                    <span className="text-base">{book.category || "Chưa có"}</span>
+                    <span className="text-base">
+                      {
+                        book.category
+                          ? categories.find(category => category._id === book.category)?.name || "Không xác định"
+                          : "Chưa có"
+                      }
+                    </span>
                   </div>
                   <div className="py-2 text-gray-200 flex items-center">
                     <span className="sm:hidden font-semibold text-cyan-400 mr-2">Giá:</span>

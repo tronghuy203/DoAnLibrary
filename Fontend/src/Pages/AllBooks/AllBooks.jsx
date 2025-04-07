@@ -5,21 +5,32 @@ import { createAxios } from "../../createInstance";
 import { loginSuccess } from "../../redux/authSlice";
 import { getAllUsers } from "../../redux/apiRequest";
 import { getAllBooks } from "../../redux/apiBooks";
+import { getCategory } from "../../redux/apiCategory"; 
 
 const AllBooks = () => {
   const user = useSelector((state) => state.auth.login?.currentUser);
   const books = useSelector((state) => state.books.allBooks);
+  const categories = useSelector((state) => state.categories.allCategories);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const axiosJWT = useMemo(() => createAxios(user, dispatch, loginSuccess), [user, dispatch]);
 
-  // State for filtering, pagination, and search
+  // State cho lọc, phân trang, tìm kiếm
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedPriceRange, setSelectedPriceRange] = useState("all");
   const [selectedAuthor, setSelectedAuthor] = useState("all");
   const [selectedRating, setSelectedRating] = useState("all");
-  const [visibleBooks, setVisibleBooks] = useState(8); // Initial number of books to show
-  const [searchQuery, setSearchQuery] = useState(""); // Search input state
+  const [visibleBooks, setVisibleBooks] = useState(8);
+  const [searchQuery, setSearchQuery] = useState("");
+
+  // Map categoryId => categoryName
+  const categoryMap = useMemo(() => {
+    const map = {};
+    categories?.forEach((cat) => {
+      map[cat._id] = cat.name;
+    });
+    return map;
+  }, [categories]);
 
   useEffect(() => {
     if (!user) {
@@ -31,6 +42,7 @@ const AllBooks = () => {
       try {
         await getAllUsers(user.accessToken, dispatch, axiosJWT);
         await getAllBooks(user.accessToken, dispatch, axiosJWT);
+        await getCategory(user.accessToken, dispatch, axiosJWT); // Gọi API lấy categories
       } catch (error) {
         console.error("Lỗi khi tải dữ liệu:", error);
       }
@@ -39,7 +51,6 @@ const AllBooks = () => {
     fetchData();
   }, [user, dispatch, axiosJWT, navigate]);
 
-  // Filter books based on selected criteria and search query
   const filteredBooks = books?.filter((book) => {
     const matchesSearch = book.title.toLowerCase().includes(searchQuery.toLowerCase());
     return (
@@ -56,13 +67,11 @@ const AllBooks = () => {
     );
   });
 
-  // Extract unique categories and authors for dropdowns
-  const categories = ["all", ...new Set(books?.map((book) => book.category))];
+  const categoryOptions = ["all", ...new Set(books?.map((book) => book.category))];
   const authors = ["all", ...new Set(books?.map((book) => book.author))];
 
-  // Handle "Xem thêm" button click
   const handleLoadMore = () => {
-    setVisibleBooks((prev) => prev + 8); // Load 8 more books each time
+    setVisibleBooks((prev) => prev + 8);
   };
 
   return (
@@ -85,31 +94,29 @@ const AllBooks = () => {
         />
       </div>
 
-      {/* Filtering Section */}
+      {/* Filter */}
       <div className="mb-12 max-w-7xl mx-auto bg-white dark:bg-zinc-800 p-6 rounded-xl shadow-md grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Category Filter */}
         <div>
           <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Danh mục</label>
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="w-full p-3 rounded-lg bg-gray-100 dark:bg-zinc-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
+            className="w-full p-3 rounded-lg bg-gray-100 dark:bg-zinc-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
           >
-            {categories.map((cat) => (
-              <option key={cat} value={cat}>
-                {cat === "all" ? "Tất cả" : cat}
+            {categoryOptions.map((catId) => (
+              <option key={catId} value={catId}>
+                {catId === "all" ? "Tất cả" : categoryMap[catId] || "Không rõ"}
               </option>
             ))}
           </select>
         </div>
 
-        {/* Price Filter */}
         <div>
           <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Giá</label>
           <select
             value={selectedPriceRange}
             onChange={(e) => setSelectedPriceRange(e.target.value)}
-            className="w-full p-3 rounded-lg bg-gray-100 dark:bg-zinc-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
+            className="w-full p-3 rounded-lg bg-gray-100 dark:bg-zinc-700 text-gray-900 dark:text-white"
           >
             <option value="all">Tất cả</option>
             <option value="low">Dưới 100,000 ₫</option>
@@ -118,13 +125,12 @@ const AllBooks = () => {
           </select>
         </div>
 
-        {/* Author Filter */}
         <div>
           <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Tác giả</label>
           <select
             value={selectedAuthor}
             onChange={(e) => setSelectedAuthor(e.target.value)}
-            className="w-full p-3 rounded-lg bg-gray-100 dark:bg-zinc-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
+            className="w-full p-3 rounded-lg bg-gray-100 dark:bg-zinc-700 text-gray-900 dark:text-white"
           >
             {authors.map((author) => (
               <option key={author} value={author}>
@@ -134,13 +140,12 @@ const AllBooks = () => {
           </select>
         </div>
 
-        {/* Rating Filter */}
         <div>
           <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Đánh giá</label>
           <select
             value={selectedRating}
             onChange={(e) => setSelectedRating(e.target.value)}
-            className="w-full p-3 rounded-lg bg-gray-100 dark:bg-zinc-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500 transition-all duration-200"
+            className="w-full p-3 rounded-lg bg-gray-100 dark:bg-zinc-700 text-gray-900 dark:text-white"
           >
             <option value="all">Tất cả</option>
             <option value="4+">4 sao trở lên</option>
@@ -149,27 +154,20 @@ const AllBooks = () => {
         </div>
       </div>
 
-      {/* Books List */}
+      {/* Book List */}
       {filteredBooks && filteredBooks.length > 0 ? (
         <>
-          <ul
-            data-aos="zoom-in"
-            className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 max-w-7xl mx-auto"
-          >
+          <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 max-w-7xl mx-auto" data-aos="zoom-in">
             {filteredBooks.slice(0, visibleBooks).map((book, index) => (
               <li
                 key={book._id}
-                className="bg-white dark:bg-zinc-800 rounded-2xl shadow-lg overflow-hidden transform hover:scale-105 hover:shadow-xl transition-all duration-300 animate-fade-in-up"
+                className="bg-white dark:bg-zinc-800 rounded-2xl shadow-lg overflow-hidden transform hover:scale-105 transition-all duration-300"
                 style={{ animationDelay: `${index * 0.1}s` }}
               >
                 <Link to={`/books/${book._id}`}>
                   <div className="relative group">
                     <img
-                      src={
-                        book.image && book.image.trim() !== ""
-                          ? book.image
-                          : "https://via.placeholder.com/150"
-                      }
+                      src={book.image?.trim() ? book.image : "https://via.placeholder.com/150"}
                       alt={book.title}
                       className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110"
                     />
@@ -178,14 +176,13 @@ const AllBooks = () => {
                 </Link>
 
                 <div className="p-6">
-                  <h5 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 truncate">
-                    {book.title}
-                  </h5>
-                  <p className="text-red-600 dark:text-red-400 font-bold text-xl">
-                    {book.price.toLocaleString("vi-VN")} ₫
-                  </p>
+                  <h5 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 truncate">{book.title}</h5>
+                  <p className="text-red-600 dark:text-red-400 font-bold text-xl">{book.price.toLocaleString("vi-VN")} ₫</p>
                   <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
                     Tác giả: {book.author || "Không rõ"}
+                  </p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Danh mục: {categoryMap[book.category] || "Không rõ"}
                   </p>
                   <p className="text-sm text-gray-600 dark:text-gray-400">
                     Đánh giá: {book.rating ? `${book.rating}/5` : "Chưa có"}
@@ -195,12 +192,12 @@ const AllBooks = () => {
             ))}
           </ul>
 
-          {/* Load More Button */}
+          {/* Load More */}
           {visibleBooks < filteredBooks.length && (
             <div className="text-center mt-12">
               <button
                 onClick={handleLoadMore}
-                className="bg-indigo-600 text-white py-3 px-8 rounded-full font-semibold hover:bg-indigo-700 transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1"
+                className="bg-indigo-600 text-white py-3 px-8 rounded-full font-semibold hover:bg-indigo-700 transition-all duration-300 shadow-md"
               >
                 Xem thêm
               </button>
@@ -208,12 +205,7 @@ const AllBooks = () => {
           )}
         </>
       ) : (
-        <p
-          data-aos="slide-up"
-          className="text-gray-600 dark:text-gray-400 text-lg text-center italic animate-fade-in"
-        >
-          Hiện chưa có sách nào phù hợp
-        </p>
+        <p className="text-gray-600 dark:text-gray-400 text-lg text-center italic">Hiện chưa có sách nào phù hợp</p>
       )}
     </div>
   );

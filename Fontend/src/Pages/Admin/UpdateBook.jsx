@@ -1,5 +1,6 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { updateBook, getAllBooks } from "../../redux/apiBooks";
+import { getCategory } from "../../redux/apiCategory";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams, useNavigate } from "react-router-dom";
 import { createAxios } from "../../createInstance";
@@ -10,6 +11,7 @@ const UpdateBook = () => {
   const { bookId } = useParams();
   const [book, setBook] = useState({ title: "", author: "", description: "", price: "0", category: "", image: null });
   const [previewImage, setPreviewImage] = useState(null);
+  const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
   const dispatch = useDispatch();
@@ -31,6 +33,41 @@ const UpdateBook = () => {
           });
           if (foundBook.image) {
             setPreviewImage(foundBook.image); // Giả sử image là URL từ server
+          }
+        } else {
+          setError("Không tìm thấy sách.");
+        }
+      } catch (error) {
+        setError("Lỗi khi tải dữ liệu sách.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchBooks();
+  }, [bookId, dispatch, user, axiosJWT]);useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const categoryData = await getCategory(user.accessToken, dispatch, axiosJWT);
+        setCategories(categoryData);
+      } catch (err) {
+        console.error("Error fetching categories", err);
+      }
+    };
+
+    fetchCategories();
+
+    const fetchBooks = async () => {
+      try {
+        setLoading(true);
+        const books = await getAllBooks(user.accessToken, dispatch, axiosJWT);
+        const foundBook = books.find((b) => b._id === bookId);
+        if (foundBook) {
+          setBook({
+            ...foundBook,
+            price: formatPrice(foundBook.price.toString()), // Format price on load
+          });
+          if (foundBook.image) {
+            setPreviewImage(foundBook.image); // Assuming image is a URL
           }
         } else {
           setError("Không tìm thấy sách.");
@@ -238,9 +275,11 @@ const UpdateBook = () => {
               className="w-full pl-10 pr-4 py-3 bg-gray-800 text-gray-100 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 appearance-none placeholder-gray-500 transition-all duration-200"
             >
               <option value="">Chọn danh mục</option>
-              <option value="Tiểu thuyết">Tiểu thuyết</option>
-              <option value="Khoa học">Khoa học</option>
-              <option value="Lịch sử">Lịch sử</option>
+              {categories.map((cat) => (
+                <option key={cat._id} value={cat._id}>
+                  {cat.name}
+                </option>
+              ))}
             </select>
           </div>
         </div>

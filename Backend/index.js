@@ -6,6 +6,7 @@ const cookieParser = require("cookie-parser");
 const authRoute = require("./routes/auth");
 const userRoute = require("./routes/user");
 const bookRoute = require("./routes/book");
+const categoryRoute = require("./routes/category");
 const documentRoute = require("./routes/document");
 const reviewRoute = require("./routes/review");
 const path = require("path");
@@ -25,6 +26,7 @@ app.use("/uploads", express.static(path.join(__dirname, "uploads")));
 app.use("/v1/auth", authRoute);
 app.use("/v1/user", userRoute);
 app.use("/v1/books", bookRoute);
+app.use("/v1/categorys", categoryRoute);
 app.use("/v1/documents", documentRoute);
 app.use("/v1/reviews", reviewRoute);
 
