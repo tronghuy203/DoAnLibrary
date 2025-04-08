@@ -1,4 +1,4 @@
-import React, { useEffect, useState, useMemo } from "react";
+import React, { useEffect, useState, useMemo, useRef } from "react";
 import { useNavigate, useParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { createAxios } from "../../createInstance";
@@ -27,6 +27,7 @@ const DetailDocument = () => {
   const [reviewCount, setReviewCount] = useState(0);
   const [activeTab, setActiveTab] = useState("Mô tả");
   const [showShareOptions, setShowShareOptions] = useState(false);
+  const shareRef = useRef(null); // Ref để kiểm tra click ngoài
 
   useEffect(() => {
     const fetchDocument = async () => {
@@ -58,6 +59,22 @@ const DetailDocument = () => {
 
     fetchDocument();
   }, [user, navigate, id, dispatch, axiosJWT]);
+
+  // Xử lý click ngoài để tắt dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (shareRef.current && !shareRef.current.contains(event.target)) {
+        setShowShareOptions(false);
+      }
+    };
+
+    if (showShareOptions) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showShareOptions]);
 
   const handleDownload = () => {
     if (!docData) {
@@ -107,7 +124,6 @@ const DetailDocument = () => {
     }
   };
 
-  // Hàm định dạng ngày giờ
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleString("vi-VN", {
@@ -169,33 +185,37 @@ const DetailDocument = () => {
                 >
                   Tải xuống tài liệu
                 </button>
-                <div className="relative py-3">
+                <div className="relative">
                   <button
                     onClick={() => setShowShareOptions(!showShareOptions)}
-                    className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 flex items-center gap-2"
+                    className="text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200 flex items-center gap-2 mt-2"
                   >
                     <FaShareAlt className="w-5 h-5" />
                     Chia sẻ
                   </button>
+                  {/* Dropdown menu */}
                   {showShareOptions && (
-                    <div className="absolute left-0 mt-2 w-48 bg-white dark:bg-gray-700 rounded-lg shadow-lg z-10">
+                    <div
+                      ref={shareRef}
+                      className="absolute left-0 mt-2 w-48 bg-white dark:bg-gray-700 rounded-lg shadow-lg z-10 border border-gray-200 dark:border-gray-700 animate-fade-in"
+                    >
                       <button
                         onClick={() => shareToSocialMedia("facebook")}
-                        className="flex items-center gap-2 w-full px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-t-lg"
+                        className="flex items-center gap-2 w-full px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-t-lg transition-all duration-200"
                       >
                         <FaFacebook className="w-5 h-5" />
                         Facebook
                       </button>
                       <button
                         onClick={() => shareToSocialMedia("instagram")}
-                        className="flex items-center gap-2 w-full px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600"
+                        className="flex items-center gap-2 w-full px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200"
                       >
                         <FaInstagram className="w-5 h-5" />
                         Instagram
                       </button>
                       <button
                         onClick={() => shareToSocialMedia("zalo")}
-                        className="flex items-center gap-2 w-full px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-b-lg"
+                        className="flex items-center gap-2 w-full px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-b-lg transition-all duration-200"
                       >
                         <FaComment className="w-5 h-5" />
                         Zalo

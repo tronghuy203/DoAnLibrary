@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react"; // Thêm useRef
 import { useDispatch, useSelector } from "react-redux";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { getBookDetail } from "../../redux/apiBooks";
@@ -19,6 +19,7 @@ const DetailBook = () => {
   const [showShareOptions, setShowShareOptions] = useState(false);
   const [averageRating, setAverageRating] = useState(0);
   const [reviewCount, setReviewCount] = useState(0);
+  const shareRef = useRef(null); // Ref để kiểm tra click ngoài
 
   const calculateAverageRating = (reviews) => {
     if (!reviews || reviews.length === 0) return 0;
@@ -33,6 +34,22 @@ const DetailBook = () => {
     }
     getBookDetail(id, user.accessToken, dispatch, axiosJWT);
   }, [id, user, dispatch, axiosJWT, navigate]);
+
+  // Xử lý click ngoài để tắt dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (shareRef.current && !shareRef.current.contains(event.target)) {
+        setShowShareOptions(false);
+      }
+    };
+
+    if (showShareOptions) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showShareOptions]);
 
   const shareToSocialMedia = (platform) => {
     const url = encodeURIComponent(window.location.href);
@@ -65,7 +82,6 @@ const DetailBook = () => {
     }
   };
 
-  // Hàm định dạng ngày giờ
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleString("vi-VN", {
@@ -169,25 +185,29 @@ const DetailBook = () => {
                   <FaShareAlt className="w-5 h-5" />
                   Chia sẻ
                 </button>
+                {/* Dropdown menu */}
                 {showShareOptions && (
-                  <div className="absolute left-0 mt-2 w-48 bg-white dark:bg-gray-700 rounded-lg shadow-lg z-10">
+                  <div
+                    ref={shareRef}
+                    className="absolute left-0 mt-2 w-48 bg-white dark:bg-gray-700 rounded-lg shadow-lg z-10 border border-gray-200 dark:border-gray-700 animate-fade-in"
+                  >
                     <button
                       onClick={() => shareToSocialMedia("facebook")}
-                      className="flex items-center gap-2 w-full px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-t-lg"
+                      className="flex items-center gap-2 w-full px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-t-lg transition-all duration-200"
                     >
                       <FaFacebook className="w-5 h-5" />
                       Facebook
                     </button>
                     <button
                       onClick={() => shareToSocialMedia("instagram")}
-                      className="flex items-center gap-2 w-full px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600"
+                      className="flex items-center gap-2 w-full px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200"
                     >
                       <FaInstagram className="w-5 h-5" />
                       Instagram
                     </button>
                     <button
                       onClick={() => shareToSocialMedia("zalo")}
-                      className="flex items-center gap-2 w-full px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-b-lg"
+                      className="flex items-center gap-2 w-full px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-b-lg transition-all duration-200"
                     >
                       <FaComment className="w-5 h-5" />
                       Zalo

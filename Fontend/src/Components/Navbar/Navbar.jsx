@@ -50,12 +50,17 @@ const Navbar = () => {
     setIsDropdownOpen(false);
   };
 
+  const handleMenuItemClick = () => {
+    setIsMenuOpen(false);
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  };
+
   return (
     <nav className="fixed top-0 left-0 right-0 z-50 bg-white dark:bg-zinc-900 backdrop-blur-md shadow-sm">
       <div className="max-w-full mx-auto px-4 sm:px-6 lg:px-8">
         <div className="flex items-center justify-between h-16">
-        <div className="flex items-center gap-x-2 ">
-            <Link to="/" className="flex items-center space-x-3">
+          <div className="flex items-center gap-x-2 ">
+            <Link to="/" className="flex items-center space-x-3" onClick={handleMenuItemClick}>
               <img 
                 className="h-10 w-10 object-contain" 
                 src="https://static.vecteezy.com/system/resources/previews/024/043/963/original/book-icon-clipart-transparent-background-free-png.png" 
@@ -68,16 +73,15 @@ const Navbar = () => {
             </div>
           </div>
 
-
           <div className="hidden lg:flex items-center space-x-4">
-            <NavItem to="/" icon={<BookOpenIcon className="w-5 h-5" />} text="Trang chủ" />
+            <NavItem to="/" icon={<BookOpenIcon className="w-5 h-5" />} text="Trang chủ" onClick={handleMenuItemClick} />
             
             <div className="flex items-center space-x-4 ml-4">
               {user ? (
                 <>
-                  <NavItem to="/all-books" icon={<BookOpenIcon className="w-5 h-5" />} text="Sách" />
-                  <NavItem to="/document-list" icon={<DocumentTextIcon className="w-5 h-5" />} text="Tài liệu" />
-                  <NavItem to="/cart" icon={<ShoppingCartIcon className="w-5 h-5" />} text="Giỏ hàng" />
+                  <NavItem to="/all-books" icon={<BookOpenIcon className="w-5 h-5" />} text="Sách" onClick={handleMenuItemClick} />
+                  <NavItem to="/document-list" icon={<DocumentTextIcon className="w-5 h-5" />} text="Tài liệu" onClick={handleMenuItemClick} />
+                  <NavItem to="/cart" icon={<ShoppingCartIcon className="w-5 h-5" />} text="Giỏ hàng" onClick={handleMenuItemClick} />
                   <div className="relative" ref={dropdownRef}>
                     <button
                       onClick={handleToggleDropdown}
@@ -102,7 +106,10 @@ const Navbar = () => {
                         <NavLink
                           to="/profile"
                           className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800"
-                          onClick={() => setIsDropdownOpen(false)}
+                          onClick={() => {
+                            setIsDropdownOpen(false);
+                            handleMenuItemClick();
+                          }}
                         >
                           <UserIcon className="w-5 h-5" />
                           <span>Hồ sơ</span>
@@ -120,8 +127,8 @@ const Navbar = () => {
                 </>
               ) : (
                 <>
-                  <NavItem to="/login" icon={<ArrowLeftOnRectangleIcon className="w-5 h-5" />} text="Login" />
-                  <NavItem to="/register" icon={<UserIcon className="w-5 h-5" />} text="Register" />
+                  <NavItem to="/login" icon={<ArrowLeftOnRectangleIcon className="w-5 h-5" />} text="Đăng nhập" onClick={handleMenuItemClick} />
+                  <NavItem to="/register" icon={<UserIcon className="w-5 h-5" />} text="Đăng ký" onClick={handleMenuItemClick} />
                 </>
               )}
             </div>
@@ -145,14 +152,14 @@ const Navbar = () => {
             className="lg:hidden absolute top-16 left-1/2 transform -translate-x-1/2 w-full max-w-full bg-white dark:bg-zinc-900 border-t dark:border-zinc-800 shadow-lg animate-in slide-in-from-top-2 flex flex-col items-center"
           >
             <div className="px-2 pt-2 pb-3 space-y-1 text-center">
-              <MobileNavItem to="/" icon={<BookOpenIcon className="w-5 h-5" />} text="Home" />
-              <MobileNavItem to="/all-books" icon={<BookOpenIcon className="w-5 h-5" />} text="Books" />
-              <MobileNavItem to="/document-list" icon={<DocumentTextIcon className="w-5 h-5" />} text="Tài liệu" />
-              <MobileNavItem to="/cart" icon={<ShoppingCartIcon className="w-5 h-5" />} text="Cart" />
+              <MobileNavItem to="/" icon={<BookOpenIcon className="w-5 h-5" />} text="Trang chủ" onClick={handleMenuItemClick} />
               
               {user ? (
                 <>
-                  <MobileNavItem to="/profile" icon={<UserIcon className="w-5 h-5" />} text="Profile" />
+                  <MobileNavItem to="/all-books" icon={<BookOpenIcon className="w-5 h-5" />} text="Sách" onClick={handleMenuItemClick} />
+                  <MobileNavItem to="/document-list" icon={<DocumentTextIcon className="w-5 h-5" />} text="Tài liệu" onClick={handleMenuItemClick} />
+                  <MobileNavItem to="/cart" icon={<ShoppingCartIcon className="w-5 h-5" />} text="Thanh toán" onClick={handleMenuItemClick} />
+                  <MobileNavItem to="/profile" icon={<UserIcon className="w-5 h-5" />} text="Hồ sơ" onClick={handleMenuItemClick} />
                   <div className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200 flex items-center justify-center">
                     {user?.avatar ? 
                       <img src={user.avatar} alt="Avatar" className="w-8 h-8 rounded-full object-cover mr-2" /> : 
@@ -161,7 +168,10 @@ const Navbar = () => {
                     {user.username}
                   </div>
                   <button
-                    onClick={handleLogout}
+                    onClick={() => {
+                      handleLogout();
+                      handleMenuItemClick();
+                    }}
                     className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/50"
                   >
                     <ArrowRightOnRectangleIcon className="w-5 h-5" />
@@ -170,8 +180,8 @@ const Navbar = () => {
                 </>
               ) : (
                 <>
-                  <MobileNavItem to="/login" icon={<ArrowLeftOnRectangleIcon className="w-5 h-5" />} text="Login" />
-                  <MobileNavItem to="/register" icon={<UserIcon className="w-5 h-5" />} text="Register" />
+                  <MobileNavItem to="/login" icon={<ArrowLeftOnRectangleIcon className="w-5 h-5" />} text="Đăng nhập" onClick={handleMenuItemClick} />
+                  <MobileNavItem to="/register" icon={<UserIcon className="w-5 h-5" />} text="Đăng ký" onClick={handleMenuItemClick} />
                 </>
               )}
             </div>
@@ -182,9 +192,10 @@ const Navbar = () => {
   );
 };
 
-const NavItem = ({ to, icon, text }) => (
+const NavItem = ({ to, icon, text, onClick }) => (
   <NavLink
     to={to}
+    onClick={onClick}
     className={({ isActive }) =>
       `flex items-center space-x-2 px-4 py-2 text-sm rounded-lg transition-colors ${
         isActive
@@ -198,9 +209,10 @@ const NavItem = ({ to, icon, text }) => (
   </NavLink>
 );
 
-const MobileNavItem = ({ to, icon, text }) => (
+const MobileNavItem = ({ to, icon, text, onClick }) => (
   <NavLink
     to={to}
+    onClick={onClick}
     className={({ isActive }) =>
       `flex items-center space-x-2 px-4 py-2 text-sm rounded-lg w-full ${
         isActive
