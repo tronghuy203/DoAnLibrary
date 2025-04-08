@@ -13,7 +13,7 @@ const TopBooks = () => {
 
   useEffect(() => {
     const fetchReviewStats = async () => {
-      if (!books || !user) return;
+      if (!books) return;
 
       try {
         const stats = {};

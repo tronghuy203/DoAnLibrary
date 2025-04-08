@@ -9,6 +9,7 @@ const borrowSlice = createSlice({
     borrowRecords: [],
     penalties: [],
     message: "",
+    requestDetails: null
   },
   reducers: {
     // GET ALL BORROW RECORDS
@@ -35,6 +36,19 @@ const borrowSlice = createSlice({
       state.borrowRequests.push(action.payload);
     },
     addBorrowRequestFailed: (state) => {
+      state.isFetching = false;
+      state.error = true;
+    },
+
+    getBorrowRequestDetailsStart: (state) => {
+      state.isFetching = true;
+      state.error = false;
+    },
+    getBorrowRequestDetailsSuccess: (state, action) => {
+      state.isFetching = false;
+      state.requestDetails = action.payload; 
+    },
+    getBorrowRequestDetailsFailed: (state) => {
       state.isFetching = false;
       state.error = true;
     },
@@ -81,6 +95,9 @@ export const {
   addBorrowRequestStart,
   addBorrowRequestSuccess,
   addBorrowRequestFailed,
+  getBorrowRequestDetailsStart,
+  getBorrowRequestDetailsSuccess,
+  getBorrowRequestDetailsFailed,
   payRentalSuccess,
   payRentalFailed,
   confirmPickupSuccess,

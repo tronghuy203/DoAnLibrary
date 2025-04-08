@@ -4,6 +4,10 @@ const middlewareController = require("../controllers/middlewareController");
 
 router.post("/request", middlewareController.verifyToken, borrowController.requestBorrow);
 
+router.get("/my-requests", middlewareController.verifyToken, borrowController.getMyBorrowRequests);
+
+router.get("/request/:requestId", middlewareController.verifyToken, borrowController.getBorrowRequestById);
+
 router.post("/pay-rental/:requestId", middlewareController.verifyToken, borrowController.payRentalFeeAndCreateBorrow);
 
 router.put("/confirm-pickup/:borrowId", middlewareController.verifyAdmin, borrowController.confirmPickup);

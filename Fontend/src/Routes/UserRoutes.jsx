@@ -16,6 +16,7 @@ const DetailBook = lazy(() => import("../Pages/DetailBook/Detailbook"));
 const DocumentList = lazy(() => import("../Pages/UserDocument/UserDocumentList"));
 const DetailDocument = lazy(() => import("../Pages/UserDocument/DetailDocument"));
 const UploadDocument = lazy(() => import("../Pages/UserDocument/UploadDocument"));
+const Payment = lazy(() => import("../Pages/Payment/Payment"));
 const UserRoutes = () => {
   return (
     <UserLayout>
@@ -34,6 +35,7 @@ const UserRoutes = () => {
           <Route path="/document-list" element={<DocumentList />} />
           <Route path="/document/:id" element={<DetailDocument />} />
           <Route path="/upload-document" element={<UploadDocument />} />
+          <Route path="/payment/:requestId" element={<Payment />} />
         </Routes>
       </Suspense>
     </UserLayout>

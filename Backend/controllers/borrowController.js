@@ -62,6 +62,32 @@ const borrowController = {
     }
   },
 
+  getMyBorrowRequests: async (req, res) => {
+    try {
+      const userId = req.user.id;
+      const requests = await BorrowRequest.find({ userId });
+      res.status(200).json(requests);
+    } catch (err) {
+      res.status(500).json({ message: "Lỗi khi lấy danh sách yêu cầu", error: err.message });
+    }
+  },
+
+  getBorrowRequestById: async (req, res) => {
+    try {
+      const { requestId } = req.params;
+      const userId = req.user.id;
+  
+      const request = await BorrowRequest.findOne({ _id: requestId, userId })
+        .populate("bookId", "title price"); // Lấy thêm thông tin sách nếu cần
+      if (!request) {
+        return res.status(404).json({ message: "Không tìm thấy yêu cầu mượn" });
+      }
+  
+      res.status(200).json(request);
+    } catch (err) {
+      res.status(500).json({ message: "Lỗi khi lấy thông tin yêu cầu", error: err.message });
+    }
+  },
   // Người dùng thanh toán phí mượn và hệ thống tự tạo BorrowRecord
   payRentalFeeAndCreateBorrow: async (req, res) => {
     try {
