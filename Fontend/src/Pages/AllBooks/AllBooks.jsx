@@ -5,10 +5,12 @@ import { createAxios } from "../../createInstance";
 import { loginSuccess } from "../../redux/authSlice";
 import { getAllUsers } from "../../redux/apiRequest";
 import { getAllBooks } from "../../redux/apiBooks";
+import { getReviews } from "../../redux/apiReview";
 
 const AllBooks = () => {
   const user = useSelector((state) => state.auth.login?.currentUser);
   const books = useSelector((state) => state.books.allBooks);
+  const reviewsState = useSelector((state) => state.reviews.reviews); // Dữ liệu reviews từ Redux
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const axiosJWT = useMemo(() => createAxios(user, dispatch, loginSuccess), [user, dispatch]);
@@ -18,9 +20,11 @@ const AllBooks = () => {
   const [selectedPriceRange, setSelectedPriceRange] = useState("all");
   const [selectedAuthor, setSelectedAuthor] = useState("all");
   const [selectedRating, setSelectedRating] = useState("all");
-  const [visibleBooks, setVisibleBooks] = useState(8); // Initial number of books to show
-  const [searchQuery, setSearchQuery] = useState(""); // Search input state
+  const [visibleBooks, setVisibleBooks] = useState(8);
+  const [searchQuery, setSearchQuery] = useState("");
+  const [ratingsData, setRatingsData] = useState({}); // Lưu trữ dữ liệu đánh giá
 
+  // Tải dữ liệu người dùng và sách
   useEffect(() => {
     if (!user) {
       navigate("/login");
@@ -29,8 +33,10 @@ const AllBooks = () => {
 
     const fetchData = async () => {
       try {
-        await getAllUsers(user.accessToken, dispatch, axiosJWT);
-        await getAllBooks(user.accessToken, dispatch, axiosJWT);
+        await Promise.all([
+          getAllUsers(user.accessToken, dispatch, axiosJWT),
+          getAllBooks(user.accessToken, dispatch, axiosJWT),
+        ]);
       } catch (error) {
         console.error("Lỗi khi tải dữ liệu:", error);
       }
@@ -39,22 +45,62 @@ const AllBooks = () => {
     fetchData();
   }, [user, dispatch, axiosJWT, navigate]);
 
-  // Filter books based on selected criteria and search query
-  const filteredBooks = books?.filter((book) => {
-    const matchesSearch = book.title.toLowerCase().includes(searchQuery.toLowerCase());
-    return (
-      matchesSearch &&
-      (selectedCategory === "all" || book.category === selectedCategory) &&
-      (selectedPriceRange === "all" ||
-        (selectedPriceRange === "low" && book.price < 100000) ||
-        (selectedPriceRange === "medium" && book.price >= 100000 && book.price <= 500000) ||
-        (selectedPriceRange === "high" && book.price > 500000)) &&
-      (selectedAuthor === "all" || book.author === selectedAuthor) &&
-      (selectedRating === "all" ||
-        (selectedRating === "4+" && book.rating >= 4) ||
-        (selectedRating === "3+" && book.rating >= 3))
-    );
-  });
+  // Tải tất cả reviews khi books thay đổi
+  useEffect(() => {
+    if (books && books.length > 0) {
+      const fetchReviews = async () => {
+        try {
+          // Gọi getReviews cho từng cuốn sách
+          await Promise.all(
+            books.map((book) => getReviews("book", book._id, dispatch))
+          );
+        } catch (error) {
+          console.error("Lỗi khi tải reviews:", error);
+        }
+      };
+      fetchReviews();
+    }
+  }, [books, dispatch]);
+
+  // Cập nhật ratingsData khi reviewsState thay đổi
+  useEffect(() => {
+    if (reviewsState && books) {
+      const newRatingsData = {};
+      books.forEach((book) => {
+        const bookReviews = reviewsState.filter((review) => review.itemId === book._id);
+        const reviewCount = bookReviews.length;
+        const averageRating =
+          reviewCount > 0
+            ? bookReviews.reduce((sum, review) => sum + review.rating, 0) / reviewCount
+            : 0;
+        newRatingsData[book._id] = { averageRating: averageRating.toFixed(1), reviewCount };
+      });
+      setRatingsData(newRatingsData);
+    }
+  }, [reviewsState, books]);
+
+  // Filter and sort books based on selected criteria and search query
+  const filteredBooks = useMemo(() => {
+    const filtered = books?.filter((book) => {
+      const matchesSearch = book.title.toLowerCase().includes(searchQuery.toLowerCase());
+      const avgRating = ratingsData[book._id]?.averageRating || 0;
+      return (
+        matchesSearch &&
+        (selectedCategory === "all" || book.category === selectedCategory) &&
+        (selectedPriceRange === "all" ||
+          (selectedPriceRange === "low" && book.price < 100000) ||
+          (selectedPriceRange === "medium" && book.price >= 100000 && book.price <= 500000) ||
+          (selectedPriceRange === "high" && book.price > 500000)) &&
+        (selectedAuthor === "all" || book.author === selectedAuthor) &&
+        (selectedRating === "all" ||
+          (selectedRating === "4+" && avgRating >= 4) ||
+          (selectedRating === "3+" && avgRating >= 3))
+      );
+    });
+
+    // Sắp xếp theo createdAt giảm dần (mới nhất lên đầu)
+    return filtered?.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  }, [books, searchQuery, selectedCategory, selectedPriceRange, selectedAuthor, selectedRating, ratingsData]);
 
   // Extract unique categories and authors for dropdowns
   const categories = ["all", ...new Set(books?.map((book) => book.category))];
@@ -62,7 +108,7 @@ const AllBooks = () => {
 
   // Handle "Xem thêm" button click
   const handleLoadMore = () => {
-    setVisibleBooks((prev) => prev + 8); // Load 8 more books each time
+    setVisibleBooks((prev) => prev + 8);
   };
 
   return (
@@ -156,43 +202,64 @@ const AllBooks = () => {
             data-aos="zoom-in"
             className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 max-w-7xl mx-auto"
           >
-            {filteredBooks.slice(0, visibleBooks).map((book, index) => (
-              <li
-                key={book._id}
-                className="bg-white dark:bg-zinc-800 rounded-2xl shadow-lg overflow-hidden transform hover:scale-105 hover:shadow-xl transition-all duration-300 animate-fade-in-up"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <Link to={`/books/${book._id}`}>
-                  <div className="relative group">
-                    <img
-                      src={
-                        book.image && book.image.trim() !== ""
-                          ? book.image
-                          : "https://via.placeholder.com/150"
-                      }
-                      alt={book.title}
-                      className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110"
-                    />
-                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300"></div>
-                  </div>
-                </Link>
+            {filteredBooks.slice(0, visibleBooks).map((book, index) => {
+              const { averageRating = 0, reviewCount = 0 } = ratingsData[book._id] || {};
+              return (
+                <li
+                  key={book._id}
+                  className="bg-white dark:bg-zinc-800 rounded-2xl shadow-lg overflow-hidden transform hover:scale-105 hover:shadow-xl transition-all duration-300 animate-fade-in-up"
+                  style={{ animationDelay: `${index * 0.1}s` }}
+                >
+                  <Link to={`/books/${book._id}`}>
+                    <div className="relative group">
+                      <img
+                        src={
+                          book.image && book.image.trim() !== ""
+                            ? book.image
+                            : "https://via.placeholder.com/150"
+                        }
+                        alt={book.title}
+                        className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110"
+                      />
+                      <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300"></div>
+                    </div>
+                  </Link>
 
-                <div className="p-6">
-                  <h5 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 truncate">
-                    {book.title}
-                  </h5>
-                  <p className="text-red-600 dark:text-red-400 font-bold text-xl">
-                    {book.price.toLocaleString("vi-VN")} ₫
-                  </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    Tác giả: {book.author || "Không rõ"}
-                  </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Đánh giá: {book.rating ? `${book.rating}/5` : "Chưa có"}
-                  </p>
-                </div>
-              </li>
-            ))}
+                  <div className="p-6">
+                    <h5 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 truncate">
+                      {book.title}
+                    </h5>
+                    <p className="text-red-600 dark:text-red-400 font-bold text-xl">
+                      {book.price.toLocaleString("vi-VN")} ₫
+                    </p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
+                      Tác giả: {book.author || "Không rõ"}
+                    </p>
+                    <div className="flex items-center gap-2 mt-1">
+                      <div className="flex text-yellow-400">
+                        {[...Array(5)].map((_, i) => (
+                          <svg
+                            key={i}
+                            className={`w-5 h-5 ${
+                              i < Math.round(averageRating)
+                                ? "fill-current"
+                                : "fill-none stroke-current"
+                            }`}
+                            xmlns="http://www.w3.org/2000/svg"
+                            viewBox="0 0 24 24"
+                          >
+                            <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                          </svg>
+                        ))}
+                      </div>
+                      <span className="text-sm text-gray-600 dark:text-gray-400">
+                        ({averageRating}/5) - {reviewCount} đánh giá
+                      </span>
+                    </div>
+                  </div>
+                </li>
+              );
+            })}
           </ul>
 
           {/* Load More Button */}

@@ -41,12 +41,18 @@ const ListBook = () => {
     }
   };
 
-  const filteredBooks = books.filter(
-    (book) =>
-      book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      book.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      (book.category && book.category.toLowerCase().includes(searchTerm.toLowerCase()))
-  );
+  // Filter and sort books based on search term
+  const filteredBooks = useMemo(() => {
+    const filtered = books.filter(
+      (book) =>
+        book.title.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        book.author.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        (book.category && book.category.toLowerCase().includes(searchTerm.toLowerCase()))
+    );
+
+    // Sắp xếp theo createdAt giảm dần (mới nhất lên đầu)
+    return filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
+  }, [books, searchTerm]);
 
   const totalPages = Math.ceil(filteredBooks.length / booksPerPage);
   const startIndex = (currentPage - 1) * booksPerPage;
