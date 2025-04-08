@@ -91,7 +91,6 @@ const BookReviews = () => {
     });
   };
 
-  // Hàm tạo avatar mặc định nếu không có ảnh
   const getAvatarUrl = (user) => {
     return user?.avatar || `https://ui-avatars.com/api/?name=${user?.username || "Anonymous"}&background=random&size=40`;
   };

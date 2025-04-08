@@ -78,7 +78,6 @@ const CreateDocument = () => {
         encType="multipart/form-data"
         className="w-full max-w-2xl bg-gray-900 p-8 rounded-2xl shadow-2xl border border-gray-800 transform transition-all hover:shadow-[0_0_20px_rgba(0,255,255,0.1)]"
       >
-        {/* Tiêu đề */}
         <div className="mb-6">
           <label className="block text-gray-200 text-sm font-medium mb-2" htmlFor="title">
             Tiêu đề
@@ -98,7 +97,6 @@ const CreateDocument = () => {
           </div>
         </div>
 
-        {/* Mô tả */}
         <div className="mb-6">
           <label className="block text-gray-200 text-sm font-medium mb-2" htmlFor="description">
             Mô tả
@@ -117,7 +115,6 @@ const CreateDocument = () => {
           </div>
         </div>
 
-        {/* Chọn file */}
         <div className="mb-8">
           <label className="block text-gray-200 text-sm font-medium mb-2">Tài liệu</label>
           <div className="relative">
@@ -160,7 +157,6 @@ const CreateDocument = () => {
           )}
         </div>
 
-        {/* Nút submit */}
         <button
           type="submit"
           className="w-full flex items-center justify-center gap-2 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-3 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl"

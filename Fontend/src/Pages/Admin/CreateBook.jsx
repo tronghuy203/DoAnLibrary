@@ -45,7 +45,7 @@ const CreateBook = () => {
 
   const handleDecrease = () => {
     const rawValue = parseInt(book.price.replace(/\./g, "")) || 0;
-    const newValue = Math.max(0, rawValue - 1000); // Không cho giảm dưới 0
+    const newValue = Math.max(0, rawValue - 1000);
     setBook({ ...book, price: formatPrice(newValue.toString()) });
   };
 

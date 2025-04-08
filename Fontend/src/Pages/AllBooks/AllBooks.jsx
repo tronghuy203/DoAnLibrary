@@ -10,21 +10,19 @@ import { getReviews } from "../../redux/apiReview";
 const AllBooks = () => {
   const user = useSelector((state) => state.auth.login?.currentUser);
   const books = useSelector((state) => state.books.allBooks);
-  const reviewsState = useSelector((state) => state.reviews.reviews); // Dữ liệu reviews từ Redux
+  const reviewsState = useSelector((state) => state.reviews.reviews);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const axiosJWT = useMemo(() => createAxios(user, dispatch, loginSuccess), [user, dispatch]);
 
-  // State for filtering, pagination, and search
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedPriceRange, setSelectedPriceRange] = useState("all");
   const [selectedAuthor, setSelectedAuthor] = useState("all");
   const [selectedRating, setSelectedRating] = useState("all");
   const [visibleBooks, setVisibleBooks] = useState(8);
   const [searchQuery, setSearchQuery] = useState("");
-  const [ratingsData, setRatingsData] = useState({}); // Lưu trữ dữ liệu đánh giá
+  const [ratingsData, setRatingsData] = useState({});
 
-  // Tải dữ liệu người dùng và sách
   useEffect(() => {
     if (!user) {
       navigate("/login");
@@ -45,12 +43,10 @@ const AllBooks = () => {
     fetchData();
   }, [user, dispatch, axiosJWT, navigate]);
 
-  // Tải tất cả reviews khi books thay đổi
   useEffect(() => {
     if (books && books.length > 0) {
       const fetchReviews = async () => {
         try {
-          // Gọi getReviews cho từng cuốn sách
           await Promise.all(
             books.map((book) => getReviews("book", book._id, dispatch))
           );
@@ -62,7 +58,6 @@ const AllBooks = () => {
     }
   }, [books, dispatch]);
 
-  // Cập nhật ratingsData khi reviewsState thay đổi
   useEffect(() => {
     if (reviewsState && books) {
       const newRatingsData = {};
@@ -79,7 +74,6 @@ const AllBooks = () => {
     }
   }, [reviewsState, books]);
 
-  // Filter and sort books based on selected criteria and search query
   const filteredBooks = useMemo(() => {
     const filtered = books?.filter((book) => {
       const matchesSearch = book.title.toLowerCase().includes(searchQuery.toLowerCase());
@@ -98,15 +92,12 @@ const AllBooks = () => {
       );
     });
 
-    // Sắp xếp theo createdAt giảm dần (mới nhất lên đầu)
     return filtered?.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   }, [books, searchQuery, selectedCategory, selectedPriceRange, selectedAuthor, selectedRating, ratingsData]);
 
-  // Extract unique categories and authors for dropdowns
   const categories = ["all", ...new Set(books?.map((book) => book.category))];
   const authors = ["all", ...new Set(books?.map((book) => book.author))];
 
-  // Handle "Xem thêm" button click
   const handleLoadMore = () => {
     setVisibleBooks((prev) => prev + 8);
   };
@@ -120,7 +111,6 @@ const AllBooks = () => {
         Thư Viện Sách
       </h4>
 
-      {/* Search Bar */}
       <div className="max-w-3xl mx-auto mb-10">
         <input
           type="text"
@@ -131,9 +121,7 @@ const AllBooks = () => {
         />
       </div>
 
-      {/* Filtering Section */}
       <div className="mb-12 max-w-7xl mx-auto bg-white dark:bg-zinc-800 p-6 rounded-xl shadow-md grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
-        {/* Category Filter */}
         <div>
           <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Danh mục</label>
           <select
@@ -149,7 +137,6 @@ const AllBooks = () => {
           </select>
         </div>
 
-        {/* Price Filter */}
         <div>
           <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Giá</label>
           <select
@@ -164,7 +151,6 @@ const AllBooks = () => {
           </select>
         </div>
 
-        {/* Author Filter */}
         <div>
           <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Tác giả</label>
           <select
@@ -180,7 +166,6 @@ const AllBooks = () => {
           </select>
         </div>
 
-        {/* Rating Filter */}
         <div>
           <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Đánh giá</label>
           <select
@@ -195,7 +180,6 @@ const AllBooks = () => {
         </div>
       </div>
 
-      {/* Books List */}
       {filteredBooks && filteredBooks.length > 0 ? (
         <>
           <ul

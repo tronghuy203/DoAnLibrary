@@ -27,10 +27,10 @@ const UpdateBook = () => {
         if (foundBook) {
           setBook({
             ...foundBook,
-            price: formatPrice(foundBook.price.toString()), // Định dạng giá khi load
+            price: formatPrice(foundBook.price.toString()), 
           });
           if (foundBook.image) {
-            setPreviewImage(foundBook.image); // Giả sử image là URL từ server
+            setPreviewImage(foundBook.image); 
           }
         } else {
           setError("Không tìm thấy sách.");

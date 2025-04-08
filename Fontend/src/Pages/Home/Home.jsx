@@ -18,6 +18,7 @@ const Home = () => {
       duration: 800,
       easing: "ease-in-sine",
       delay: 100, 
+      once: true,
     });
     AOS.refresh();
   },[]);

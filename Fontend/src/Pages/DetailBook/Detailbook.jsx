@@ -19,7 +19,7 @@ const DetailBook = () => {
   const [showShareOptions, setShowShareOptions] = useState(false);
   const [averageRating, setAverageRating] = useState(0);
   const [reviewCount, setReviewCount] = useState(0);
-  const shareRef = useRef(null); // Ref để kiểm tra click ngoài
+  const shareRef = useRef(null); 
 
   const calculateAverageRating = (reviews) => {
     if (!reviews || reviews.length === 0) return 0;
@@ -35,7 +35,6 @@ const DetailBook = () => {
     getBookDetail(id, user.accessToken, dispatch, axiosJWT);
   }, [id, user, dispatch, axiosJWT, navigate]);
 
-  // Xử lý click ngoài để tắt dropdown
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (shareRef.current && !shareRef.current.contains(event.target)) {
@@ -106,9 +105,7 @@ const DetailBook = () => {
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-black dark:text-white px-4 sm:px-8 md:px-12 lg:px-16 py-32 transition-all duration-300">
       <div className="max-w-5xl mx-auto">
-        {/* Main Content */}
         <div className="flex flex-col md:flex-row gap-6 md:gap-8">
-          {/* Book Image */}
           <div data-aos="fade-right" className="flex-shrink-0 mx-auto md:mx-0">
             <img
               src={book.image || "https://via.placeholder.com/150"}
@@ -117,7 +114,6 @@ const DetailBook = () => {
             />
           </div>
 
-          {/* Book Details */}
           <div
             data-aos="fade-left"
             className="flex-1 flex flex-col space-y-6 bg-white dark:bg-gray-800 rounded-lg p-8 shadow-lg border border-gray-200 dark:border-gray-700"
@@ -185,7 +181,6 @@ const DetailBook = () => {
                   <FaShareAlt className="w-5 h-5" />
                   Chia sẻ
                 </button>
-                {/* Dropdown menu */}
                 {showShareOptions && (
                   <div
                     ref={shareRef}
@@ -219,7 +214,6 @@ const DetailBook = () => {
           </div>
         </div>
 
-        {/* Tabs */}
         <div
           data-aos="fade-up"
           className="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700"
