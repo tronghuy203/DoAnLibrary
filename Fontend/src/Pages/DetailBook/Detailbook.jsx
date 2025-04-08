@@ -1,9 +1,9 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { getBookDetail } from "../../redux/apiBooks";
+import { getCategory } from "../../redux/apiCategory";
 import { createAxios } from "../../createInstance";
-import { loginSuccess } from "../../redux/authSlice";
 import { FaShareAlt, FaFacebook, FaInstagram, FaComment } from "react-icons/fa";
 import ReviewSection from "../ReviewSection/ReviewSection";
 
@@ -13,26 +13,61 @@ const DetailBook = () => {
   const navigate = useNavigate();
   const user = useSelector((state) => state.auth.login?.currentUser);
   const book = useSelector((state) => state.books.detailBook);
-  const axiosJWT = createAxios(user, dispatch, loginSuccess);
+  const categories = useSelector((state) => state.categories.allCategories);
+  const axiosJWT = useMemo(() => createAxios(user, dispatch), [user, dispatch]);
 
   const [activeTab, setActiveTab] = useState("Mô tả");
   const [showShareOptions, setShowShareOptions] = useState(false);
   const [averageRating, setAverageRating] = useState(0);
   const [reviewCount, setReviewCount] = useState(0);
+  const shareRef = useRef(null); // Ref để kiểm tra click ngoài
 
   const calculateAverageRating = (reviews) => {
     if (!reviews || reviews.length === 0) return 0;
     const total = reviews.reduce((sum, review) => sum + review.rating, 0);
     return (total / reviews.length).toFixed(1);
   };
+  const categoryMap = useMemo(() => {
+    const map = {};
+    categories?.forEach((cat) => {
+      map[cat._id] = cat.name;
+    });
+    return map;
+  }, [categories]);
 
   useEffect(() => {
     if (!user) {
       navigate("/login");
       return;
     }
-    getBookDetail(id, user.accessToken, dispatch, axiosJWT);
-  }, [id, user, dispatch, axiosJWT, navigate]);
+
+    const fetchData = async () => {
+      try {
+        await getCategory(user.accessToken, dispatch, axiosJWT);
+        await getBookDetail(id, user.accessToken, dispatch, axiosJWT);
+      } catch (error) {
+        console.error("Lỗi khi tải dữ liệu:", error);
+      }
+    };
+
+    fetchData();
+  }, [id, user, user?.accessToken, dispatch, navigate, axiosJWT]);
+
+  // Xử lý click ngoài để tắt dropdown
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      if (shareRef.current && !shareRef.current.contains(event.target)) {
+        setShowShareOptions(false);
+      }
+    };
+
+    if (showShareOptions) {
+      document.addEventListener("mousedown", handleClickOutside);
+    }
+    return () => {
+      document.removeEventListener("mousedown", handleClickOutside);
+    };
+  }, [showShareOptions]);
 
   const shareToSocialMedia = (platform) => {
     const url = encodeURIComponent(window.location.href);
@@ -65,7 +100,6 @@ const DetailBook = () => {
     }
   };
 
-  // Hàm định dạng ngày giờ
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleString("vi-VN", {
@@ -116,7 +150,7 @@ const DetailBook = () => {
               </span>
               <span className="text-lg text-gray-600 dark:text-gray-400">
                 <span className="font-semibold">Thể loại:</span>{" "}
-                {book.category || "Không rõ"}
+                {categoryMap[book.category] || "Không rõ"}
               </span>
             </div>
             <div className="flex items-center gap-4">
@@ -125,7 +159,9 @@ const DetailBook = () => {
                   <svg
                     key={i}
                     className={`w-6 h-6 ${
-                      i < Math.round(averageRating) ? "fill-current" : "fill-none stroke-current"
+                      i < Math.round(averageRating)
+                        ? "fill-current"
+                        : "fill-none stroke-current"
                     }`}
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
@@ -169,25 +205,29 @@ const DetailBook = () => {
                   <FaShareAlt className="w-5 h-5" />
                   Chia sẻ
                 </button>
+                {/* Dropdown menu */}
                 {showShareOptions && (
-                  <div className="absolute left-0 mt-2 w-48 bg-white dark:bg-gray-700 rounded-lg shadow-lg z-10">
+                  <div
+                    ref={shareRef}
+                    className="absolute left-0 mt-2 w-48 bg-white dark:bg-gray-700 rounded-lg shadow-lg z-10 border border-gray-200 dark:border-gray-700 animate-fade-in"
+                  >
                     <button
                       onClick={() => shareToSocialMedia("facebook")}
-                      className="flex items-center gap-2 w-full px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-t-lg"
+                      className="flex items-center gap-2 w-full px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-t-lg transition-all duration-200"
                     >
                       <FaFacebook className="w-5 h-5" />
                       Facebook
                     </button>
                     <button
                       onClick={() => shareToSocialMedia("instagram")}
-                      className="flex items-center gap-2 w-full px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600"
+                      className="flex items-center gap-2 w-full px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-200"
                     >
                       <FaInstagram className="w-5 h-5" />
                       Instagram
                     </button>
                     <button
                       onClick={() => shareToSocialMedia("zalo")}
-                      className="flex items-center gap-2 w-full px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-b-lg"
+                      className="flex items-center gap-2 w-full px-4 py-2 text-gray-800 dark:text-gray-200 hover:bg-gray-200 dark:hover:bg-gray-600 rounded-b-lg transition-all duration-200"
                     >
                       <FaComment className="w-5 h-5" />
                       Zalo
@@ -205,32 +245,36 @@ const DetailBook = () => {
           className="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700"
         >
           <div className="flex border-b border-gray-200 dark:border-gray-700">
-            {["Mô tả", "Nội dung đánh giá", "Đánh giá", "Đề xuất"].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => {
-                  setActiveTab(tab);
-                  if (tab === "Đánh giá") {
-                    setTimeout(() => {
-                      scrollToReviewForm();
-                    }, 100);
-                  } else if (tab === "Nội dung đánh giá") {
-                    setTimeout(() => {
-                      document.getElementById("review-section")?.scrollIntoView({
-                        behavior: "smooth",
-                      });
-                    }, 100);
-                  }
-                }}
-                className={`px-4 py-2 text-base font-semibold transition-all duration-300 ${
-                  activeTab === tab
-                    ? "text-green-500 border-b-2 border-green-500"
-                    : "text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
+            {["Mô tả", "Nội dung đánh giá", "Đánh giá", "Đề xuất"].map(
+              (tab) => (
+                <button
+                  key={tab}
+                  onClick={() => {
+                    setActiveTab(tab);
+                    if (tab === "Đánh giá") {
+                      setTimeout(() => {
+                        scrollToReviewForm();
+                      }, 100);
+                    } else if (tab === "Nội dung đánh giá") {
+                      setTimeout(() => {
+                        document
+                          .getElementById("review-section")
+                          ?.scrollIntoView({
+                            behavior: "smooth",
+                          });
+                      }, 100);
+                    }
+                  }}
+                  className={`px-4 py-2 text-base font-semibold transition-all duration-300 ${
+                    activeTab === tab
+                      ? "text-green-500 border-b-2 border-green-500"
+                      : "text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                  }`}
+                >
+                  {tab}
+                </button>
+              )
+            )}
           </div>
 
           {/* Tab Content */}

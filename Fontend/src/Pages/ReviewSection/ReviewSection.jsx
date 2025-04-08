@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import {
   getReviews,
@@ -26,14 +26,45 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
   const [ratingStats, setRatingStats] = useState({});
   const [selectedRatingFilter, setSelectedRatingFilter] = useState(null);
   const [visibleReviews, setVisibleReviews] = useState(3);
-  const [visibleReplies, setVisibleReplies] = useState({}); // Default to 1 reply when toggled
+  const [visibleReplies, setVisibleReplies] = useState({});
   const [showRepliesForReview, setShowRepliesForReview] = useState({});
+  const [showReportForm, setShowReportForm] = useState(null);
+  const [reportReason, setReportReason] = useState("");
+  const [likes, setLikes] = useState({});
+  const [dislikes, setDislikes] = useState({});
+  const optionsRef = useRef({});
+  const replyOptionsRef = useRef({});
+  const commentRef = useRef(null);
+  const replyRefs = useRef({});
 
   let axiosJWT = createAxios(user, dispatch, loginSuccess);
 
   useEffect(() => {
     getReviews(type, itemId, dispatch);
   }, [dispatch, type, itemId]);
+
+  useEffect(() => {
+    const handleClickOutside = (event) => {
+      Object.keys(showOptions).forEach((reviewId) => {
+        if (
+          optionsRef.current[reviewId] &&
+          !optionsRef.current[reviewId].contains(event.target)
+        ) {
+          setShowOptions((prev) => ({ ...prev, [reviewId]: false }));
+        }
+      });
+      Object.keys(showReplyOptions).forEach((replyId) => {
+        if (
+          replyOptionsRef.current[replyId] &&
+          !replyOptionsRef.current[replyId].contains(event.target)
+        ) {
+          setShowReplyOptions((prev) => ({ ...prev, [replyId]: false }));
+        }
+      });
+    };
+    document.addEventListener("mousedown", handleClickOutside);
+    return () => document.removeEventListener("mousedown", handleClickOutside);
+  }, [showOptions, showReplyOptions]);
 
   useEffect(() => {
     if (reviews) {
@@ -46,6 +77,53 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
     }
   }, [reviews, onReviewsUpdate]);
 
+  const handleEditReview = (review) => {
+    setComment(review.comment);
+    setRating(review.rating);
+    setEditingReviewId(review._id);
+    setShowOptions({});
+    commentRef.current.scrollIntoView({ behavior: "smooth" });
+  };
+
+  const handleEditReply = (reviewId, reply) => {
+    setReplyInput({ ...replyInput, [reviewId]: reply.comment });
+    setEditingReplyId(reply._id);
+    setShowReplyOptions({});
+    replyRefs.current[reply._id]?.scrollIntoView({ behavior: "smooth" }); // Cuộn đến ô phản hồi cụ thể
+  };
+
+  const handleSubmitReport = (id, isReply = false) => {
+    if (!reportReason) {
+      alert("Vui lòng nhập lý do báo cáo!");
+      return;
+    }
+    console.log(`Báo cáo ${isReply ? "phản hồi" : "đánh giá"} ID: ${id}, Lý do: ${reportReason}`);
+    setShowReportForm(null);
+    setReportReason("");
+  };
+
+  const handleLike = (id, isReply = false) => {
+    setLikes((prev) => ({
+      ...prev,
+      [id]: prev[id] === 1 ? 0 : 1, // Toggle like
+    }));
+    setDislikes((prev) => ({
+      ...prev,
+      [id]: prev[id] === 1 ? 0 : prev[id], // Tắt dislike nếu đang bật
+    }));
+  };
+
+  const handleDislike = (id, isReply = false) => {
+    setDislikes((prev) => ({
+      ...prev,
+      [id]: prev[id] === 1 ? 0 : 1, // Toggle dislike
+    }));
+    setLikes((prev) => ({
+      ...prev,
+      [id]: prev[id] === 1 ? 0 : prev[id], // Tắt like nếu đang bật
+    }));
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!user) {
@@ -57,13 +135,7 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
       return;
     }
 
-    const reviewData = {
-      type,
-      itemId,
-      rating,
-      comment,
-      userId: user._id,
-    };
+    const reviewData = { type, itemId, rating, comment, userId: user._id };
 
     try {
       if (editingReviewId) {
@@ -138,7 +210,6 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
       ...prev,
       [reviewId]: !prev[reviewId],
     }));
-    // Set default to 1 reply when toggling on
     if (!showRepliesForReview[reviewId]) {
       setVisibleReplies((prev) => ({
         ...prev,
@@ -149,9 +220,7 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
 
   const sortedReviews = reviews
     ? [...reviews].sort((a, b) => {
-        if (b.rating !== a.rating) {
-          return b.rating - a.rating;
-        }
+        if (b.rating !== a.rating) return b.rating - a.rating;
         return new Date(b.createdAt) - new Date(a.createdAt);
       })
     : [];
@@ -162,27 +231,15 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
 
   const displayedReviews = filteredReviews.slice(0, visibleReviews);
 
-  const handleShowMoreReviews = () => {
-    setVisibleReviews(filteredReviews.length);
-  };
-
-  const handleCollapseReviews = () => {
-    setVisibleReviews(3);
-  };
-
-  const handleShowMoreReplies = (reviewId) => {
+  const handleShowMoreReviews = () => setVisibleReviews(filteredReviews.length);
+  const handleCollapseReviews = () => setVisibleReviews(3);
+  const handleShowMoreReplies = (reviewId) =>
     setVisibleReplies((prev) => ({
       ...prev,
       [reviewId]: reviews.find((r) => r._id === reviewId)?.replies.length || 0,
     }));
-  };
-
-  const handleCollapseReplies = (reviewId) => {
-    setVisibleReplies((prev) => ({
-      ...prev,
-      [reviewId]: 1, // Collapse back to 1 reply
-    }));
-  };
+  const handleCollapseReplies = (reviewId) =>
+    setVisibleReplies((prev) => ({ ...prev, [reviewId]: 1 }));
 
   const formatDate = (dateString) => {
     const date = new Date(dateString);
@@ -194,6 +251,7 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
       minute: "2-digit",
     });
   };
+
   const isAdmin = user?.admin === true;
 
   return (
@@ -207,7 +265,6 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
       )}
       {error && <p className="text-red-500 font-medium animate-fade-in">{error}</p>}
 
-      {/* Rating Statistics */}
       <div className="mb-6 p-4 bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 animate-fade-in">
         <h4 className="font-semibold mb-3 text-lg text-gray-900 dark:text-white">Phân loại đánh giá</h4>
         <div className="flex items-center gap-3 flex-wrap">
@@ -260,7 +317,7 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
               </div>
             </div>
             {(user?._id === review.userId?._id || isAdmin) && (
-              <div className="relative">
+              <div className="relative" ref={(el) => (optionsRef.current[review._id] = el)}>
                 <button
                   onClick={() => toggleOptions(review._id)}
                   className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-all duration-200 transform hover:scale-110"
@@ -270,12 +327,7 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
                 {showOptions[review._id] && (
                   <div className="absolute right-0 mt-2 w-36 bg-white dark:bg-gray-800 rounded-lg shadow-lg z-10 border border-gray-200 dark:border-gray-700 animate-slide-down">
                     <button
-                      onClick={() => {
-                        setComment(review.comment);
-                        setRating(review.rating);
-                        setEditingReviewId(review._id);
-                        setShowOptions({});
-                      }}
+                      onClick={() => handleEditReview(review)}
                       className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
                     >
                       Sửa
@@ -288,6 +340,12 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
                       className="block w-full text-left px-4 py-2 text-sm text-red-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
                     >
                       Xóa
+                    </button>
+                    <button
+                      onClick={() => setShowReportForm(review._id)}
+                      className="block w-full text-left px-4 py-2 text-sm text-orange-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+                    >
+                      Báo cáo
                     </button>
                   </div>
                 )}
@@ -315,17 +373,59 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
           </div>
           <p className="text-gray-700 dark:text-gray-300">{review.comment}</p>
 
-          {/* Toggle Replies Button */}
+          {/* Like/Dislike/Reply */}
+          <div className="flex gap-4 mt-2">
+          <button
+            onClick={() => handleLike(review._id)}
+            className={`flex items-center gap-1 transition-colors ${
+              likes[review._id] === 1
+                ? "text-blue-500"
+                : "text-gray-500 hover:text-blue-500"
+            }`}
+          >
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.91l-.01-.01L23 10z"/>
+            </svg>
+            <span>Thích ({likes[review._id] || 0})</span>
+          </button>
+          <button
+            onClick={() => handleDislike(review._id)}
+            className={`flex items-center gap-1 transition-colors ${
+              dislikes[review._id] === 1
+                ? "text-red-500"
+                : "text-gray-500 hover:text-red-500"
+            }`}
+          >
+            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <path d="M15 3H6c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14.73v1.91l.01.01L1 14c0 1.1.9 2 2 2h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 23l6.59-6.59c.36-.36.58-.86.58-1.41V5c0-1.1-.9-2-2-2zm4 0v12h4V3h-4z"/>
+            </svg>
+            <span>Không thích ({dislikes[review._id] || 0})</span>
+          </button>
+            <button
+              onClick={() => toggleShowReplies(review._id)}
+              className="flex items-center gap-1 text-gray-500 hover:text-green-500 transition-colors"
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z" />
+              </svg>
+              <span>Phản hồi</span>
+            </button>
+          </div>
+
           <div className="mt-2">
             <button
               onClick={() => toggleShowReplies(review._id)}
               className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center gap-1 transition-all duration-200 transform hover:scale-105"
             >
               <span>
-                {showRepliesForReview[review._id] ? "Ẩn phản hồi" : `Xem tất cả phản hồi (${review.replies?.length || 0})`}
+                {showRepliesForReview[review._id]
+                  ? "Ẩn phản hồi"
+                  : `Xem tất cả phản hồi (${review.replies?.length || 0})`}
               </span>
               <svg
-                className={`w-4 h-4 transition-transform duration-200 ${showRepliesForReview[review._id] ? "rotate-180" : ""}`}
+                className={`w-4 h-4 transition-transform duration-200 ${
+                  showRepliesForReview[review._id] ? "rotate-180" : ""
+                }`}
                 fill="none"
                 stroke="currentColor"
                 viewBox="0 0 24 24"
@@ -335,7 +435,6 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
             </button>
           </div>
 
-          {/* Replies Section (Shown only when toggled) */}
           {showRepliesForReview[review._id] && (
             <div className="ml-6 mt-3 animate-fade-in">
               {(review.replies || []).slice(0, visibleReplies[review._id] || 1).map((reply) => (
@@ -356,7 +455,7 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
                       </span>
                     </div>
                     {(user?._id === reply.userId?._id || isAdmin) && (
-                      <div className="relative">
+                      <div className="relative" ref={(el) => (replyOptionsRef.current[reply._id] = el)}>
                         <button
                           onClick={() => toggleReplyOptions(reply._id)}
                           className="text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-all duration-200 transform hover:scale-110"
@@ -364,13 +463,9 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
                           ⋮
                         </button>
                         {showReplyOptions[reply._id] && (
-                          <div className="absolute right-0 mt-2 w-36 bg-white dark:bg-gray-800 rounded-lg shadow-lgA z-10 border border-gray-200 dark:border-gray-700 animate-slide-down">
+                          <div className="absolute right-0 mt-2 w-36 bg-white dark:bg-gray-800 rounded-lg shadow-lg z-10 border border-gray-200 dark:border-gray-700 animate-slide-down">
                             <button
-                              onClick={() => {
-                                setReplyInput({ ...replyInput, [review._id]: reply.comment });
-                                setEditingReplyId(reply._id);
-                                setShowReplyOptions({});
-                              }}
+                              onClick={() => handleEditReply(review._id, reply)}
                               className="block w-full text-left px-4 py-2 text-sm text-gray-700 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
                             >
                               Sửa
@@ -384,10 +479,54 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
                             >
                               Xóa
                             </button>
+                            <button
+                              onClick={() => setShowReportForm(reply._id)}
+                              className="block w-full text-left px-4 py-2 text-sm text-orange-500 hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors duration-200"
+                            >
+                              Báo cáo
+                            </button>
                           </div>
                         )}
                       </div>
                     )}
+                  </div>
+                  {/* Like/Dislike/Reply for Replies */}
+                  <div className="flex gap-4 mt-2">
+                <button
+                  onClick={() => handleLike(reply._id, true)}
+                  className={`flex items-center gap-1 transition-colors ${
+                    likes[reply._id] === 1
+                      ? "text-blue-500"
+                      : "text-gray-500 hover:text-blue-500"
+                  }`}
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.91l-.01-.01L23 10z"/>
+                  </svg>
+                  <span>Thích ({likes[reply._id] || 0})</span>
+                </button>
+                <button
+                  onClick={() => handleDislike(reply._id, true)}
+                  className={`flex items-center gap-1 transition-colors ${
+                    dislikes[reply._id] === 1
+                      ? "text-red-500"
+                      : "text-gray-500 hover:text-red-500"
+                  }`}
+                >
+                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                    <path d="M15 3H6c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14.73v1.91l.01.01L1 14c0 1.1.9 2 2 2h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 23l6.59-6.59c.36-.36.58-.86.58-1.41V5c0-1.1-.9-2-2-2zm4 0v12h4V3h-4z"/>
+                  </svg>
+                  <span>Không thích ({dislikes[reply._id] || 0})</span>
+                </button>
+                    <button
+                      onClick={() => toggleShowReplies(review._id)}
+                      className="flex items-center gap-1 text-gray-500 hover:text-green-500 transition-colors"
+                    >
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                        <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z" />
+                      </svg>
+                      <span>Phản hồi</span>
+                    </button>
                   </div>
                 </div>
               ))}
@@ -418,8 +557,8 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
                 </div>
               )}
 
-              {/* Add reply input */}
               <textarea
+                ref={(el) => (replyRefs.current[review._id] = el)}
                 placeholder="Trả lời đánh giá..."
                 className="border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 w-full mt-2 p-2 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-all duration-300"
                 value={replyInput[review._id] || ""}
@@ -431,6 +570,34 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
               >
                 {editingReplyId ? "Cập nhật phản hồi" : "Gửi phản hồi"}
               </button>
+            </div>
+          )}
+
+          {/* Report Form for Review */}
+          {showReportForm === review._id && (
+            <div className="mt-4 p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 animate-fade-in">
+              <h4 className="font-semibold text-gray-900 dark:text-white">Báo cáo đánh giá</h4>
+              <textarea
+                value={reportReason}
+                onChange={(e) => setReportReason(e.target.value)}
+                className="w-full mt-2 p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+                placeholder="Lý do báo cáo..."
+                rows="3"
+              />
+              <div className="mt-2 flex gap-2">
+                <button
+                  onClick={() => handleSubmitReport(review._id)}
+                  className="bg-orange-500 text-white px-4 py-1 rounded-lg hover:bg-orange-600"
+                >
+                  Gửi báo cáo
+                </button>
+                <button
+                  onClick={() => setShowReportForm(null)}
+                  className="bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-1 rounded-lg hover:bg-gray-400 dark:hover:bg-gray-500"
+                >
+                  Hủy
+                </button>
+              </div>
             </div>
           )}
         </div>
@@ -462,7 +629,6 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
         </div>
       )}
 
-      {/* Add Review Form */}
       <form
         onSubmit={handleSubmit}
         className="mt-6 p-4 bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700 animate-fade-in"
@@ -493,6 +659,7 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
 
         <label className="block font-semibold text-gray-900 dark:text-white mb-2">Bình luận:</label>
         <textarea
+          ref={commentRef}
           value={comment}
           onChange={(e) => setComment(e.target.value)}
           className="border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 w-full p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-all duration-300"
@@ -507,6 +674,36 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
           {editingReviewId ? "Cập nhật đánh giá" : "Gửi đánh giá"}
         </button>
       </form>
+
+      {/* Report Form for Reply (outside the review loop) */}
+      {showReportForm && !filteredReviews.some((r) => r._id === showReportForm) && (
+        <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
+          <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-96 animate-fade-in border border-gray-200 dark:border-gray-700">
+            <h4 className="font-semibold text-gray-900 dark:text-white mb-4">Báo cáo phản hồi</h4>
+            <textarea
+              value={reportReason}
+              onChange={(e) => setReportReason(e.target.value)}
+              className="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-lg bg-white dark:bg-gray-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500"
+              placeholder="Lý do báo cáo..."
+              rows="4"
+            />
+            <div className="mt-4 flex gap-2">
+              <button
+                onClick={() => handleSubmitReport(showReportForm, true)}
+                className="bg-orange-500 text-white px-4 py-2 rounded-lg hover:bg-orange-600"
+              >
+                Gửi báo cáo
+              </button>
+              <button
+                onClick={() => setShowReportForm(null)}
+                className="bg-gray-300 dark:bg-gray-600 text-gray-700 dark:text-gray-200 px-4 py-2 rounded-lg hover:bg-gray-400 dark:hover:bg-gray-500"
+              >
+                Hủy
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
     </div>
   );
 };

@@ -5,7 +5,8 @@ import { createAxios } from "../../createInstance";
 import { loginSuccess } from "../../redux/authSlice";
 import { getAllUsers } from "../../redux/apiRequest";
 import { getAllBooks } from "../../redux/apiBooks";
-import { getCategory } from "../../redux/apiCategory"; 
+import { getCategory } from "../../redux/apiCategory";
+import { getReviews } from "../../redux/apiReview";
 
 const AllBooks = () => {
   const user = useSelector((state) => state.auth.login?.currentUser);
@@ -15,15 +16,14 @@ const AllBooks = () => {
   const navigate = useNavigate();
   const axiosJWT = useMemo(() => createAxios(user, dispatch, loginSuccess), [user, dispatch]);
 
-  // State cho lọc, phân trang, tìm kiếm
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedPriceRange, setSelectedPriceRange] = useState("all");
   const [selectedAuthor, setSelectedAuthor] = useState("all");
   const [selectedRating, setSelectedRating] = useState("all");
   const [visibleBooks, setVisibleBooks] = useState(8);
   const [searchQuery, setSearchQuery] = useState("");
+  const [reviewStats, setReviewStats] = useState({});
 
-  // Map categoryId => categoryName
   const categoryMap = useMemo(() => {
     const map = {};
     categories?.forEach((cat) => {
@@ -42,7 +42,7 @@ const AllBooks = () => {
       try {
         await getAllUsers(user.accessToken, dispatch, axiosJWT);
         await getAllBooks(user.accessToken, dispatch, axiosJWT);
-        await getCategory(user.accessToken, dispatch, axiosJWT); // Gọi API lấy categories
+        await getCategory(user.accessToken, dispatch, axiosJWT);
       } catch (error) {
         console.error("Lỗi khi tải dữ liệu:", error);
       }
@@ -50,6 +50,29 @@ const AllBooks = () => {
 
     fetchData();
   }, [user, dispatch, axiosJWT, navigate]);
+
+  useEffect(() => {
+    if (books.length > 0) {
+      fetchReviewStats();
+    }
+  }, [books]);
+
+  const fetchReviewStats = async () => {
+    try {
+      const stats = {};
+      for (const book of books) {
+        const reviews = await getReviews("book", book._id, dispatch);
+        const averageRating = reviews.reduce((acc, r) => acc + r.rating, 0) / (reviews.length || 1);
+        stats[book._id] = {
+          averageRating: averageRating.toFixed(1),
+          reviewCount: reviews.length,
+        };
+      }
+      setReviewStats(stats);
+    } catch (error) {
+      console.error("Lỗi khi lấy thống kê đánh giá:", error);
+    }
+  };
 
   const filteredBooks = books?.filter((book) => {
     const matchesSearch = book.title.toLowerCase().includes(searchQuery.toLowerCase());
@@ -76,32 +99,27 @@ const AllBooks = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-200 dark:from-zinc-900 dark:to-zinc-700 text-gray-900 dark:text-white px-6 sm:px-12 py-16 transition-all duration-300">
-      <h4
-        data-aos="slide-up"
-        className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-center mb-16 mt-8 tracking-tight animate-fade-in bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500"
-      >
+      <h4 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-center mb-16 mt-8 tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
         Thư Viện Sách
       </h4>
 
-      {/* Search Bar */}
       <div className="max-w-3xl mx-auto mb-10">
         <input
           type="text"
           value={searchQuery}
           onChange={(e) => setSearchQuery(e.target.value)}
           placeholder="Tìm kiếm sách theo tiêu đề..."
-          className="w-full p-4 rounded-lg bg-white dark:bg-zinc-800 text-gray-900 dark:text-white shadow-md focus:ring-2 focus:ring-indigo-500 focus:outline-none transition-all duration-200 placeholder-gray-400 dark:placeholder-gray-500"
+          className="w-full p-4 rounded-lg bg-white dark:bg-zinc-800 text-gray-900 dark:text-white shadow-md focus:ring-2 focus:ring-indigo-500 focus:outline-none"
         />
       </div>
 
-      {/* Filter */}
       <div className="mb-12 max-w-7xl mx-auto bg-white dark:bg-zinc-800 p-6 rounded-xl shadow-md grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <div>
           <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Danh mục</label>
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="w-full p-3 rounded-lg bg-gray-100 dark:bg-zinc-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-indigo-500"
+            className="w-full p-3 rounded-lg bg-gray-100 dark:bg-zinc-700 text-gray-900 dark:text-white"
           >
             {categoryOptions.map((catId) => (
               <option key={catId} value={catId}>
@@ -154,50 +172,56 @@ const AllBooks = () => {
         </div>
       </div>
 
-      {/* Book List */}
-      {filteredBooks && filteredBooks.length > 0 ? (
+      {/* Danh sách sách */}
+      {filteredBooks.length > 0 ? (
         <>
-          <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 max-w-7xl mx-auto" data-aos="zoom-in">
-            {filteredBooks.slice(0, visibleBooks).map((book, index) => (
-              <li
-                key={book._id}
-                className="bg-white dark:bg-zinc-800 rounded-2xl shadow-lg overflow-hidden transform hover:scale-105 transition-all duration-300"
-                style={{ animationDelay: `${index * 0.1}s` }}
-              >
-                <Link to={`/books/${book._id}`}>
-                  <div className="relative group">
+          <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 max-w-7xl mx-auto">
+            {filteredBooks.slice(0, visibleBooks).map((book, index) => {
+              const ratingInfo = reviewStats[book._id];
+              const avg = parseFloat(ratingInfo?.averageRating || 0);
+              const count = ratingInfo?.reviewCount || 0;
+
+              return (
+                <li key={book._id} className="bg-white dark:bg-zinc-800 rounded-2xl shadow-lg overflow-hidden transform hover:scale-105 transition-all duration-300">
+                  <Link to={`/books/${book._id}`}>
                     <img
                       src={book.image?.trim() ? book.image : "https://via.placeholder.com/150"}
                       alt={book.title}
-                      className="w-full h-64 object-cover transition-transform duration-500 group-hover:scale-110"
+                      className="w-full h-64 object-cover"
                     />
-                    <div className="absolute inset-0 bg-black bg-opacity-0 group-hover:bg-opacity-30 transition-all duration-300"></div>
+                  </Link>
+                  <div className="p-6">
+                    <h5 className="text-lg font-semibold mb-2 truncate">{book.title}</h5>
+                    <p className="text-red-600 font-bold text-xl">{book.price.toLocaleString("vi-VN")} ₫</p>
+                    <p className="text-sm mt-1">Tác giả: {book.author || "Không rõ"}</p>
+                    <div className="flex items-center mt-2 text-yellow-400">
+                      {[...Array(5)].map((_, i) => (
+                        <svg
+                          key={i}
+                          className={`w-5 h-5 ${
+                            i < Math.round(avg) ? "fill-current" : "fill-none stroke-current"
+                          }`}
+                          xmlns="http://www.w3.org/2000/svg"
+                          viewBox="0 0 24 24"
+                        >
+                          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                        </svg>
+                      ))}
+                      <span className="ml-2 text-sm text-gray-600 dark:text-gray-300">
+                        {avg > 0 ? `${avg}/5 (${count} đánh giá)` : "Chưa có đánh giá"}
+                      </span>
+                    </div>
                   </div>
-                </Link>
-
-                <div className="p-6">
-                  <h5 className="text-lg font-semibold text-gray-900 dark:text-white mb-2 truncate">{book.title}</h5>
-                  <p className="text-red-600 dark:text-red-400 font-bold text-xl">{book.price.toLocaleString("vi-VN")} ₫</p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400 mt-1">
-                    Tác giả: {book.author || "Không rõ"}
-                  </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Danh mục: {categoryMap[book.category] || "Không rõ"}
-                  </p>
-                  <p className="text-sm text-gray-600 dark:text-gray-400">
-                    Đánh giá: {book.rating ? `${book.rating}/5` : "Chưa có"}
-                  </p>
-                </div>
-              </li>
-            ))}
+                </li>
+              );
+            })}
           </ul>
 
-          {/* Load More */}
           {visibleBooks < filteredBooks.length && (
-            <div className="text-center mt-12">
+            <div className="text-center mt-10">
               <button
                 onClick={handleLoadMore}
-                className="bg-indigo-600 text-white py-3 px-8 rounded-full font-semibold hover:bg-indigo-700 transition-all duration-300 shadow-md"
+                className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full font-medium transition-all duration-300"
               >
                 Xem thêm
               </button>
@@ -205,7 +229,7 @@ const AllBooks = () => {
           )}
         </>
       ) : (
-        <p className="text-gray-600 dark:text-gray-400 text-lg text-center italic">Hiện chưa có sách nào phù hợp</p>
+        <p className="text-center mt-10 text-gray-500">Không tìm thấy sách nào.</p>
       )}
     </div>
   );
