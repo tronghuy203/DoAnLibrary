@@ -9,9 +9,10 @@ const bookSchema = new mongoose.Schema({
         type: String,
         require: true,
     },
-    category:{
-        type: String,
-        require: true,
+    category: {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Category",
+        required: true,
     },
     author: {
         type: String,

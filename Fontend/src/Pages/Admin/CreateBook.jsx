@@ -1,9 +1,21 @@
-import React, { useMemo, useState } from "react";
-import { createBook } from "../../redux/apiBooks";
+import React, { useMemo, useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
+import { createBook } from "../../redux/apiBooks";
+import { getCategory } from "../../redux/apiCategory"; // Import hàm getCategory
 import { createAxios } from "../../createInstance";
 import { loginSuccess } from "../../redux/authSlice";
-import { BookOpenIcon, UserIcon, DocumentTextIcon, CurrencyDollarIcon, CheckCircleIcon, ExclamationCircleIcon, PhotoIcon, TagIcon, ChevronUpIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
+import {
+  BookOpenIcon,
+  UserIcon,
+  DocumentTextIcon,
+  CurrencyDollarIcon,
+  CheckCircleIcon,
+  ExclamationCircleIcon,
+  PhotoIcon,
+  TagIcon,
+  ChevronUpIcon,
+  ChevronDownIcon,
+} from "@heroicons/react/24/outline";
 
 const CreateBook = () => {
   const [book, setBook] = useState({
@@ -16,11 +28,34 @@ const CreateBook = () => {
   });
   const [previewImage, setPreviewImage] = useState(null);
   const [message, setMessage] = useState("");
+  const [categories, setCategories] = useState([]); // State để lưu danh mục từ API
 
   const dispatch = useDispatch();
   const user = useSelector((state) => state.auth.login.currentUser);
   const accessToken = user?.accessToken;
   const axiosJWT = useMemo(() => createAxios(user, dispatch, loginSuccess), [user, dispatch]);
+
+  // Lấy danh sách danh mục khi component mount
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        if (!accessToken) {
+          console.warn("Chưa đăng nhập, không thể lấy danh mục.");
+          return;
+        }
+        const data = await getCategory(accessToken, dispatch, axiosJWT);
+        if (Array.isArray(data)) {
+          setCategories(data); // Lưu danh mục vào state
+        } else {
+          console.error("Dữ liệu danh mục không hợp lệ:", data);
+        }
+      } catch (err) {
+        console.error("Lỗi khi lấy danh sách danh mục:", err);
+      }
+    };
+
+    fetchCategories();
+  }, [accessToken, axiosJWT, dispatch]);
 
   const formatPrice = (value) => {
     const num = parseInt(value.replace(/\./g, "")) || 0;
@@ -114,10 +149,7 @@ const CreateBook = () => {
         </div>
       )}
 
-      <form
-        onSubmit={handleSubmit}
-        className="w-full max-w-2xl bg-gray-900 p-8 rounded-2xl shadow-2xl border border-gray-800 transform transition-all hover:shadow-[0_0_20px_rgba(0,255,255,0.1)]"
-      >
+      <div className="w-full max-w-2xl bg-gray-900 p-8 rounded-2xl shadow-2xl border border-gray-800 transform transition-all hover:shadow-[0_0_20px_rgba(0,255,255,0.1)]">
         <div className="mb-6">
           <label className="block text-gray-200 text-sm font-medium mb-2" htmlFor="title">
             Tiêu đề
@@ -229,9 +261,11 @@ const CreateBook = () => {
               className="w-full pl-10 pr-4 py-3 bg-gray-800 text-gray-100 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 appearance-none placeholder-gray-500 transition-all duration-200"
             >
               <option value="">Chọn danh mục</option>
-              <option value="Tiểu thuyết">Tiểu thuyết</option>
-              <option value="Khoa học">Khoa học</option>
-              <option value="Lịch sử">Lịch sử</option>
+              {categories.map((cat) => (
+                <option key={cat._id} value={cat._id}>
+                  {cat.name}
+                </option>
+              ))}
             </select>
           </div>
         </div>
@@ -277,13 +311,13 @@ const CreateBook = () => {
         </div>
 
         <button
-          type="submit"
+          onClick={handleSubmit}
           className="w-full flex items-center justify-center gap-2 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-3 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl"
         >
           <BookOpenIcon className="w-5 h-5" />
           Tạo sách
         </button>
-      </form>
+      </div>
     </div>
   );
 };

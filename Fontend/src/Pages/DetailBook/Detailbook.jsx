@@ -1,9 +1,9 @@
-import { useEffect, useState, useRef } from "react"; // Thêm useRef
+import { useEffect, useState, useRef, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { getBookDetail } from "../../redux/apiBooks";
+import { getCategory } from "../../redux/apiCategory";
 import { createAxios } from "../../createInstance";
-import { loginSuccess } from "../../redux/authSlice";
 import { FaShareAlt, FaFacebook, FaInstagram, FaComment } from "react-icons/fa";
 import ReviewSection from "../ReviewSection/ReviewSection";
 
@@ -13,13 +13,15 @@ const DetailBook = () => {
   const navigate = useNavigate();
   const user = useSelector((state) => state.auth.login?.currentUser);
   const book = useSelector((state) => state.books.detailBook);
-  const axiosJWT = createAxios(user, dispatch, loginSuccess);
+  const allBooks = useSelector((state) => state.books.allBooks); // Lấy tất cả sách từ Redux
+  const categories = useSelector((state) => state.categories.allCategories);
+  const axiosJWT = useMemo(() => createAxios(user, dispatch), [user, dispatch]);
 
   const [activeTab, setActiveTab] = useState("Mô tả");
   const [showShareOptions, setShowShareOptions] = useState(false);
   const [averageRating, setAverageRating] = useState(0);
   const [reviewCount, setReviewCount] = useState(0);
-  const shareRef = useRef(null); 
+  const shareRef = useRef(null);
 
   const calculateAverageRating = (reviews) => {
     if (!reviews || reviews.length === 0) return 0;
@@ -27,13 +29,43 @@ const DetailBook = () => {
     return (total / reviews.length).toFixed(1);
   };
 
+  const categoryMap = useMemo(() => {
+    const map = {};
+    categories?.forEach((cat) => {
+      map[cat._id] = cat.name;
+    });
+    return map;
+  }, [categories]);
+
+  // Lọc sách đề xuất dựa trên tác giả hoặc thể loại
+  const recommendedBooks = useMemo(() => {
+    if (!book || !allBooks) return [];
+    return allBooks
+      .filter(
+        (b) =>
+          b._id !== book._id && // Loại bỏ sách hiện tại
+          (b.author === book.author || b.category === book.category) // Cùng tác giả hoặc thể loại
+      )
+      .slice(0, 3); // Giới hạn 3 sách đề xuất
+  }, [book, allBooks]);
+
   useEffect(() => {
     if (!user) {
       navigate("/login");
       return;
     }
-    getBookDetail(id, user.accessToken, dispatch, axiosJWT);
-  }, [id, user, dispatch, axiosJWT, navigate]);
+
+    const fetchData = async () => {
+      try {
+        await getCategory(user.accessToken, dispatch, axiosJWT);
+        await getBookDetail(id, user.accessToken, dispatch, axiosJWT);
+      } catch (error) {
+        console.error("Lỗi khi tải dữ liệu:", error);
+      }
+    };
+
+    fetchData();
+  }, [id, user, user?.accessToken, dispatch, navigate, axiosJWT]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -128,7 +160,7 @@ const DetailBook = () => {
               </span>
               <span className="text-lg text-gray-600 dark:text-gray-400">
                 <span className="font-semibold">Thể loại:</span>{" "}
-                {book.category || "Không rõ"}
+                {categoryMap[book.category] || "Không rõ"}
               </span>
             </div>
             <div className="flex items-center gap-4">
@@ -137,7 +169,9 @@ const DetailBook = () => {
                   <svg
                     key={i}
                     className={`w-6 h-6 ${
-                      i < Math.round(averageRating) ? "fill-current" : "fill-none stroke-current"
+                      i < Math.round(averageRating)
+                        ? "fill-current"
+                        : "fill-none stroke-current"
                     }`}
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
@@ -230,9 +264,9 @@ const DetailBook = () => {
                     }, 100);
                   } else if (tab === "Nội dung đánh giá") {
                     setTimeout(() => {
-                      document.getElementById("review-section")?.scrollIntoView({
-                        behavior: "smooth",
-                      });
+                      document
+                        .getElementById("review-section")
+                        ?.scrollIntoView({ behavior: "smooth" });
                     }, 100);
                   }
                 }}
@@ -256,18 +290,30 @@ const DetailBook = () => {
                 </p>
               </div>
             )}
-            {activeTab === "Nội dung" && null}
             {activeTab === "Nội dung đánh giá" && null}
             {activeTab === "Đề xuất" && (
               <div data-aos="fade-in">
-                <p className="leading-relaxed">
-                  Bạn có thể quan tâm đến các sách sau:
+                <p className="leading-relaxed font-semibold mb-4">
+                  Sách đề xuất (cùng tác giả hoặc thể loại):
                 </p>
-                <ul className="list-disc list-inside mt-2 space-y-1">
-                  <li>Vở bài tập Toán 2 - Bộ sách Chân trời sáng tạo</li>
-                  <li>Sách bài tập Hình học cơ bản cho học sinh tiểu học</li>
-                  <li>100 bài toán thực tế cho trẻ em</li>
-                </ul>
+                {recommendedBooks.length > 0 ? (
+                  <ul className="list-disc list-inside space-y-3">
+                    {recommendedBooks.map((recBook) => (
+                      <li key={recBook._id}>
+                        <Link
+                          to={`/books/${recBook._id}`}
+                          className="text-blue-500 hover:text-blue-700 dark:text-blue-400 dark:hover:text-blue-300 transition-colors duration-200"
+                        >
+                          {recBook.title} - {recBook.author} ({categoryMap[recBook.category] || "Không rõ"})
+                        </Link>
+                      </li>
+                    ))}
+                  </ul>
+                ) : (
+                  <p className="text-gray-500 dark:text-gray-400">
+                    Không có sách đề xuất nào phù hợp.
+                  </p>
+                )}
               </div>
             )}
           </div>

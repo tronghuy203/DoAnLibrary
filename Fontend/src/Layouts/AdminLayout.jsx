@@ -108,6 +108,19 @@ const AdminLayout = () => {
                 <ul className="pl-8 mt-2 space-y-2">
                   <li>
                     <Link
+                      to="/admin/categorys/list"
+                      className={`flex items-center gap-3 py-2 px-4 rounded-lg transition duration-200 ${
+                        location.pathname === "/admin/categorys/list"
+                          ? "bg-blue-600 text-white shadow-sm"
+                          : "text-gray-400 hover:bg-gray-700 hover:text-white"
+                      }`}
+                    >
+                      <PlusIcon className="w-5 h-5" />
+                      <span>Thêm danh mục</span>
+                    </Link>
+                  </li>
+                  <li>
+                    <Link
                       to="/admin/books/create"
                       className={`flex items-center gap-3 py-2 px-4 rounded-lg transition duration-200 ${
                         location.pathname === "/admin/books/create"

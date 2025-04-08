@@ -2,6 +2,10 @@ const router = require("express").Router();
 const authController = require("../controllers/authController");
 const middlewareController = require("../controllers/middlewareController");
 
+router.post("/google", authController.googleLogin);
+
+router.post("/facebook", authController.facebookLogin);
+
 router.post("/register", authController.registerUser);
 
 router.post("/forgot-password", authController.forgotPassword);

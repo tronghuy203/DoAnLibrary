@@ -20,6 +20,40 @@ export const loginUser = async(user,dispatch,navigate) =>{
     }
 }
 
+export const googleLogin = async(token, dispatch, navigate) => {
+    dispatch(loginStart());
+    try {
+        const res = await axios.post("/v1/auth/google", { token });
+        dispatch(loginSuccess(res.data));
+        localStorage.setItem("accessToken", res.data.accessToken);
+        if (res.data.admin) {
+            navigate("/admin");
+        } else {
+            navigate("/");
+        }
+    } catch(err) {
+        dispatch(loginFailed());
+        throw err;
+    }
+}
+export const facebookLogin = async (data, dispatch, navigate) => {
+    dispatch(loginStart());
+    try {
+        const res = await axios.post("/v1/auth/facebook", data);
+        dispatch(loginSuccess(res.data));
+        localStorage.setItem("accessToken", res.data.accessToken);
+        if (res.data.admin) {
+            navigate("/admin");
+        } else {
+            navigate("/");
+        }
+    } catch (err) {
+        dispatch(loginFailed());
+        throw err;
+    }
+};
+
+
 
 export const registerUser = async(user, dispatch, navigate)=>{
     dispatch(registerStart());

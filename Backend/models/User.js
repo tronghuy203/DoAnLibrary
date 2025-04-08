@@ -28,9 +28,18 @@ const userSchema = new mongoose.Schema(
     },
     password: {
       type: String,
-      required: true,
+      // required: true,
       minlength: 6,
     },
+    googleId: {
+      type: String,
+      unique: true,
+      sparse: true, // Cho phép null nhưng vẫn đảm bảo unique nếu có giá trị
+    },
+    facebookId: { 
+      type: String, 
+      unique: true, 
+      sparse: true },
     avatar: { 
       type: String, 
       default: "https://cellphones.com.vn/sforum/wp-content/uploads/2023/10/avatar-trang-4.jpg"

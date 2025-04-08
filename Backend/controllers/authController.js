@@ -3,10 +3,17 @@ const User = require("../models/User");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
+const { OAuth2Client } = require('google-auth-library');
 
 let refreshTokens = [];
 let tempUsers = {};
 let resetCodes = {};
+
+const googleClient = new OAuth2Client({
+    clientId: process.env.GOOGLE_CLIENT_ID,
+    clientSecret: process.env.GOOGLE_CLIENT_SECRET,
+    redirectUri: 'http://localhost:8000/v1/auth/google/callback' // Thay bằng URL thực tế của bạn
+});
 
 const transporter = nodemailer.createTransport({
     host: "smtp.gmail.com",
@@ -207,6 +214,113 @@ const authController = {
             process.env.JWT_REFRESH_KEY,
             { expiresIn: "365d" }
         );
+    },
+
+    googleLogin: async (req, res) => {
+        try {
+            const { token } = req.body;
+            if (!token) {
+                return res.status(400).json({ message: "Thiếu token Google" });
+            }
+
+            const ticket = await googleClient.verifyIdToken({
+                idToken: token,
+                audience: process.env.GOOGLE_CLIENT_ID,
+            });
+            const payload = ticket.getPayload();
+            const { email, name, sub: googleId } = payload;
+
+            // Tìm user bằng email hoặc googleId
+            let user = await User.findOne({ $or: [{ email }, { googleId }] });
+
+            if (!user) {
+                // Nếu không có tài khoản, tạo mới và đăng nhập luôn
+                user = new User({
+                    username: name || `user_${googleId}`, // Nếu không có name, dùng googleId để tạo username
+                    email,
+                    googleId,
+                    isVerified: true, // Google đã xác thực email
+                });
+                await user.save();
+            } else if (!user.googleId) {
+                // Nếu tài khoản đã tồn tại qua đăng ký thường, liên kết với googleId
+                user.googleId = googleId;
+                user.isVerified = true; // Đánh dấu đã xác thực nếu chưa
+                await user.save();
+            }
+
+            const accessToken = authController.generateAccessToken(user);
+            const refreshToken = authController.generateRefreshToken(user);
+            refreshTokens.push(refreshToken);
+
+            res.cookie("refreshToken", refreshToken, {
+                httpOnly: true,
+                secure: false, // Đặt true nếu dùng HTTPS
+                path: "/",
+                sameSite: "strict",
+            });
+
+            const { password, ...others } = user._doc;
+            res.status(200).json({ ...others, accessToken });
+        } catch (err) {
+            console.error("Google login error:", err);
+            res.status(500).json({ message: "Lỗi server", error: err.message });
+        }
+    },
+
+    facebookLogin: async (req, res) => {
+        try {
+            const { accessToken } = req.body;
+            if (!accessToken) return res.status(400).json({ message: "Thiếu access token Facebook" });
+
+            // Gửi yêu cầu đến Facebook Graph API để xác thực token và lấy thông tin user
+            const fbResponse = await fetch(
+                `https://graph.facebook.com/me?fields=id,name,email&access_token=${accessToken}`
+            );
+            const fbUser = await fbResponse.json();
+
+            if (!fbUser.id) {
+                return res.status(400).json({ message: "Token Facebook không hợp lệ" });
+            }
+
+            const { id: facebookId, name, email } = fbUser;
+
+            // Tìm user bằng email hoặc facebookId
+            let user = await User.findOne({ $or: [{ email }, { facebookId }] });
+
+            if (!user) {
+                // Tạo tài khoản mới nếu chưa tồn tại
+                user = new User({
+                    username: name || `user_${facebookId}`,
+                    email: email || `${facebookId}@facebook.com`, // Nếu không có email, tạo email giả
+                    facebookId,
+                    isVerified: true,
+                });
+                await user.save();
+            } else if (!user.facebookId) {
+                // Liên kết facebookId nếu tài khoản đã tồn tại qua cách khác
+                user.facebookId = facebookId;
+                user.isVerified = true;
+                await user.save();
+            }
+
+            const accessTokenJwt = authController.generateAccessToken(user);
+            const refreshToken = authController.generateRefreshToken(user);
+            refreshTokens.push(refreshToken);
+
+            res.cookie("refreshToken", refreshToken, {
+                httpOnly: true,
+                secure: false,
+                path: "/",
+                sameSite: "strict",
+            });
+
+            const { password, ...others } = user._doc;
+            res.status(200).json({ ...others, accessToken: accessTokenJwt });
+        } catch (err) {
+            console.error("Facebook login error:", err);
+            res.status(500).json({ message: "Lỗi server", error: err.message });
+        }
     },
 
     loginUser: async (req, res) => {
