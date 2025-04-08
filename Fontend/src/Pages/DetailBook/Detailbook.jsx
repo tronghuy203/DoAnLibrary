@@ -1,9 +1,9 @@
-import { useEffect, useState, useRef } from "react"; // Thêm useRef
+import { useEffect, useState, useRef, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useParams, useNavigate, Link } from "react-router-dom";
 import { getBookDetail } from "../../redux/apiBooks";
+import { getCategory } from "../../redux/apiCategory";
 import { createAxios } from "../../createInstance";
-import { loginSuccess } from "../../redux/authSlice";
 import { FaShareAlt, FaFacebook, FaInstagram, FaComment } from "react-icons/fa";
 import ReviewSection from "../ReviewSection/ReviewSection";
 
@@ -13,7 +13,8 @@ const DetailBook = () => {
   const navigate = useNavigate();
   const user = useSelector((state) => state.auth.login?.currentUser);
   const book = useSelector((state) => state.books.detailBook);
-  const axiosJWT = createAxios(user, dispatch, loginSuccess);
+  const categories = useSelector((state) => state.categories.allCategories);
+  const axiosJWT = useMemo(() => createAxios(user, dispatch), [user, dispatch]);
 
   const [activeTab, setActiveTab] = useState("Mô tả");
   const [showShareOptions, setShowShareOptions] = useState(false);
@@ -26,14 +27,31 @@ const DetailBook = () => {
     const total = reviews.reduce((sum, review) => sum + review.rating, 0);
     return (total / reviews.length).toFixed(1);
   };
+  const categoryMap = useMemo(() => {
+    const map = {};
+    categories?.forEach((cat) => {
+      map[cat._id] = cat.name;
+    });
+    return map;
+  }, [categories]);
 
   useEffect(() => {
     if (!user) {
       navigate("/login");
       return;
     }
-    getBookDetail(id, user.accessToken, dispatch, axiosJWT);
-  }, [id, user, dispatch, axiosJWT, navigate]);
+
+    const fetchData = async () => {
+      try {
+        await getCategory(user.accessToken, dispatch, axiosJWT);
+        await getBookDetail(id, user.accessToken, dispatch, axiosJWT);
+      } catch (error) {
+        console.error("Lỗi khi tải dữ liệu:", error);
+      }
+    };
+
+    fetchData();
+  }, [id, user, user?.accessToken, dispatch, navigate, axiosJWT]);
 
   // Xử lý click ngoài để tắt dropdown
   useEffect(() => {
@@ -132,7 +150,7 @@ const DetailBook = () => {
               </span>
               <span className="text-lg text-gray-600 dark:text-gray-400">
                 <span className="font-semibold">Thể loại:</span>{" "}
-                {book.category || "Không rõ"}
+                {categoryMap[book.category] || "Không rõ"}
               </span>
             </div>
             <div className="flex items-center gap-4">
@@ -141,7 +159,9 @@ const DetailBook = () => {
                   <svg
                     key={i}
                     className={`w-6 h-6 ${
-                      i < Math.round(averageRating) ? "fill-current" : "fill-none stroke-current"
+                      i < Math.round(averageRating)
+                        ? "fill-current"
+                        : "fill-none stroke-current"
                     }`}
                     xmlns="http://www.w3.org/2000/svg"
                     viewBox="0 0 24 24"
@@ -225,32 +245,36 @@ const DetailBook = () => {
           className="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700"
         >
           <div className="flex border-b border-gray-200 dark:border-gray-700">
-            {["Mô tả", "Nội dung đánh giá", "Đánh giá", "Đề xuất"].map((tab) => (
-              <button
-                key={tab}
-                onClick={() => {
-                  setActiveTab(tab);
-                  if (tab === "Đánh giá") {
-                    setTimeout(() => {
-                      scrollToReviewForm();
-                    }, 100);
-                  } else if (tab === "Nội dung đánh giá") {
-                    setTimeout(() => {
-                      document.getElementById("review-section")?.scrollIntoView({
-                        behavior: "smooth",
-                      });
-                    }, 100);
-                  }
-                }}
-                className={`px-4 py-2 text-base font-semibold transition-all duration-300 ${
-                  activeTab === tab
-                    ? "text-green-500 border-b-2 border-green-500"
-                    : "text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
-                }`}
-              >
-                {tab}
-              </button>
-            ))}
+            {["Mô tả", "Nội dung đánh giá", "Đánh giá", "Đề xuất"].map(
+              (tab) => (
+                <button
+                  key={tab}
+                  onClick={() => {
+                    setActiveTab(tab);
+                    if (tab === "Đánh giá") {
+                      setTimeout(() => {
+                        scrollToReviewForm();
+                      }, 100);
+                    } else if (tab === "Nội dung đánh giá") {
+                      setTimeout(() => {
+                        document
+                          .getElementById("review-section")
+                          ?.scrollIntoView({
+                            behavior: "smooth",
+                          });
+                      }, 100);
+                    }
+                  }}
+                  className={`px-4 py-2 text-base font-semibold transition-all duration-300 ${
+                    activeTab === tab
+                      ? "text-green-500 border-b-2 border-green-500"
+                      : "text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                  }`}
+                >
+                  {tab}
+                </button>
+              )
+            )}
           </div>
 
           {/* Tab Content */}
