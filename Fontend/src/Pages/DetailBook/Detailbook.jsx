@@ -153,6 +153,10 @@ const DetailBook = () => {
                 {categoryMap[book.category] || "Không rõ"}
               </span>
             </div>
+            <span className="text-lg text-gray-600 dark:text-gray-400">
+                <span className="font-semibold">Số lượng:</span>{" "}
+                {book.quantity || "Không rõ"}
+              </span>
             <div className="flex items-center gap-4">
               <div className="flex text-yellow-400">
                 {[...Array(5)].map((_, i) => (
