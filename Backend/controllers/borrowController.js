@@ -6,13 +6,11 @@ const Book = require("../models/Book");
 const { v4: uuidv4 } = require("uuid");
 
 const borrowController = {
-  // Gửi yêu cầu mượn
   requestBorrow: async (req, res) => {
     try {
       const { bookId } = req.body;
       const userId = req.user.id;
 
-      // Kiểm tra yêu cầu đang chờ xử lý
       const existingRequest = await BorrowRequest.findOne({
         userId,
         bookId,
@@ -39,7 +37,7 @@ const borrowController = {
         });
       }
 
-      // ✅ Kiểm tra sách còn không
+      // Kiểm tra sách còn không
       const book = await Book.findById(bookId);
       if (!book) {
         return res.status(404).json({ message: "Không tìm thấy sách." });
@@ -49,7 +47,7 @@ const borrowController = {
         return res.status(400).json({ message: "Sách đã hết, không thể mượn." });
       }
 
-      // ✅ Tạo yêu cầu mới
+      // Tạo yêu cầu mới
       const request = new BorrowRequest({ userId, bookId, status: "pending" });
       const savedRequest = await request.save();
 
@@ -105,15 +103,15 @@ const borrowController = {
       if (!book)
         return res.status(404).json({ message: "Không tìm thấy sách" });
 
-      // ✅ Kiểm tra sách còn không
+      // Kiểm tra sách còn không
       if (book.quantity <= 0) {
         return res.status(400).json({ message: "Sách đã hết, không thể mượn." });
       }
 
-      // ✅ Số tiền thanh toán chính là giá sách
+      // Số tiền thanh toán chính là giá sách
       const rentalFee = book.price;
 
-      // ✅ Tạo bản ghi thanh toán
+      // Tạo bản ghi thanh toán
       const payment = new Payment({
         userId,
         amount: rentalFee,
@@ -124,7 +122,7 @@ const borrowController = {
 
       await payment.save();
 
-      // ✅ Tạo đơn mượn
+      // Tạo đơn mượn
       const borrowRecord = new BorrowRecord({
         userId: request.userId,
         bookId: request.bookId,
@@ -135,11 +133,11 @@ const borrowController = {
 
       await borrowRecord.save();
 
-      // ✅ Cập nhật trạng thái yêu cầu
+      // Cập nhật trạng thái yêu cầu
       request.status = "paid";
       await request.save();
 
-      // ✅ Giảm số lượng sách
+      // Giảm số lượng sách
       book.quantity -= 1;
       await book.save();
 
@@ -203,14 +201,14 @@ const borrowController = {
       const returnDate = new Date();
       record.returnDate = returnDate;
 
-      // ✅ Tăng lại số lượng sách
+      // Tăng lại số lượng sách
       const book = await Book.findById(record.bookId);
       if (book) {
         book.quantity += 1;
         await book.save();
       }
 
-      // ✅ Tính tiền phạt nếu trễ
+      // Tính tiền phạt nếu trễ
       if (returnDate > record.dueDate) {
         record.status = "overdue";
 
@@ -283,6 +281,52 @@ const borrowController = {
         .json({ message: "Lỗi khi lấy danh sách", error: err.message });
     }
   },
+
+  getTotalRevenue: async (req, res) => {
+    try {
+      const result = await Payment.aggregate([
+        { $match: { status: "success" } },
+        {
+          $group: {
+            _id: null,
+            totalRevenue: { $sum: "$amount" }
+          }
+        }
+      ]);
+
+      const total = result[0]?.totalRevenue || 0;
+      res.status(200).json({ totalRevenue: total });
+    } catch (err) {
+      res.status(500).json({ message: "Lỗi khi tính tổng doanh thu", error: err.message });
+    }
+  },
+
+    // Tổng doanh thu theo ngày
+    getDailyRevenue: async (req, res) => {
+      try {
+        const result = await Payment.aggregate([
+          {
+            $match: { status: "success" }
+          },
+          {
+            $group: {
+              _id: {
+                $dateToString: { format: "%Y-%m-%d", date: "$createdAt" }
+              },
+              totalRevenue: { $sum: "$amount" }
+            }
+          },
+          {
+            $sort: { _id: 1 } // Sắp xếp theo ngày tăng dần
+          }
+        ]);
+  
+        res.status(200).json(result);
+      } catch (err) {
+        res.status(500).json({ message: "Lỗi khi tính tổng doanh thu theo ngày", error: err.message });
+      }
+    },
+  
 };
 
 module.exports = borrowController;

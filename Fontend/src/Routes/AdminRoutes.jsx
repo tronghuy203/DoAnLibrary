@@ -15,6 +15,7 @@ const BorrowBook = lazy(() => import("../Pages/Admin/BorrowBook"));
 const BookReview = lazy(() => import("../Pages/Admin/BookReview"));
 const DocumentReview = lazy(() => import("../Pages/Admin/DocumentReview"));
 const ListCategory = lazy(() => import("../Pages/Admin/ListCategory"));
+const RevenueDashboard = lazy(() => import("../Pages/Admin/RevenueDashboard"));
 
 const AdminRoutes = () => {
   return (
@@ -29,8 +30,9 @@ const AdminRoutes = () => {
             <Route path="users" element={<AdminUserManagement />} />
             <Route path="documents/create" element={<CreateDocument />} />
             <Route path="documents/list" element={<ListDocument />} />
-            <Route path="books/borrow" element={<BorrowBook />} />
-            <Route path="categorys/list" element={<ListCategory />} />
+            <Route path="manage/borrow" element={<BorrowBook />} />
+            <Route path="manage-revenue/revenue" element={<RevenueDashboard  />} />
+            <Route path="books/categorys/list" element={<ListCategory />} />
             <Route path="reviews/books" element={<BookReview />} />
             <Route path="reviews/documents" element={<DocumentReview />} />
           </Route>

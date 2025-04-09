@@ -18,4 +18,9 @@ router.post("/pay-penalty/:penaltyId", middlewareController.verifyToken, borrowC
 
 router.get("/all", middlewareController.verifyAdmin, borrowController.getAllBorrowRecords);
 
+router.get("/revenue/total", middlewareController.verifyAdmin, borrowController.getTotalRevenue);
+
+router.get("/revenue/daily", middlewareController.verifyAdmin, borrowController.getDailyRevenue);
+
+
 module.exports = router;

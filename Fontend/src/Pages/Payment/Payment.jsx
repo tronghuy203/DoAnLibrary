@@ -127,7 +127,7 @@ const PaymentPage = () => {
         </button>
 
         <button
-          onClick={() => navigate(`/book/${requestDetails.bookId?._id || ""}`)}
+          onClick={() => navigate(`/books/${requestDetails.bookId?._id || ""}`)}
           className="w-full mt-4 text-gray-600 hover:text-gray-800 underline"
         >
           Quay lại trang sách

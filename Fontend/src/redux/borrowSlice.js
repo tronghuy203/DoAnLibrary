@@ -9,7 +9,9 @@ const borrowSlice = createSlice({
     borrowRecords: [],
     penalties: [],
     message: "",
-    requestDetails: null
+    requestDetails: null,
+    totalRevenue: 0,
+    dailyRevenue: [],
   },
   reducers: {
     // GET ALL BORROW RECORDS
@@ -46,7 +48,7 @@ const borrowSlice = createSlice({
     },
     getBorrowRequestDetailsSuccess: (state, action) => {
       state.isFetching = false;
-      state.requestDetails = action.payload; 
+      state.requestDetails = action.payload;
     },
     getBorrowRequestDetailsFailed: (state) => {
       state.isFetching = false;
@@ -85,6 +87,34 @@ const borrowSlice = createSlice({
     payPenaltyFailed: (state) => {
       state.error = true;
     },
+
+    // GET TOTAL REVENUE
+    getTotalRevenueStart: (state) => {
+      state.isFetching = true;
+      state.error = false;
+    },
+    getTotalRevenueSuccess: (state, action) => {
+      state.isFetching = false;
+      state.totalRevenue = action.payload;
+    },
+    getTotalRevenueFailed: (state) => {
+      state.isFetching = false;
+      state.error = true;
+    },
+
+    // GET DAILY REVENUE
+    getDailyRevenueStart: (state) => {
+      state.isFetching = true;
+      state.error = false;
+    },
+    getDailyRevenueSuccess: (state, action) => {
+      state.isFetching = false;
+      state.dailyRevenue = action.payload;
+    },
+    getDailyRevenueFailed: (state) => {
+      state.isFetching = false;
+      state.error = true;
+    },
   },
 });
 
@@ -106,6 +136,12 @@ export const {
   confirmReturnFailed,
   payPenaltySuccess,
   payPenaltyFailed,
+  getTotalRevenueStart,
+  getTotalRevenueSuccess,
+  getTotalRevenueFailed,
+  getDailyRevenueStart,
+  getDailyRevenueSuccess,
+  getDailyRevenueFailed,
 } = borrowSlice.actions;
 
 export default borrowSlice.reducer;

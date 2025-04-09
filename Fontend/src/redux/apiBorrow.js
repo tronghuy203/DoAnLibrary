@@ -16,6 +16,12 @@ import {
   getBorrowRequestDetailsStart,
   getBorrowRequestDetailsSuccess,
   getBorrowRequestDetailsFailed,
+  getTotalRevenueStart,
+  getTotalRevenueSuccess,
+  getTotalRevenueFailed,
+  getDailyRevenueFailed,
+  getDailyRevenueSuccess,
+  getDailyRevenueStart,
 } from "./borrowSlice";
 
 export const requestBorrow = async (bookId, accessToken, dispatch, axiosJWT) => {
@@ -180,3 +186,34 @@ export const getAllBorrowRecords = async (accessToken, dispatch, axiosJWT) => {
     console.error("Lỗi khi lấy danh sách đơn mượn:", err);
   }
 };
+
+export const getTotalRevenue = async (accessToken, dispatch, axiosJWT) => {
+  dispatch(getTotalRevenueStart());
+  try {
+    const res = await axiosJWT.get("http://localhost:8000/v1/borrow/revenue/total", {
+      headers: { token: `Bearer ${accessToken}` },
+    });
+    dispatch(getTotalRevenueSuccess(res.data.totalRevenue));
+    return res.data.totalRevenue;
+  } catch (err) {
+    dispatch(getTotalRevenueFailed());
+    console.error("Lỗi khi lấy tổng doanh thu:", err);
+    throw err;
+  }
+};
+
+export const getDailyRevenue = async (accessToken, dispatch, axiosJWT) => {
+  dispatch(getDailyRevenueStart());
+  try {
+    const res = await axiosJWT.get("http://localhost:8000/v1/borrow/revenue/daily", {
+      headers: { token: `Bearer ${accessToken}` },
+    });
+    dispatch(getDailyRevenueSuccess(res.data));
+    return res.data;
+  } catch (err) {
+    dispatch(getDailyRevenueFailed());
+    console.error("Lỗi khi lấy doanh thu theo ngày:", err);
+    throw err;
+  }
+};
+
