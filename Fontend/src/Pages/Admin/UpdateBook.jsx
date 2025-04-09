@@ -5,11 +5,11 @@ import { useDispatch, useSelector } from "react-redux";
 import { useParams, useNavigate } from "react-router-dom";
 import { createAxios } from "../../createInstance";
 import { loginSuccess } from "../../redux/authSlice";
-import { BookOpenIcon, UserIcon, DocumentTextIcon, CurrencyDollarIcon, ArrowLeftIcon, ExclamationCircleIcon, ArrowPathIcon, PhotoIcon, TagIcon, ChevronUpIcon, ChevronDownIcon } from "@heroicons/react/24/outline";
+import { BookOpenIcon, UserIcon, DocumentTextIcon, CurrencyDollarIcon, ArrowLeftIcon, ExclamationCircleIcon, ArrowPathIcon, PhotoIcon, TagIcon, ChevronUpIcon, ChevronDownIcon, HashtagIcon } from "@heroicons/react/24/outline";
 
 const UpdateBook = () => {
   const { bookId } = useParams();
-  const [book, setBook] = useState({ title: "", author: "", description: "", price: "0", category: "", image: null });
+  const [book, setBook] = useState({ title: "", author: "", description: "", price: "0", quantity: "1", category: "", image: null });
   const [previewImage, setPreviewImage] = useState(null);
   const [categories, setCategories] = useState([]);
   const [loading, setLoading] = useState(true);
@@ -21,6 +21,7 @@ const UpdateBook = () => {
   const axiosJWT = useMemo(() => createAxios(user, dispatch, loginSuccess), [user, dispatch]);
 
   useEffect(() => {
+<<<<<<< HEAD
     const fetchBooks = async () => {
       try {
         setLoading(true);
@@ -45,6 +46,8 @@ const UpdateBook = () => {
     };
     fetchBooks();
   }, [bookId, dispatch, user, axiosJWT]);useEffect(() => {
+=======
+>>>>>>> 2d8b23b487c210a9f101c33aee402ab025e93e3e
     const fetchCategories = async () => {
       try {
         const categoryData = await getCategory(user.accessToken, dispatch, axiosJWT);
@@ -54,8 +57,6 @@ const UpdateBook = () => {
       }
     };
 
-    fetchCategories();
-
     const fetchBooks = async () => {
       try {
         setLoading(true);
@@ -64,10 +65,11 @@ const UpdateBook = () => {
         if (foundBook) {
           setBook({
             ...foundBook,
-            price: formatPrice(foundBook.price.toString()), // Format price on load
+            price: formatPrice(foundBook.price.toString()),
+            quantity: foundBook.quantity ? foundBook.quantity.toString() : "1"
           });
           if (foundBook.image) {
-            setPreviewImage(foundBook.image); // Assuming image is a URL
+            setPreviewImage(foundBook.image);
           }
         } else {
           setError("Không tìm thấy sách.");
@@ -78,6 +80,8 @@ const UpdateBook = () => {
         setLoading(false);
       }
     };
+
+    fetchCategories();
     fetchBooks();
   }, [bookId, dispatch, user, axiosJWT]);
 
@@ -87,16 +91,18 @@ const UpdateBook = () => {
   };
 
   const handleChange = (e) => {
-    if (e.target.name === "price") {
-      const rawValue = e.target.value.replace(/\./g, "");
-      const formattedValue = formatPrice(rawValue);
-      setBook({ ...book, price: formattedValue });
-    } else if (e.target.name === "image") {
+    const { name, value } = e.target;
+    if (name === "price" || name === "quantity") {
+      const rawValue = value.replace(/\./g, "");
+      if (!/^\d*$/.test(rawValue)) return;
+      const formattedValue = name === "price" ? formatPrice(rawValue) : rawValue;
+      setBook({ ...book, [name]: formattedValue });
+    } else if (name === "image") {
       const file = e.target.files[0];
       setBook({ ...book, image: file });
       setPreviewImage(URL.createObjectURL(file));
     } else {
-      setBook({ ...book, [e.target.name]: e.target.value });
+      setBook({ ...book, [name]: value });
     }
   };
 
@@ -112,12 +118,22 @@ const UpdateBook = () => {
     setBook({ ...book, price: formatPrice(newValue.toString()) });
   };
 
+  const handleIncreaseQuantity = () => {
+    const newValue = parseInt(book.quantity) + 1;
+    setBook({ ...book, quantity: newValue.toString() });
+  };
+
+  const handleDecreaseQuantity = () => {
+    const newValue = Math.max(1, parseInt(book.quantity) - 1);
+    setBook({ ...book, quantity: newValue.toString() });
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
       const formData = new FormData();
       Object.keys(book).forEach((key) => {
-        if (key === "price") {
+        if (key === "price" || key === "quantity") {
           formData.append(key, book[key].replace(/\./g, ""));
         } else {
           formData.append(key, book[key]);
@@ -221,6 +237,45 @@ const UpdateBook = () => {
         </div>
 
         <div className="mb-6">
+          <label className="block text-gray-200 text-sm font-medium mb-2" htmlFor="quantity">
+            Số lượng
+          </label>
+          <div className="relative flex items-center">
+            <HashtagIcon className="absolute left-3 w-5 h-5 text-cyan-400" />
+            <input
+              id="quantity"
+              name="quantity"
+              value={book.quantity}
+              onChange={handleChange}
+              min="1"
+              required
+              className="w-full pl-10 pr-16 py-3 bg-gray-800 text-gray-100 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-gray-500 transition-all duration-200"
+              onKeyPress={(e) => {
+                if (!/[0-9]/.test(e.key)) {
+                  e.preventDefault();
+                }
+              }}
+            />
+            <div className="absolute right-2 flex flex-col">
+              <button
+                type="button"
+                onClick={handleIncreaseQuantity}
+                className="p-0.5 text-cyan-400 hover:text-cyan-300 transition-colors duration-200"
+              >
+                <ChevronUpIcon className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={handleDecreaseQuantity}
+                className="p-0.5 text-cyan-400 hover:text-cyan-300 transition-colors duration-200"
+              >
+                <ChevronDownIcon className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+
+        <div className="mb-6">
           <label className="block text-gray-200 text-sm font-medium mb-2" htmlFor="price">
             Giá
           </label>
@@ -304,8 +359,7 @@ const UpdateBook = () => {
                 </div>
               ) : (
                 <div className="text-center">
-                  <PhotoIcon 
-                  Icon className="w-12 h-12 mx-auto text-cyan-400 group-hover:text-cyan-300 transition-colors duration-200" />
+                  <PhotoIcon className="w-12 h-12 mx-auto text-cyan-400 group-hover:text-cyan-300 transition-colors duration-200" />
                   <p className="mt-2 text-gray-400 group-hover:text-gray-300 transition-colors duration-200">
                     Nhấp để chọn hoặc kéo ảnh vào đây
                   </p>

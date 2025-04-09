@@ -15,6 +15,7 @@ import {
   TagIcon,
   ChevronUpIcon,
   ChevronDownIcon,
+  HashtagIcon,
 } from "@heroicons/react/24/outline";
 
 const CreateBook = () => {
@@ -23,6 +24,7 @@ const CreateBook = () => {
     author: "",
     description: "",
     price: "0",
+    quantity: "1",
     category: "",
     image: null,
   });
@@ -63,14 +65,18 @@ const CreateBook = () => {
   };
 
   const handleChange = (e) => {
-    if (e.target.name === "price") {
-      const rawValue = e.target.value.replace(/\./g, "");
+    const { name, value } = e.target;
+  
+    if (name === "price" || name === "quantity") {
+      const rawValue = value.replace(/\./g, "");
+      if (!/^\d*$/.test(rawValue)) return; // chỉ cho nhập số
       const formattedValue = formatPrice(rawValue);
-      setBook({ ...book, price: formattedValue });
+      setBook({ ...book, [name]: formattedValue });
     } else {
-      setBook({ ...book, [e.target.name]: e.target.value });
+      setBook({ ...book, [name]: value });
     }
   };
+  
 
   const handleIncrease = () => {
     const rawValue = parseInt(book.price.replace(/\./g, "")) || 0;
@@ -83,6 +89,15 @@ const CreateBook = () => {
     const newValue = Math.max(0, rawValue - 1000);
     setBook({ ...book, price: formatPrice(newValue.toString()) });
   };
+
+  const handleIncreaseQuantity = () => {
+    setBook({ ...book, quantity: book.quantity + 1 });
+  };
+  
+  const handleDecreaseQuantity = () => {
+    setBook({ ...book, quantity: Math.max(1, book.quantity - 1) }); // Không giảm dưới 1
+  };
+  
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -102,7 +117,7 @@ const CreateBook = () => {
 
       const formData = new FormData();
       Object.keys(book).forEach((key) => {
-        if (key === "price") {
+        if (key === "price" || key === "quantity") {
           formData.append(key, book[key].replace(/\./g, ""));
         } else {
           formData.append(key, book[key]);
@@ -205,6 +220,47 @@ const CreateBook = () => {
             />
           </div>
         </div>
+
+        <div className="mb-6">
+          <label className="block text-gray-200 text-sm font-medium mb-2" htmlFor="quantity">
+            Số lượng
+          </label>
+          <div className="relative flex items-center">
+          <HashtagIcon className="absolute left-3 w-5 h-5 text-cyan-400" />
+            <input
+              id="quantity"
+              name="quantity"
+              value={book.quantity}
+              onChange={handleChange}
+              min="1"
+              required
+              className="w-full pl-10 pr-16 py-3 bg-gray-800 text-gray-100 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-gray-500 transition-all duration-200"
+              onKeyPress={(e) => {
+                if (!/[0-9]/.test(e.key)) {
+                  e.preventDefault();
+                }
+              }}
+            />
+            
+            <div className="absolute right-2 flex flex-col">
+              <button
+                type="button"
+                onClick={handleIncreaseQuantity}
+                className="p-0.5 text-cyan-400 hover:text-cyan-300 transition-colors duration-200"
+              >
+                <ChevronUpIcon className="w-4 h-4" />
+              </button>
+              <button
+                type="button"
+                onClick={handleDecreaseQuantity}
+                className="p-0.5 text-cyan-400 hover:text-cyan-300 transition-colors duration-200"
+              >
+                <ChevronDownIcon className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
+        </div>
+
 
         <div className="mb-6">
           <label className="block text-gray-200 text-sm font-medium mb-2" htmlFor="price">

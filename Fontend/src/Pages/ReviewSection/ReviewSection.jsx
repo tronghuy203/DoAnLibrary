@@ -74,8 +74,15 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
         stats[review.rating]++;
       });
       setRatingStats(stats);
+
+      // Kiểm tra xem người dùng đã có đánh giá chưa để disable form nếu cần
+      const userReview = reviews.find((review) => review.userId?._id === user?._id);
+      if (userReview && !editingReviewId) {
+        setRating(0);
+        setComment("");
+      }
     }
-  }, [reviews, onReviewsUpdate]);
+  }, [reviews, onReviewsUpdate, user, editingReviewId]);
 
   const handleEditReview = (review) => {
     setComment(review.comment);
@@ -142,6 +149,12 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
         await updateReview(editingReviewId, reviewData, user.accessToken, dispatch, axiosJWT);
         setEditingReviewId(null);
       } else {
+        // Kiểm tra xem người dùng đã có đánh giá trước đó chưa
+        const existingReview = reviews.find((review) => review.userId?._id === user._id);
+        if (existingReview) {
+          alert("Bạn đã đánh giá trước đó. Vui lòng xóa đánh giá cũ để tạo đánh giá mới!");
+          return;
+        }
         await addReview(reviewData, user.accessToken, dispatch, axiosJWT);
       }
       setComment("");
@@ -149,6 +162,7 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
       getReviews(type, itemId, dispatch);
     } catch (err) {
       console.error("Lỗi gửi đánh giá:", err);
+      alert("Có lỗi xảy ra khi gửi đánh giá!");
     }
   };
 
@@ -156,6 +170,9 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
     if (window.confirm("Xóa đánh giá này?")) {
       try {
         await deleteReview(id, { userId: user._id }, user.accessToken, dispatch, axiosJWT);
+        setEditingReviewId(null); // Reset nếu đang chỉnh sửa
+        setComment("");
+        setRating(0);
         getReviews(type, itemId, dispatch);
       } catch (err) {
         console.error("Lỗi xóa đánh giá:", err);
@@ -253,6 +270,7 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
   };
 
   const isAdmin = user?.admin === true;
+  const userHasReviewed = reviews?.some((review) => review.userId?._id === user?._id);
 
   return (
     <div className="mt-6">
@@ -639,10 +657,14 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
             return (
               <svg
                 key={starValue}
-                onClick={() => setRating(starValue)}
-                onMouseEnter={() => setHoverRating(starValue)}
-                onMouseLeave={() => setHoverRating(0)}
-                className={`w-8 h-8 cursor-pointer transition-all duration-200 transform hover:scale-110 ${
+                onClick={() => !userHasReviewed || editingReviewId ? setRating(starValue) : null}
+                onMouseEnter={() => !userHasReviewed || editingReviewId ? setHoverRating(starValue) : null}
+                onMouseLeave={() => !userHasReviewed || editingReviewId ? setHoverRating(0) : null}
+                className={`w-8 h-8 transition-all duration-200 transform hover:scale-110 ${
+                  userHasReviewed && !editingReviewId
+                    ? "cursor-not-allowed opacity-50"
+                    : "cursor-pointer"
+                } ${
                   starValue <= (hoverRating || rating)
                     ? "text-yellow-400 fill-current"
                     : "text-gray-300 dark:text-gray-600 fill-none stroke-current"
@@ -660,15 +682,27 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
         <textarea
           ref={commentRef}
           value={comment}
-          onChange={(e) => setComment(e.target.value)}
-          className="border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 w-full p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-all duration-300"
+          onChange={(e) => (!userHasReviewed || editingReviewId ? setComment(e.target.value) : null)}
+          className={`border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 w-full p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-all duration-300 ${
+            userHasReviewed && !editingReviewId ? "cursor-not-allowed opacity-50" : ""
+          }`}
           rows="4"
-          placeholder="Viết bình luận của bạn..."
+          placeholder={
+            userHasReviewed && !editingReviewId
+              ? "Bạn đã đánh giá trước đó. Xóa đánh giá cũ để tạo mới."
+              : "Viết bình luận của bạn..."
+          }
+          disabled={userHasReviewed && !editingReviewId}
         />
 
         <button
           type="submit"
-          className="bg-blue-600 text-white px-6 py-2 mt-4 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-500 font-medium transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg"
+          className={`bg-blue-600 text-white px-6 py-2 mt-4 rounded-lg font-medium transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg ${
+            userHasReviewed && !editingReviewId
+              ? "opacity-50 cursor-not-allowed"
+              : "hover:bg-blue-700 dark:hover:bg-blue-500"
+          }`}
+          disabled={userHasReviewed && !editingReviewId}
         >
           {editingReviewId ? "Cập nhật đánh giá" : "Gửi đánh giá"}
         </button>
