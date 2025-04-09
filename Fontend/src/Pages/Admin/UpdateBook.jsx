@@ -21,7 +21,6 @@ const UpdateBook = () => {
   const axiosJWT = useMemo(() => createAxios(user, dispatch, loginSuccess), [user, dispatch]);
 
   useEffect(() => {
-<<<<<<< HEAD
     const fetchBooks = async () => {
       try {
         setLoading(true);
@@ -46,8 +45,6 @@ const UpdateBook = () => {
     };
     fetchBooks();
   }, [bookId, dispatch, user, axiosJWT]);useEffect(() => {
-=======
->>>>>>> 2d8b23b487c210a9f101c33aee402ab025e93e3e
     const fetchCategories = async () => {
       try {
         const categoryData = await getCategory(user.accessToken, dispatch, axiosJWT);
