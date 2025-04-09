@@ -74,8 +74,15 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
         stats[review.rating]++;
       });
       setRatingStats(stats);
+
+      // Kiểm tra xem người dùng đã có đánh giá chưa để disable form nếu cần
+      const userReview = reviews.find((review) => review.userId?._id === user?._id);
+      if (userReview && !editingReviewId) {
+        setRating(0);
+        setComment("");
+      }
     }
-  }, [reviews, onReviewsUpdate]);
+  }, [reviews, onReviewsUpdate, user, editingReviewId]);
 
   const handleEditReview = (review) => {
     setComment(review.comment);
@@ -89,7 +96,7 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
     setReplyInput({ ...replyInput, [reviewId]: reply.comment });
     setEditingReplyId(reply._id);
     setShowReplyOptions({});
-    replyRefs.current[reply._id]?.scrollIntoView({ behavior: "smooth" }); // Cuộn đến ô phản hồi cụ thể
+    replyRefs.current[reply._id]?.scrollIntoView({ behavior: "smooth" });
   };
 
   const handleSubmitReport = (id, isReply = false) => {
@@ -105,22 +112,22 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
   const handleLike = (id, isReply = false) => {
     setLikes((prev) => ({
       ...prev,
-      [id]: prev[id] === 1 ? 0 : 1, // Toggle like
+      [id]: prev[id] === 1 ? 0 : 1,
     }));
     setDislikes((prev) => ({
       ...prev,
-      [id]: prev[id] === 1 ? 0 : prev[id], // Tắt dislike nếu đang bật
+      [id]: prev[id] === 1 ? 0 : prev[id],
     }));
   };
 
   const handleDislike = (id, isReply = false) => {
     setDislikes((prev) => ({
       ...prev,
-      [id]: prev[id] === 1 ? 0 : 1, // Toggle dislike
+      [id]: prev[id] === 1 ? 0 : 1,
     }));
     setLikes((prev) => ({
       ...prev,
-      [id]: prev[id] === 1 ? 0 : prev[id], // Tắt like nếu đang bật
+      [id]: prev[id] === 1 ? 0 : prev[id],
     }));
   };
 
@@ -142,6 +149,12 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
         await updateReview(editingReviewId, reviewData, user.accessToken, dispatch, axiosJWT);
         setEditingReviewId(null);
       } else {
+        // Kiểm tra xem người dùng đã có đánh giá trước đó chưa
+        const existingReview = reviews.find((review) => review.userId?._id === user._id);
+        if (existingReview) {
+          alert("Bạn đã đánh giá trước đó. Vui lòng xóa đánh giá cũ để tạo đánh giá mới!");
+          return;
+        }
         await addReview(reviewData, user.accessToken, dispatch, axiosJWT);
       }
       setComment("");
@@ -149,6 +162,7 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
       getReviews(type, itemId, dispatch);
     } catch (err) {
       console.error("Lỗi gửi đánh giá:", err);
+      alert("Có lỗi xảy ra khi gửi đánh giá!");
     }
   };
 
@@ -156,6 +170,9 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
     if (window.confirm("Xóa đánh giá này?")) {
       try {
         await deleteReview(id, { userId: user._id }, user.accessToken, dispatch, axiosJWT);
+        setEditingReviewId(null); // Reset nếu đang chỉnh sửa
+        setComment("");
+        setRating(0);
         getReviews(type, itemId, dispatch);
       } catch (err) {
         console.error("Lỗi xóa đánh giá:", err);
@@ -253,6 +270,7 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
   };
 
   const isAdmin = user?.admin === true;
+  const userHasReviewed = reviews?.some((review) => review.userId?._id === user?._id);
 
   return (
     <div className="mt-6">
@@ -373,34 +391,33 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
           </div>
           <p className="text-gray-700 dark:text-gray-300">{review.comment}</p>
 
-          {/* Like/Dislike/Reply */}
           <div className="flex gap-4 mt-2">
-          <button
-            onClick={() => handleLike(review._id)}
-            className={`flex items-center gap-1 transition-colors ${
-              likes[review._id] === 1
-                ? "text-blue-500"
-                : "text-gray-500 hover:text-blue-500"
-            }`}
-          >
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.91l-.01-.01L23 10z"/>
-            </svg>
-            <span>Thích ({likes[review._id] || 0})</span>
-          </button>
-          <button
-            onClick={() => handleDislike(review._id)}
-            className={`flex items-center gap-1 transition-colors ${
-              dislikes[review._id] === 1
-                ? "text-red-500"
-                : "text-gray-500 hover:text-red-500"
-            }`}
-          >
-            <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path d="M15 3H6c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14.73v1.91l.01.01L1 14c0 1.1.9 2 2 2h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 23l6.59-6.59c.36-.36.58-.86.58-1.41V5c0-1.1-.9-2-2-2zm4 0v12h4V3h-4z"/>
-            </svg>
-            <span>Không thích ({dislikes[review._id] || 0})</span>
-          </button>
+            <button
+              onClick={() => handleLike(review._id)}
+              className={`flex items-center gap-1 transition-colors ${
+                likes[review._id] === 1
+                  ? "text-blue-500"
+                  : "text-gray-500 hover:text-blue-500"
+              }`}
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.91l-.01-.01L23 10z"/>
+              </svg>
+              <span>Thích ({likes[review._id] || 0})</span>
+            </button>
+            <button
+              onClick={() => handleDislike(review._id)}
+              className={`flex items-center gap-1 transition-colors ${
+                dislikes[review._id] === 1
+                  ? "text-red-500"
+                  : "text-gray-500 hover:text-red-500"
+              }`}
+            >
+              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                <path d="M15 3H6c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14.73v1.91l.01.01L1 14c0 1.1.9 2 2 2h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 23l6.59-6.59c.36-.36.58-.86.58-1.41V5c0-1.1-.9-2-2-2zm4 0v12h4V3h-4z"/>
+              </svg>
+              <span>Không thích ({dislikes[review._id] || 0})</span>
+            </button>
             <button
               onClick={() => toggleShowReplies(review._id)}
               className="flex items-center gap-1 text-gray-500 hover:text-green-500 transition-colors"
@@ -490,34 +507,33 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
                       </div>
                     )}
                   </div>
-                  {/* Like/Dislike/Reply for Replies */}
                   <div className="flex gap-4 mt-2">
-                <button
-                  onClick={() => handleLike(reply._id, true)}
-                  className={`flex items-center gap-1 transition-colors ${
-                    likes[reply._id] === 1
-                      ? "text-blue-500"
-                      : "text-gray-500 hover:text-blue-500"
-                  }`}
-                >
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.91l-.01-.01L23 10z"/>
-                  </svg>
-                  <span>Thích ({likes[reply._id] || 0})</span>
-                </button>
-                <button
-                  onClick={() => handleDislike(reply._id, true)}
-                  className={`flex items-center gap-1 transition-colors ${
-                    dislikes[reply._id] === 1
-                      ? "text-red-500"
-                      : "text-gray-500 hover:text-red-500"
-                  }`}
-                >
-                  <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                    <path d="M15 3H6c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14.73v1.91l.01.01L1 14c0 1.1.9 2 2 2h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 23l6.59-6.59c.36-.36.58-.86.58-1.41V5c0-1.1-.9-2-2-2zm4 0v12h4V3h-4z"/>
-                  </svg>
-                  <span>Không thích ({dislikes[reply._id] || 0})</span>
-                </button>
+                    <button
+                      onClick={() => handleLike(reply._id, true)}
+                      className={`flex items-center gap-1 transition-colors ${
+                        likes[reply._id] === 1
+                          ? "text-blue-500"
+                          : "text-gray-500 hover:text-blue-500"
+                      }`}
+                    >
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.91l-.01-.01L23 10z"/>
+                      </svg>
+                      <span>Thích ({likes[reply._id] || 0})</span>
+                    </button>
+                    <button
+                      onClick={() => handleDislike(reply._id, true)}
+                      className={`flex items-center gap-1 transition-colors ${
+                        dislikes[reply._id] === 1
+                          ? "text-red-500"
+                          : "text-gray-500 hover:text-red-500"
+                      }`}
+                    >
+                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                        <path d="M15 3H6c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14.73v1.91l.01.01L1 14c0 1.1.9 2 2 2h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 23l6.59-6.59c.36-.36.58-.86.58-1.41V5c0-1.1-.9-2-2-2zm4 0v12h4V3h-4z"/>
+                      </svg>
+                      <span>Không thích ({dislikes[reply._id] || 0})</span>
+                    </button>
                     <button
                       onClick={() => toggleShowReplies(review._id)}
                       className="flex items-center gap-1 text-gray-500 hover:text-green-500 transition-colors"
@@ -573,7 +589,6 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
             </div>
           )}
 
-          {/* Report Form for Review */}
           {showReportForm === review._id && (
             <div className="mt-4 p-4 bg-white dark:bg-gray-800 rounded-lg border border-gray-200 dark:border-gray-700 animate-fade-in">
               <h4 className="font-semibold text-gray-900 dark:text-white">Báo cáo đánh giá</h4>
@@ -640,10 +655,14 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
             return (
               <svg
                 key={starValue}
-                onClick={() => setRating(starValue)}
-                onMouseEnter={() => setHoverRating(starValue)}
-                onMouseLeave={() => setHoverRating(0)}
-                className={`w-8 h-8 cursor-pointer transition-all duration-200 transform hover:scale-110 ${
+                onClick={() => !userHasReviewed || editingReviewId ? setRating(starValue) : null}
+                onMouseEnter={() => !userHasReviewed || editingReviewId ? setHoverRating(starValue) : null}
+                onMouseLeave={() => !userHasReviewed || editingReviewId ? setHoverRating(0) : null}
+                className={`w-8 h-8 transition-all duration-200 transform hover:scale-110 ${
+                  userHasReviewed && !editingReviewId
+                    ? "cursor-not-allowed opacity-50"
+                    : "cursor-pointer"
+                } ${
                   starValue <= (hoverRating || rating)
                     ? "text-yellow-400 fill-current"
                     : "text-gray-300 dark:text-gray-600 fill-none stroke-current"
@@ -661,21 +680,32 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
         <textarea
           ref={commentRef}
           value={comment}
-          onChange={(e) => setComment(e.target.value)}
-          className="border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 w-full p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-all duration-300"
+          onChange={(e) => (!userHasReviewed || editingReviewId ? setComment(e.target.value) : null)}
+          className={`border border-gray-300 dark:border-gray-600 bg-white dark:bg-gray-700 text-gray-900 dark:text-gray-100 w-full p-3 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 transition-all duration-300 ${
+            userHasReviewed && !editingReviewId ? "cursor-not-allowed opacity-50" : ""
+          }`}
           rows="4"
-          placeholder="Viết bình luận của bạn..."
+          placeholder={
+            userHasReviewed && !editingReviewId
+              ? "Bạn đã đánh giá trước đó. Xóa đánh giá cũ để tạo mới."
+              : "Viết bình luận của bạn..."
+          }
+          disabled={userHasReviewed && !editingReviewId}
         />
 
         <button
           type="submit"
-          className="bg-blue-600 text-white px-6 py-2 mt-4 rounded-lg hover:bg-blue-700 dark:hover:bg-blue-500 font-medium transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg"
+          className={`bg-blue-600 text-white px-6 py-2 mt-4 rounded-lg font-medium transition-all duration-200 transform hover:scale-105 shadow-md hover:shadow-lg ${
+            userHasReviewed && !editingReviewId
+              ? "opacity-50 cursor-not-allowed"
+              : "hover:bg-blue-700 dark:hover:bg-blue-500"
+          }`}
+          disabled={userHasReviewed && !editingReviewId}
         >
           {editingReviewId ? "Cập nhật đánh giá" : "Gửi đánh giá"}
         </button>
       </form>
 
-      {/* Report Form for Reply (outside the review loop) */}
       {showReportForm && !filteredReviews.some((r) => r._id === showReportForm) && (
         <div className="fixed inset-0 flex items-center justify-center bg-black bg-opacity-50 z-50">
           <div className="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-96 animate-fade-in border border-gray-200 dark:border-gray-700">
