@@ -19,7 +19,8 @@ import {
 const AdminLayout = () => {
   const [isBookMenuOpen, setIsBookMenuOpen] = useState(false);
   const [isDocumentMenuOpen, setIsDocumentMenuOpen] = useState(false);
-  const [isReviewMenuOpen, setIsReviewMenuOpen] = useState(false); // State cho dropdown đánh giá
+  const [isReviewMenuOpen, setIsReviewMenuOpen] = useState(false);
+  const [isRevenueOpen, setIsRevenueOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const location = useLocation();
   const navigate = useNavigate();
@@ -108,9 +109,9 @@ const AdminLayout = () => {
                 <ul className="pl-8 mt-2 space-y-2">
                   <li>
                     <Link
-                      to="/admin/categorys/list"
+                      to="/admin/books/categorys/list"
                       className={`flex items-center gap-3 py-2 px-4 rounded-lg transition duration-200 ${
-                        location.pathname === "/admin/categorys/list"
+                        location.pathname === "/admin/books/categorys/list"
                           ? "bg-blue-600 text-white shadow-sm"
                           : "text-gray-400 hover:bg-gray-700 hover:text-white"
                       }`}
@@ -147,6 +148,33 @@ const AdminLayout = () => {
                   </li>
                 </ul>
               )}
+            </li>
+
+            <li>
+              <Link
+                to="/admin/manage/borrow"
+                className={`flex items-center gap-3 py-3 px-4 rounded-lg transition duration-200 ${
+                  location.pathname === "/admin/manage/borrow"
+                    ? "bg-blue-600 text-white shadow-md"
+                    : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                }`}
+              >
+                <svg
+                  className="w-5 h-5"
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                  xmlns="http://www.w3.org/2000/svg"
+                >
+                  <path
+                    strokeLinecap="round"
+                    strokeLinejoin="round"
+                    strokeWidth="2"
+                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                  />
+                </svg>
+                <span>Quản lý mượn, trả</span>
+              </Link>
             </li>
 
             <li>
@@ -250,6 +278,45 @@ const AdminLayout = () => {
                   </li>
                 </ul>
               )}
+            </li>            
+
+            <li>
+              <div
+                className={`flex items-center justify-between py-3 px-4 rounded-lg cursor-pointer transition duration-200 ${
+                  location.pathname.startsWith("/admin/manage-revenue")
+                    ? "bg-blue-600 text-white shadow-md"
+                    : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                }`}
+                onClick={() => setIsRevenueOpen(!isRevenueOpen)}
+              >
+                <div className="flex items-center gap-3">
+                  <ChatBubbleLeftRightIcon className="w-5 h-5" />
+                  <span>Quản lý doanh thu</span>
+                </div>
+                {isRevenueOpen ? (
+                  <ChevronDownIcon className="w-4 h-4 text-white transition-transform duration-200" />
+                ) : (
+                  <ChevronRightIcon className="w-4 h-4 text-white transition-transform duration-200" />
+                )}
+              </div>
+              {isRevenueOpen && (
+                <ul className="pl-8 mt-2 space-y-2">
+                  <li>
+                    <Link
+                      to="/admin/manage-revenue/revenue"
+                      className={`flex items-center gap-3 py-2 px-4 rounded-lg transition duration-200 ${
+                        location.pathname === "/admin/manage-revenue/revenue"
+                          ? "bg-blue-600 text-white shadow-sm"
+                          : "text-gray-400 hover:bg-gray-700 hover:text-white"
+                      }`}
+                    >
+                      <BookOpenIcon className="w-5 h-5" />
+                      <span>Doanh thu sánh</span>
+                    </Link>
+                  </li>
+                
+                </ul>
+              )}
             </li>
 
             <li>
@@ -312,7 +379,7 @@ const AdminLayout = () => {
         </svg>
       </button>
 
-      <main className="flex-1 p-6 lg:ml-0">
+      <main className="flex-1 lg:ml-0">
         <Outlet />
       </main>
     </div>

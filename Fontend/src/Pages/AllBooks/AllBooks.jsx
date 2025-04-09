@@ -76,6 +76,8 @@ const AllBooks = () => {
 
   const filteredBooks = books?.filter((book) => {
     const matchesSearch = book.title.toLowerCase().includes(searchQuery.toLowerCase());
+    const avgRating = parseFloat(reviewStats[book._id]?.averageRating || 0);
+
     return (
       matchesSearch &&
       (selectedCategory === "all" || book.category === selectedCategory) &&
@@ -85,8 +87,8 @@ const AllBooks = () => {
         (selectedPriceRange === "high" && book.price > 500000)) &&
       (selectedAuthor === "all" || book.author === selectedAuthor) &&
       (selectedRating === "all" ||
-        (selectedRating === "4+" && book.rating >= 4) ||
-        (selectedRating === "3+" && book.rating >= 3))
+        (selectedRating === "4+" && avgRating  >= 4) ||
+        (selectedRating === "3+" && avgRating  >= 3))
     );
   });
 

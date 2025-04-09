@@ -5,6 +5,7 @@ import bookReducer from "./bookSlice";
 import documentReducer from "./documentSlice";
 import reviewReducer from "./reviewSlice";
 import categoryReducer from "./categorySlice";
+import borrowReducer from "./borrowSlice";
 
 import {
   persistStore,
@@ -23,7 +24,7 @@ const persistConfig = {
   version: 1,
   storage,
 };
-const rootReducer = combineReducers({ auth: authReducer, users: userReducer, books: bookReducer,document: documentReducer,reviews: reviewReducer,categories: categoryReducer});
+const rootReducer = combineReducers({ auth: authReducer, users: userReducer, books: bookReducer,document: documentReducer,reviews: reviewReducer,categories: categoryReducer,borrow: borrowReducer});
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 
 export const store = configureStore({

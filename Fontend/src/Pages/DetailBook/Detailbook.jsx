@@ -6,6 +6,7 @@ import { getCategory } from "../../redux/apiCategory";
 import { createAxios } from "../../createInstance";
 import { FaShareAlt, FaFacebook, FaInstagram, FaComment } from "react-icons/fa";
 import ReviewSection from "../ReviewSection/ReviewSection";
+import { requestBorrow } from "../../redux/apiBorrow";
 
 const DetailBook = () => {
   const { id } = useParams();
@@ -35,6 +36,24 @@ const DetailBook = () => {
     return map;
   }, [categories]);
 
+  const handleBorrowRequest = async () => {
+    if (!book._id || !user.accessToken) {
+      alert("Thiếu thông tin sách hoặc token. Vui lòng đăng nhập lại!");
+      return;
+    }
+    try {
+      const borrowData = await requestBorrow(book._id, user.accessToken, dispatch, axiosJWT);
+      if (!borrowData._id) {
+        throw new Error("Không nhận được requestId từ server!");
+      }
+      navigate(`/payment/${borrowData._id}`);
+    } catch (error) {
+      const errorMessage = error.response?.data?.message || "Đã xảy ra lỗi khi gửi yêu cầu mượn sách. Vui lòng thử lại!";
+      console.error("Lỗi khi mượn sách:", error.response?.data || error.message);
+      alert(errorMessage);
+    }
+  };
+  
   useEffect(() => {
     if (!user) {
       navigate("/login");
@@ -153,6 +172,10 @@ const DetailBook = () => {
                 {categoryMap[book.category] || "Không rõ"}
               </span>
             </div>
+            <span className="text-lg text-gray-600 dark:text-gray-400">
+                <span className="font-semibold">Số lượng:</span>{" "}
+                {book.quantity || "Không rõ"}
+              </span>
             <div className="flex items-center gap-4">
               <div className="flex text-yellow-400">
                 {[...Array(5)].map((_, i) => (
@@ -192,11 +215,13 @@ const DetailBook = () => {
               </span>
             </div>
             <div className="flex flex-col sm:flex-row gap-4 relative">
-              <Link to="/cart">
-                <button className="bg-orange-500 text-white font-semibold py-3 px-8 rounded-lg hover:bg-orange-600 transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1">
-                  Mua ngay
+             
+                <button 
+                  onClick={handleBorrowRequest}
+                  className="bg-orange-500 text-white font-semibold py-3 px-8 rounded-lg hover:bg-orange-600 transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1">
+                  Mượn sách ngay
                 </button>
-              </Link>
+              
               <div className="mt-3 relative">
                 <button
                   onClick={() => setShowShareOptions(!showShareOptions)}
