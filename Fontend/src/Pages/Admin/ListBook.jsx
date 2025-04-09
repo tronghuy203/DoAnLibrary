@@ -106,11 +106,12 @@ const ListBook = () => {
           </div>
         ) : (
           <div className="bg-gray-800 rounded-xl shadow-md border border-gray-700/50 overflow-hidden">
-            <div className="hidden sm:grid sm:grid-cols-[0.5fr_1fr_1fr_1fr_1fr_1fr] bg-gray-700 text-gray-200 font-semibold p-4">
+            <div className="hidden sm:grid sm:grid-cols-[0.5fr_1fr_1fr_1fr_1fr_1fr_1fr] bg-gray-700 text-gray-200 font-semibold p-4">
               <div className="text-base">Ảnh</div>
               <div className="text-base">Tiêu đề</div>
               <div className="text-base">Tác giả</div>
               <div className="text-base">Danh mục</div>
+              <div className="text-base">Số lượng</div>
               <div className="text-base">Giá (VND)</div>
               <div className="text-base">Hành động</div>
             </div>
@@ -119,7 +120,7 @@ const ListBook = () => {
               {currentBooks.map((book) => (
                 <div
                   key={book._id}
-                  className="flex flex-col sm:grid sm:grid-cols-[0.5fr_1fr_1fr_1fr_1fr_1fr] p-4 hover:bg-gray-750 hover:-translate-y-1 transition-all duration-300 animate-slide-in"
+                  className="flex flex-col sm:grid sm:grid-cols-[0.5fr_1fr_1fr_1fr_1fr_1fr_1fr] p-4 hover:bg-gray-750 hover:-translate-y-1 transition-all duration-300 animate-slide-in"
                 >
                   <div className="py-2 flex items-center">
                     <span className="sm:hidden font-semibold text-cyan-400 mr-2">Ảnh:</span>
@@ -148,6 +149,10 @@ const ListBook = () => {
                     </span>
                   </div>
                   <div className="py-2 text-gray-200 flex items-center">
+                    <span className="sm:hidden font-semibold text-cyan-400 mr-2">Số lượng:</span>
+                    <span className="text-base ml-8">{book.quantity.toLocaleString("vi-VN")}</span>
+                  </div>
+                  <div className="py-2 text-gray-200 flex items-center">
                     <span className="sm:hidden font-semibold text-cyan-400 mr-2">Giá:</span>
                     <span className="text-base">{book.price.toLocaleString("vi-VN")}</span>
                   </div>
@@ -155,7 +160,7 @@ const ListBook = () => {
                     <Link to={`/admin/books/update/${book._id}`}>
                       <button className="bg-amber-500 hover:bg-amber-600 text-white font-semibold py-1 px-3 rounded-md transition-all duration-200 hover:shadow-md flex items-center gap-1 text-sm">
                         <PencilIcon className="w-4 h-4" />
-                        Cập nhật
+                        Sửa
                       </button>
                     </Link>
                     <button
