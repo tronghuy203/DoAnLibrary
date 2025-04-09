@@ -120,7 +120,7 @@ const ListBook = () => {
                   <div className="py-2 flex items-center">
                     <span className="sm:hidden font-semibold text-cyan-400 mr-2">Ảnh:</span>
                     <img
-                      src={book.image || "https://via.placeholder.com/100"}
+                      src={book.image || "https://png.pngtree.com/png-vector/20220220/ourmid/pngtree-vector-design-with-pattern-element-for-minimalisticluxurious-cover-menu-invitation-card-bannerbook-vector-png-image_34179868.jpg"}
                       alt={book.title}
                       className="w-12 h-15 object-cover rounded-md"
                     />

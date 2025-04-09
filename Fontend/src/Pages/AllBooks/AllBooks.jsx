@@ -77,6 +77,8 @@ const AllBooks = () => {
 
   const filteredBooks = books?.filter((book) => {
     const matchesSearch = book.title.toLowerCase().includes(searchQuery.toLowerCase());
+    const avgRating = parseFloat(reviewStats[book._id]?.averageRating || 0);
+
     return (
       matchesSearch &&
       (selectedCategory === "all" || book.category === selectedCategory) &&
@@ -86,8 +88,8 @@ const AllBooks = () => {
         (selectedPriceRange === "high" && book.price > 500000)) &&
       (selectedAuthor === "all" || book.author === selectedAuthor) &&
       (selectedRating === "all" ||
-        (selectedRating === "4+" && book.rating >= 4) ||
-        (selectedRating === "3+" && book.rating >= 3))
+        (selectedRating === "4+" && avgRating  >= 4) ||
+        (selectedRating === "3+" && avgRating  >= 3))
     );
   });
 
@@ -186,7 +188,7 @@ const AllBooks = () => {
                 <li key={book._id} className="bg-white dark:bg-zinc-800 rounded-2xl shadow-lg overflow-hidden transform hover:scale-105 transition-all duration-300">
                   <Link to={`/books/${book._id}`}>
                     <img
-                      src={book.image?.trim() ? book.image : "https://via.placeholder.com/150"}
+                      src={book.image?.trim() ? book.image : "https://png.pngtree.com/png-vector/20220220/ourmid/pngtree-vector-design-with-pattern-element-for-minimalisticluxurious-cover-menu-invitation-card-bannerbook-vector-png-image_34179868.jpg"}
                       alt={book.title}
                       className="w-full h-64 object-cover"
                     />
