@@ -3,7 +3,7 @@ import { useState } from "react";
 import { loginUser, googleLogin,facebookLogin } from "../../redux/apiRequest";
 import { useDispatch } from "react-redux";
 import anhnen from "../../Assets/anhnen.jpg";
-import { FcGoogle } from "react-icons/fc";
+// import { FcGoogle } from "react-icons/fc";
 import { FaFacebook } from "react-icons/fa";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { GoogleOAuthProvider, GoogleLogin } from '@react-oauth/google';
@@ -196,24 +196,14 @@ const Login = () => {
             <GoogleLogin
               onSuccess={handleGoogleSuccess}
               onError={handleGoogleFailure}
-              // useOneTap
-              render={(renderProps) => (
-                <button
-                  onClick={renderProps.onClick}
-                  disabled={renderProps.disabled}
-                  className="w-full flex items-center justify-center gap-3 py-3 bg-white dark:bg-zinc-700 text-gray-800 dark:text-white font-medium border border-gray-200 dark:border-zinc-600 rounded-xl hover:bg-gray-50 dark:hover:bg-zinc-600 transition-all duration-300 shadow-sm hover:shadow-md transform hover:-translate-y-1"
-                >
-                  <FcGoogle className="w-6 h-6" />
-                  Google
-                </button>
-              )}
+              // Không cần tùy chỉnh thêm vì đây là giao diện mặc định của Google
             />
             <button
               onClick={handleFacebookLogin}
-              className="w-full flex items-center justify-center gap-3 py-3 bg-blue-600 dark:bg-blue-700 text-white font-medium rounded-xl hover:bg-blue-700 dark:hover:bg-blue-800 transition-all duration-300 shadow-sm hover:shadow-md transform hover:-translate-y-1"
+              className="w-full flex items-center justify-start gap-16 py-2.5 px-3 bg-white dark:bg-zinc-800 text-gray-700 dark:text-gray-200 font-medium border border-gray-300 dark:border-zinc-600 rounded-md hover:bg-gray-100 dark:hover:bg-zinc-700 transition-all duration-200 shadow-sm"
             >
-              <FaFacebook className="w-6 h-6" />
-              Facebook
+              <FaFacebook className="w-5 h-5 text-blue-600" />
+              Đăng nhập bằng Facebook
             </button>
           </div>
 

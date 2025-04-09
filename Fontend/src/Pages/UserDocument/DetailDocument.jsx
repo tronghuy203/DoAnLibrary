@@ -27,7 +27,7 @@ const DetailDocument = () => {
   const [reviewCount, setReviewCount] = useState(0);
   const [activeTab, setActiveTab] = useState("Mô tả");
   const [showShareOptions, setShowShareOptions] = useState(false);
-  const shareRef = useRef(null); // Ref để kiểm tra click ngoài
+  const shareRef = useRef(null); 
 
   useEffect(() => {
     const fetchDocument = async () => {
@@ -60,7 +60,6 @@ const DetailDocument = () => {
     fetchDocument();
   }, [user, navigate, id, dispatch, axiosJWT]);
 
-  // Xử lý click ngoài để tắt dropdown
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (shareRef.current && !shareRef.current.contains(event.target)) {
@@ -193,7 +192,6 @@ const DetailDocument = () => {
                     <FaShareAlt className="w-5 h-5" />
                     Chia sẻ
                   </button>
-                  {/* Dropdown menu */}
                   {showShareOptions && (
                     <div
                       ref={shareRef}
@@ -225,7 +223,6 @@ const DetailDocument = () => {
                 </div>
               </div>
 
-              {/* Tabs */}
               <div className="mt-6 border-b border-gray-200 dark:border-gray-700">
                 <div className="flex">
                   {["Mô tả", "Nội dung", "Đánh giá", "Đề xuất"].map((tab) => (
@@ -251,7 +248,6 @@ const DetailDocument = () => {
                 </div>
               </div>
 
-              {/* Tab Content */}
               <div className="mt-4 text-gray-700 dark:text-gray-300">
                 {activeTab === "Mô tả" && (
                   <p className="leading-relaxed">
@@ -279,7 +275,6 @@ const DetailDocument = () => {
               </div>
             </div>
 
-            {/* PDF Viewer Section */}
             {docData.fileUrl && (
               <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 border border-gray-200 dark:border-gray-700">
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">

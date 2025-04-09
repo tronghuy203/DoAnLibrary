@@ -9,7 +9,7 @@ const PaymentPage = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const user = useSelector((state) => state.auth.login?.currentUser);
-  const { requestDetails, isFetching, error } = useSelector((state) => state.borrow); // Lấy từ Redux
+  const { requestDetails, isFetching, error } = useSelector((state) => state.borrow);
   const axiosJWT = createAxios(user, dispatch);
 
   const [paymentMethod, setPaymentMethod] = useState("");
@@ -25,21 +25,22 @@ const PaymentPage = () => {
       navigate("/");
       return;
     }
+
     if (!requestDetails || requestDetails._id !== requestId) {
-        const fetchRequestDetails = async () => {
-          try {
-            await getBorrowRequestDetails(requestId, user.accessToken, dispatch, axiosJWT);
-          } catch (err) {
-            const bookId = err.response?.data?.bookId || "";
-            console.error("Lỗi khi lấy thông tin yêu cầu:", err);
-            alert("Không thể tải thông tin yêu cầu mượn. Vui lòng thử lại!");
-            navigate(`/books/${bookId}`);
-          }
-        };
-    
-        fetchRequestDetails();
-      }
-    }, [requestId, user, requestDetails, navigate, axiosJWT, dispatch]);
+      const fetchRequestDetails = async () => {
+        try {
+          await getBorrowRequestDetails(requestId, user.accessToken, dispatch, axiosJWT);
+        } catch (err) {
+          const bookId = err.response?.data?.bookId || "";
+          console.error("Lỗi khi lấy thông tin yêu cầu:", err);
+          alert("Không thể tải thông tin yêu cầu mượn. Vui lòng thử lại!");
+          navigate(`/books/${bookId}`);
+        }
+      };
+
+      fetchRequestDetails();
+    }
+  }, [requestId, user, requestDetails, navigate, axiosJWT, dispatch]);
 
   const handlePayment = async () => {
     if (!paymentMethod) {
@@ -66,51 +67,63 @@ const PaymentPage = () => {
 
   if (isFetching || !requestDetails) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <p className="text-gray-600 text-lg">Đang tải thông tin thanh toán...</p>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-300 dark:from-zinc-900 dark:to-zinc-800 transition-all duration-300">
+        <p className="text-gray-600 dark:text-gray-300 text-lg font-medium animate-pulse">
+          Đang tải thông tin thanh toán...
+        </p>
       </div>
     );
   }
 
   if (error) {
     return (
-      <div className="min-h-screen flex items-center justify-center bg-gray-100">
-        <p className="text-red-600 text-lg">Có lỗi xảy ra khi tải thông tin!</p>
+      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-300 dark:from-zinc-900 dark:to-zinc-800 transition-all duration-300">
+        <p className="text-red-500 dark:text-red-400 text-lg font-medium animate-fade-in">
+          Có lỗi xảy ra khi tải thông tin!
+        </p>
       </div>
     );
   }
 
   return (
-    <div className="min-h-screen bg-gray-100 flex items-center justify-center py-10">
-      <div className="bg-white p-8 rounded-lg shadow-lg max-w-md w-full">
-        <h1 className="text-2xl font-bold mb-6 text-center">Thanh toán phí mượn sách</h1>
+    <div className="min-h-screen bg-gradient-to-br from-gray-100 to-gray-300 dark:from-zinc-900 dark:to-zinc-800 flex items-center justify-center py-12 px-4 transition-all duration-300">
+      <div className="bg-white dark:bg-zinc-800 p-8 rounded-2xl shadow-xl max-w-md w-full transform transition-all duration-500 animate-fade-in-up">
+        <h1 className="text-3xl font-bold mb-8 text-center text-gray-900 dark:text-white bg-clip-text bg-gradient-to-r from-orange-500 to-pink-500">
+          Thanh Toán Phí Mượn Sách
+        </h1>
 
-        <div className="mb-6">
-          <p className="text-gray-700">
-            <span className="font-semibold">Tên người nhận:</span>{" "}
-            {user?.username || user?.name || "Không xác định"}
-          </p>
-          <p className="text-gray-700">
-            <span className="font-semibold">Sách:</span>{" "}
-            {requestDetails.bookId?.title || requestDetails.bookId || "Chưa xác định"}
-          </p>
-          <p className="text-gray-700">
-            <span className="font-semibold">Phí mượn:</span>{" "}
-            {(requestDetails.bookId?.price || "Chưa xác định").toLocaleString("vi-VN")} ₫
-          </p>
+        <div className="space-y-6 mb-8">
+          <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-zinc-700 rounded-lg shadow-inner transition-all duration-300 hover:shadow-md">
+            <span className="text-gray-700 dark:text-gray-300 font-semibold">Tên người nhận:</span>
+            <span className="text-gray-900 dark:text-white font-medium">
+              {user?.username || user?.name || "Không xác định"}
+            </span>
+          </div>
+          <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-zinc-700 rounded-lg shadow-inner transition-all duration-300 hover:shadow-md">
+            <span className="text-gray-700 dark:text-gray-300 font-semibold">Sách:</span>
+            <span className="text-gray-900 dark:text-white font-medium truncate max-w-[60%]">
+              {requestDetails.bookId?.title || requestDetails.bookId || "Chưa xác định"}
+            </span>
+          </div>
+          <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-zinc-700 rounded-lg shadow-inner transition-all duration-300 hover:shadow-md">
+            <span className="text-gray-700 dark:text-gray-300 font-semibold">Phí mượn:</span>
+            <span className="text-orange-500 dark:text-orange-400 font-bold text-lg">
+              {(requestDetails.bookId?.price || "0").toLocaleString("vi-VN")} ₫
+            </span>
+          </div>
         </div>
 
-        <div className="mb-6">
-          <label className="block text-gray-700 font-semibold mb-2">
-            Chọn phương thức thanh toán:
+        <div className="mb-8">
+          <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-3 text-lg">
+            Chọn phương thức thanh toán
           </label>
           <select
             value={paymentMethod}
             onChange={(e) => setPaymentMethod(e.target.value)}
-            className="w-full p-2 border rounded-lg focus:outline-none focus:ring-2 focus:ring-orange-500"
+            className="w-full p-3 border border-gray-300 dark:border-zinc-600 rounded-lg bg-white dark:bg-zinc-700 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-orange-500 transition-all duration-300 hover:border-orange-400 dark:hover:border-orange-500"
           >
             <option value="">-- Chọn phương thức --</option>
-            <option value="vnpay">Thẻ tín dụng</option>
+            <option value="vnpay">Thẻ tín dụng (VNPay)</option>
             <option value="cash">Tiền mặt</option>
             <option value="momo">MoMo</option>
           </select>
@@ -119,7 +132,7 @@ const PaymentPage = () => {
         <button
           onClick={handlePayment}
           disabled={isFetching}
-          className={`w-full bg-orange-500 text-white font-semibold py-3 rounded-lg hover:bg-orange-600 transition-all duration-300 ${
+          className={`w-full bg-gradient-to-r from-orange-500 to-pink-500 text-white font-semibold py-3 rounded-lg shadow-md transition-all duration-300 transform hover:scale-105 hover:shadow-lg ${
             isFetching ? "opacity-50 cursor-not-allowed" : ""
           }`}
         >
@@ -128,7 +141,7 @@ const PaymentPage = () => {
 
         <button
           onClick={() => navigate(`/books/${requestDetails.bookId?._id || ""}`)}
-          className="w-full mt-4 text-gray-600 hover:text-gray-800 underline"
+          className="w-full mt-4 text-gray-600 dark:text-gray-400 hover:text-orange-500 dark:hover:text-orange-400 font-medium underline transition-all duration-300"
         >
           Quay lại trang sách
         </button>

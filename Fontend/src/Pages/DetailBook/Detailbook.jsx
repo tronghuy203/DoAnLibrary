@@ -1,6 +1,6 @@
 import { useEffect, useState, useRef, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
-import { useParams, useNavigate, Link } from "react-router-dom";
+import { useParams, useNavigate } from "react-router-dom";
 import { getBookDetail } from "../../redux/apiBooks";
 import { getCategory } from "../../redux/apiCategory";
 import { createAxios } from "../../createInstance";
@@ -14,6 +14,7 @@ const DetailBook = () => {
   const navigate = useNavigate();
   const user = useSelector((state) => state.auth.login?.currentUser);
   const book = useSelector((state) => state.books.detailBook);
+  const allBooks = useSelector((state) => state.books.allBooks);
   const categories = useSelector((state) => state.categories.allCategories);
   const axiosJWT = useMemo(() => createAxios(user, dispatch), [user, dispatch]);
 
@@ -21,13 +22,19 @@ const DetailBook = () => {
   const [showShareOptions, setShowShareOptions] = useState(false);
   const [averageRating, setAverageRating] = useState(0);
   const [reviewCount, setReviewCount] = useState(0);
-  const shareRef = useRef(null); // Ref để kiểm tra click ngoài
+  const [recommendedRatings, setRecommendedRatings] = useState({}); // Lưu trữ đánh giá của sách đề xuất
+  const shareRef = useRef(null);
+  const recommendedRef = useRef(null);
 
   const calculateAverageRating = (reviews) => {
-    if (!reviews || reviews.length === 0) return 0;
+    if (!reviews || reviews.length === 0) return { rating: 0, count: 0 };
     const total = reviews.reduce((sum, review) => sum + review.rating, 0);
-    return (total / reviews.length).toFixed(1);
+    return {
+      rating: (total / reviews.length).toFixed(1),
+      count: reviews.length,
+    };
   };
+
   const categoryMap = useMemo(() => {
     const map = {};
     categories?.forEach((cat) => {
@@ -35,6 +42,15 @@ const DetailBook = () => {
     });
     return map;
   }, [categories]);
+
+  const recommendedBooks = useMemo(() => {
+    if (!book || !allBooks) return [];
+    return allBooks.filter(
+      (b) =>
+        b._id !== book._id &&
+        (b.author === book.author || b.category === book.category)
+    );
+  }, [book, allBooks]);
 
   const handleBorrowRequest = async () => {
     if (!book._id || !user.accessToken) {
@@ -47,13 +63,17 @@ const DetailBook = () => {
         throw new Error("Không nhận được requestId từ server!");
       }
       navigate(`/payment/${borrowData._id}`);
+      // Cuộn lên đầu trang sau khi chuyển hướng
+      setTimeout(() => {
+        window.scrollTo({ top: 0, behavior: "smooth" });
+      }, 100); // Thêm độ trễ nhỏ để đảm bảo trang đã chuyển xong
     } catch (error) {
       const errorMessage = error.response?.data?.message || "Đã xảy ra lỗi khi gửi yêu cầu mượn sách. Vui lòng thử lại!";
       console.error("Lỗi khi mượn sách:", error.response?.data || error.message);
       alert(errorMessage);
     }
   };
-  
+
   useEffect(() => {
     if (!user) {
       navigate("/login");
@@ -72,7 +92,6 @@ const DetailBook = () => {
     fetchData();
   }, [id, user, user?.accessToken, dispatch, navigate, axiosJWT]);
 
-  // Xử lý click ngoài để tắt dropdown
   useEffect(() => {
     const handleClickOutside = (event) => {
       if (shareRef.current && !shareRef.current.contains(event.target)) {
@@ -119,6 +138,10 @@ const DetailBook = () => {
     }
   };
 
+  const scrollToRecommended = () => {
+    recommendedRef.current?.scrollIntoView({ behavior: "smooth" });
+  };
+
   const formatDate = (dateString) => {
     const date = new Date(dateString);
     return date.toLocaleString("vi-VN", {
@@ -128,6 +151,19 @@ const DetailBook = () => {
       hour: "2-digit",
       minute: "2-digit",
     });
+  };
+
+  const handleBookClick = (bookId) => {
+    navigate(`/books/${bookId}`);
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  };
+
+  const updateRecommendedRatings = (bookId, reviews) => {
+    const { rating, count } = calculateAverageRating(reviews);
+    setRecommendedRatings((prev) => ({
+      ...prev,
+      [bookId]: { rating, count },
+    }));
   };
 
   if (!book) {
@@ -143,18 +179,15 @@ const DetailBook = () => {
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-black dark:text-white px-4 sm:px-8 md:px-12 lg:px-16 py-32 transition-all duration-300">
       <div className="max-w-5xl mx-auto">
-        {/* Main Content */}
         <div className="flex flex-col md:flex-row gap-6 md:gap-8">
-          {/* Book Image */}
           <div data-aos="fade-right" className="flex-shrink-0 mx-auto md:mx-0">
             <img
-              src={book.image || "https://via.placeholder.com/150"}
+              src={book.image || "https://png.pngtree.com/png-vector/20220220/ourmid/pngtree-vector-design-with-pattern-element-for-minimalisticluxurious-cover-menu-invitation-card-bannerbook-vector-png-image_34179868.jpg"}
               alt={book.title}
               className="w-64 sm:w-72 md:w-80 h-auto object-cover rounded-lg shadow-lg border border-gray-200 dark:border-gray-700 transition-transform duration-300 hover:scale-105"
             />
           </div>
 
-          {/* Book Details */}
           <div
             data-aos="fade-left"
             className="flex-1 flex flex-col space-y-6 bg-white dark:bg-gray-800 rounded-lg p-8 shadow-lg border border-gray-200 dark:border-gray-700"
@@ -173,9 +206,9 @@ const DetailBook = () => {
               </span>
             </div>
             <span className="text-lg text-gray-600 dark:text-gray-400">
-                <span className="font-semibold">Số lượng:</span>{" "}
-                {book.quantity || "Không rõ"}
-              </span>
+              <span className="font-semibold">Số lượng:</span>{" "}
+              {book.quantity || "Không rõ"}
+            </span>
             <div className="flex items-center gap-4">
               <div className="flex text-yellow-400">
                 {[...Array(5)].map((_, i) => (
@@ -202,11 +235,11 @@ const DetailBook = () => {
             </div>
             <div className="flex flex-col sm:flex-row gap-4 text-gray-600 dark:text-gray-400 text-base">
               <span>
-                <span className="font-semibold">Ngày xuất bản:</span>{" "}
+                <span className="font-semibold">Năm xuất bản:</span>{" "}
                 {book.publishDate || "Không rõ"}
               </span>
               <span>
-                <span className="font-semibold">Đã bán:</span>{" "}
+                <span className="font-semibold">Đã mượn:</span>{" "}
                 {book.sold || "0"} bản
               </span>
               <span>
@@ -215,13 +248,12 @@ const DetailBook = () => {
               </span>
             </div>
             <div className="flex flex-col sm:flex-row gap-4 relative">
-             
-                <button 
-                  onClick={handleBorrowRequest}
-                  className="bg-orange-500 text-white font-semibold py-3 px-8 rounded-lg hover:bg-orange-600 transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1">
-                  Mượn sách ngay
-                </button>
-              
+              <button
+                onClick={handleBorrowRequest}
+                className="bg-orange-500 text-white font-semibold py-3 px-8 rounded-lg hover:bg-orange-600 transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1"
+              >
+                Mượn sách ngay
+              </button>
               <div className="mt-3 relative">
                 <button
                   onClick={() => setShowShareOptions(!showShareOptions)}
@@ -230,7 +262,6 @@ const DetailBook = () => {
                   <FaShareAlt className="w-5 h-5" />
                   Chia sẻ
                 </button>
-                {/* Dropdown menu */}
                 {showShareOptions && (
                   <div
                     ref={shareRef}
@@ -264,45 +295,43 @@ const DetailBook = () => {
           </div>
         </div>
 
-        {/* Tabs */}
         <div
           data-aos="fade-up"
           className="mt-8 bg-white dark:bg-gray-800 rounded-lg shadow-md p-6 border border-gray-200 dark:border-gray-700"
         >
           <div className="flex border-b border-gray-200 dark:border-gray-700">
-            {["Mô tả", "Nội dung đánh giá", "Đánh giá", "Đề xuất"].map(
-              (tab) => (
-                <button
-                  key={tab}
-                  onClick={() => {
-                    setActiveTab(tab);
-                    if (tab === "Đánh giá") {
-                      setTimeout(() => {
-                        scrollToReviewForm();
-                      }, 100);
-                    } else if (tab === "Nội dung đánh giá") {
-                      setTimeout(() => {
-                        document
-                          .getElementById("review-section")
-                          ?.scrollIntoView({
-                            behavior: "smooth",
-                          });
-                      }, 100);
-                    }
-                  }}
-                  className={`px-4 py-2 text-base font-semibold transition-all duration-300 ${
-                    activeTab === tab
-                      ? "text-green-500 border-b-2 border-green-500"
-                      : "text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
-                  }`}
-                >
-                  {tab}
-                </button>
-              )
-            )}
+            {["Mô tả", "Nội dung đánh giá", "Đánh giá", "Đề xuất"].map((tab) => (
+              <button
+                key={tab}
+                onClick={() => {
+                  setActiveTab(tab);
+                  if (tab === "Đánh giá") {
+                    setTimeout(() => {
+                      scrollToReviewForm();
+                    }, 100);
+                  } else if (tab === "Nội dung đánh giá") {
+                    setTimeout(() => {
+                      document
+                        .getElementById("review-section")
+                        ?.scrollIntoView({ behavior: "smooth" });
+                    }, 100);
+                  } else if (tab === "Đề xuất") {
+                    setTimeout(() => {
+                      scrollToRecommended();
+                    }, 100);
+                  }
+                }}
+                className={`px-4 py-2 text-base font-semibold transition-all duration-300 ${
+                  activeTab === tab
+                    ? "text-green-500 border-b-2 border-green-500"
+                    : "text-gray-600 dark:text-gray-400 hover:text-gray-800 dark:hover:text-gray-200"
+                }`}
+              >
+                {tab}
+              </button>
+            ))}
           </div>
 
-          {/* Tab Content */}
           <div className="mt-6 text-gray-700 dark:text-gray-300">
             {activeTab === "Mô tả" && (
               <div data-aos="fade-in">
@@ -311,20 +340,8 @@ const DetailBook = () => {
                 </p>
               </div>
             )}
-            {activeTab === "Nội dung" && null}
             {activeTab === "Nội dung đánh giá" && null}
-            {activeTab === "Đề xuất" && (
-              <div data-aos="fade-in">
-                <p className="leading-relaxed">
-                  Bạn có thể quan tâm đến các sách sau:
-                </p>
-                <ul className="list-disc list-inside mt-2 space-y-1">
-                  <li>Vở bài tập Toán 2 - Bộ sách Chân trời sáng tạo</li>
-                  <li>Sách bài tập Hình học cơ bản cho học sinh tiểu học</li>
-                  <li>100 bài toán thực tế cho trẻ em</li>
-                </ul>
-              </div>
-            )}
+            {activeTab === "Đề xuất" && null}
           </div>
         </div>
 
@@ -334,10 +351,57 @@ const DetailBook = () => {
             itemId={book._id}
             user={user}
             onReviewsUpdate={(reviews) => {
-              setAverageRating(calculateAverageRating(reviews));
-              setReviewCount(reviews.length);
+              const { rating, count } = calculateAverageRating(reviews);
+              setAverageRating(rating);
+              setReviewCount(count);
+              recommendedBooks.forEach((recBook) => {
+                if (recBook._id === book._id) {
+                  updateRecommendedRatings(recBook._id, reviews);
+                }
+              });
             }}
           />
+        </div>
+
+        {/* Phần Đề xuất hiển thị bên dưới ReviewSection */}
+        <div ref={recommendedRef} className="mt-8">
+          <h3 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white tracking-tight animate-fade-in">
+            Sách đề xuất (cùng tác giả hoặc thể loại)
+          </h3>
+          {recommendedBooks.length > 0 ? (
+            <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
+              {recommendedBooks.map((recBook) => {
+                  recommendedRatings[recBook._id] ||
+                  calculateAverageRating(recBook.reviews || []);
+                return (
+                  <div
+                    key={recBook._id}
+                    onClick={() => handleBookClick(recBook._id)}
+                    className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer"
+                  >
+                    <img
+                      src={recBook.image || "https://png.pngtree.com/png-vector/20220220/ourmid/pngtree-vector-design-with-pattern-element-for-minimalisticluxurious-cover-menu-invitation-card-bannerbook-vector-png-image_34179868.jpg"}
+                      alt={recBook.title}
+                      className="w-full h-80 object-cover rounded-md mb-2"
+                    />
+                    <h5 className="text-xl font-semibold truncate text-gray-900 dark:text-white">
+                      {recBook.title}
+                    </h5>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Tác giả: {recBook.author || "Không rõ"}
+                    </p>
+                    <p className="text-sm text-gray-600 dark:text-gray-400">
+                      Thể loại: {categoryMap[recBook.category] || "Không rõ"}
+                    </p>
+                  </div>
+                );
+              })}
+            </div>
+          ) : (
+            <p className="text-gray-500 dark:text-gray-400 animate-fade-in text-center">
+              Không có sách đề xuất nào phù hợp.
+            </p>
+          )}
         </div>
       </div>
     </div>

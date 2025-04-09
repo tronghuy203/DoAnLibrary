@@ -84,7 +84,7 @@ const TopBooks = () => {
                       src={
                         book.image && book.image.trim() !== ""
                           ? book.image
-                          : "https://via.placeholder.com/150"
+                          : "https://png.pngtree.com/png-vector/20220220/ourmid/pngtree-vector-design-with-pattern-element-for-minimalisticluxurious-cover-menu-invitation-card-bannerbook-vector-png-image_34179868.jpg"
                       }
                       alt={book.title}
                       className="h-[220px] w-[150px] object-cover rounded-md"
@@ -95,7 +95,6 @@ const TopBooks = () => {
                         {book.author || "Không rõ"}
                       </p>
                       <div className="flex flex-col items-start mt-2 text-yellow-400">
-                        {/* Star icons */}
                         <div className="flex">
                           {[...Array(5)].map((_, i) => (
                             <svg

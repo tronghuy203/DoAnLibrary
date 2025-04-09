@@ -70,7 +70,6 @@ const Footer = () => {
               Books Library là thư viện số, giúp người dùng dễ dàng tìm kiếm, đọc và tải sách mọi lúc, mọi nơi.{" "}
             </p>
             <br />
-            {/* social links */}
             <div className="flex items-center gap-3">
               <FaArrowRight className="rotate-[-45deg]"/>
               <p>Thành phố Đà Nẵng</p>
@@ -91,7 +90,6 @@ const Footer = () => {
               </a>
             </div>
           </div>
-          {/* Links section */}
           <div className="grid grid-cols-2 sm:grid-cols-3 col-span-2 md:pl-10">
             <div className="">
               <div className="py-8 px-4">
@@ -140,7 +138,6 @@ const Footer = () => {
             </div>
           </div>
         </div>
-        {/* footer section */}
         <div className="">
           <div className="border-t-2 border-gray-300/50">
             <p className="text-center py-10">2025 &copy; Huy-Mai-Khoa. All rights reserved || Made with ♥ by HMK</p>

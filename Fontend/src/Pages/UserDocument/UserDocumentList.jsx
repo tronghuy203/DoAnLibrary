@@ -72,7 +72,7 @@ const UserDocumentList = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-100 dark:from-gray-900 dark:to-zinc-800 flex justify-center items-start py-32 transition-colors duration-500">
       <div className="container mx-auto px-6">
-        {/* Header */}
+
         <div className="flex flex-col sm:flex-row justify-between items-center mb-16 gap-6">
           <h2
             data-aos="slide-up"
@@ -90,7 +90,6 @@ const UserDocumentList = () => {
           </button>
         </div>
 
-        {/* Search and Filter */}
         <div className="mb-10 flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
             <FaSearch className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400" />
@@ -114,7 +113,6 @@ const UserDocumentList = () => {
           </select>
         </div>
 
-        {/* Loading State */}
         {isLoading ? (
           <div className="flex justify-center items-center h-64">
             <div className="w-16 h-16 border-4 border-t-indigo-500 border-gray-300 dark:border-gray-600 rounded-full animate-spin"></div>
@@ -154,7 +152,6 @@ const UserDocumentList = () => {
               )}
             </div>
 
-            {/* Load More Button */}
             {filteredDocuments.length > visibleDocs && (
               <div className="flex justify-center mt-10">
                 <button

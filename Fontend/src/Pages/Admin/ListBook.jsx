@@ -53,7 +53,6 @@ const ListBook = () => {
     }
   };
 
-  // Filter and sort books based on search term
   const filteredBooks = useMemo(() => {
     const filtered = books.filter(
       (book) =>
@@ -62,7 +61,6 @@ const ListBook = () => {
         (book.category && book.category.toLowerCase().includes(searchTerm.toLowerCase()))
     );
 
-    // Sắp xếp theo createdAt giảm dần (mới nhất lên đầu)
     return filtered.sort((a, b) => new Date(b.createdAt) - new Date(a.createdAt));
   }, [books, searchTerm]);
 
@@ -81,7 +79,6 @@ const ListBook = () => {
         Danh Sách Sách
       </h2>
 
-      {/* Thanh tìm kiếm */}
       <div className="w-full max-w-2xl mx-auto mb-8">
         <div className="relative">
           <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
@@ -98,7 +95,6 @@ const ListBook = () => {
         </div>
       </div>
 
-      {/* Danh sách sách */}
       <div className="w-full max-w-5xl mx-auto">
         {filteredBooks.length === 0 ? (
           <div className="text-center text-gray-400 py-10 animate-slide-in text-lg">
@@ -125,7 +121,7 @@ const ListBook = () => {
                   <div className="py-2 flex items-center">
                     <span className="sm:hidden font-semibold text-cyan-400 mr-2">Ảnh:</span>
                     <img
-                      src={book.image || "https://via.placeholder.com/100"}
+                      src={book.image || "https://png.pngtree.com/png-vector/20220220/ourmid/pngtree-vector-design-with-pattern-element-for-minimalisticluxurious-cover-menu-invitation-card-bannerbook-vector-png-image_34179868.jpg"}
                       alt={book.title}
                       className="w-12 h-15 object-cover rounded-md"
                     />
@@ -177,7 +173,6 @@ const ListBook = () => {
           </div>
         )}
 
-        {/* Phân trang */}
         {totalPages > 1 && (
           <div className="flex flex-wrap justify-center mt-8 gap-2">
             {Array.from({ length: totalPages }, (_, index) => (

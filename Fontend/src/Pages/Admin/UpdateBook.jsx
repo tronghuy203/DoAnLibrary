@@ -21,6 +21,30 @@ const UpdateBook = () => {
   const axiosJWT = useMemo(() => createAxios(user, dispatch, loginSuccess), [user, dispatch]);
 
   useEffect(() => {
+    const fetchBooks = async () => {
+      try {
+        setLoading(true);
+        const books = await getAllBooks(user.accessToken, dispatch, axiosJWT);
+        const foundBook = books.find((b) => b._id === bookId);
+        if (foundBook) {
+          setBook({
+            ...foundBook,
+            price: formatPrice(foundBook.price.toString()), 
+          });
+          if (foundBook.image) {
+            setPreviewImage(foundBook.image); 
+          }
+        } else {
+          setError("Không tìm thấy sách.");
+        }
+      } catch (error) {
+        setError("Lỗi khi tải dữ liệu sách.");
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchBooks();
+  }, [bookId, dispatch, user, axiosJWT]);useEffect(() => {
     const fetchCategories = async () => {
       try {
         const categoryData = await getCategory(user.accessToken, dispatch, axiosJWT);

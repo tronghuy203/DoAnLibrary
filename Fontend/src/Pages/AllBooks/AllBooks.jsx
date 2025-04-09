@@ -52,6 +52,7 @@ const AllBooks = () => {
   }, [user, dispatch, axiosJWT, navigate]);
 
   useEffect(() => {
+
     if (books.length > 0) {
       fetchReviewStats();
     }
@@ -187,7 +188,7 @@ const AllBooks = () => {
                 <li key={book._id} className="bg-white dark:bg-zinc-800 rounded-2xl shadow-lg overflow-hidden transform hover:scale-105 transition-all duration-300">
                   <Link to={`/books/${book._id}`}>
                     <img
-                      src={book.image?.trim() ? book.image : "https://via.placeholder.com/150"}
+                      src={book.image?.trim() ? book.image : "https://png.pngtree.com/png-vector/20220220/ourmid/pngtree-vector-design-with-pattern-element-for-minimalisticluxurious-cover-menu-invitation-card-bannerbook-vector-png-image_34179868.jpg"}
                       alt={book.title}
                       className="w-full h-64 object-cover"
                     />

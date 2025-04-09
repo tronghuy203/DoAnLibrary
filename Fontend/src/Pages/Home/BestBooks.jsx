@@ -86,7 +86,7 @@ const BestBooks = () => {
                       src={
                         book.image && book.image.trim() !== ""
                           ? book.image
-                          : "https://via.placeholder.com/150"
+                          : "https://png.pngtree.com/png-vector/20220220/ourmid/pngtree-vector-design-with-pattern-element-for-minimalisticluxurious-cover-menu-invitation-card-bannerbook-vector-png-image_34179868.jpg"
                       }
                       alt={book.title}
                       className="max-w-[100px] block mx-auto transform -translate-y-14 group-hover:scale-105 duration-300 shadow-md"

@@ -1,7 +1,7 @@
 import React, { useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector } from "react-redux";
-import { motion } from "framer-motion"; // Optional: for animations
+import { motion } from "framer-motion"; 
 
 const Cart = () => {
   const user = useSelector((state) => state.auth.login?.currentUser);

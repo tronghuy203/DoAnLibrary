@@ -429,28 +429,30 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
             </button>
           </div>
 
-          <div className="mt-2">
-            <button
-              onClick={() => toggleShowReplies(review._id)}
-              className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center gap-1 transition-all duration-200 transform hover:scale-105"
-            >
-              <span>
-                {showRepliesForReview[review._id]
-                  ? "Ẩn phản hồi"
-                  : `Xem tất cả phản hồi (${review.replies?.length || 0})`}
-              </span>
-              <svg
-                className={`w-4 h-4 transition-transform duration-200 ${
-                  showRepliesForReview[review._id] ? "rotate-180" : ""
-                }`}
-                fill="none"
-                stroke="currentColor"
-                viewBox="0 0 24 24"
+          {review.replies?.length > 0 && (
+            <div className="mt-2">
+              <button
+                onClick={() => toggleShowReplies(review._id)}
+                className="text-blue-600 dark:text-blue-400 hover:text-blue-800 dark:hover:text-blue-300 flex items-center gap-1 transition-all duration-200 transform hover:scale-105"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
-              </svg>
-            </button>
-          </div>
+                <span>
+                  {showRepliesForReview[review._id]
+                    ? "Ẩn phản hồi"
+                    : `Xem tất cả phản hồi (${review.replies.length})`}
+                </span>
+                <svg
+                  className={`w-4 h-4 transition-transform duration-200 ${
+                    showRepliesForReview[review._id] ? "rotate-180" : ""
+                  }`}
+                  fill="none"
+                  stroke="currentColor"
+                  viewBox="0 0 24 24"
+                >
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M19 9l-7 7-7-7" />
+                </svg>
+              </button>
+            </div>
+          )}
 
           {showRepliesForReview[review._id] && (
             <div className="ml-6 mt-3 animate-fade-in">
@@ -530,7 +532,7 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
                       }`}
                     >
                       <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                        <path d="M15 3H6c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14.73v1.91l.01.01L1 14c0 1.1.9 2 2 2h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 23l6.59-6.59c.36-.36.58-.86.58-1.41V5c0-1.1-.9-2-2-2zm4 0v12h4V3h-4z"/>
+                        <path d="M15 3H6c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14-.73v1.91l.01.01L1 14c0 1.1.9 2 2 2h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 23l6.59-6.59c.36-.36.58-.86.58-1.41V5c0-1.1-.9-2-2-2zm4 0v12h4V3h-4z"/>
                       </svg>
                       <span>Không thích ({dislikes[reply._id] || 0})</span>
                     </button>

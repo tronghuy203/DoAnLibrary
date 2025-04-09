@@ -13,7 +13,9 @@ import {
   ChevronRightIcon, 
   DocumentPlusIcon, 
   DocumentTextIcon,
-  ChatBubbleLeftRightIcon // Icon mới cho đánh giá
+  ChatBubbleLeftRightIcon,
+  ChartBarIcon,
+  CurrencyDollarIcon 
 } from "@heroicons/react/24/outline"; 
 
 const AdminLayout = () => {
@@ -34,6 +36,12 @@ const AdminLayout = () => {
     logOut(dispatch, id, navigate, accessToken, axiosJWT);
   };
 
+  const handleMenuClick = () => {
+    if (window.innerWidth < 1024) {
+      setIsSidebarOpen(false);
+    }
+  };
+
   return (
     <div className="flex min-h-screen bg-gray-900 text-gray-100">
       {isSidebarOpen && (
@@ -44,11 +52,11 @@ const AdminLayout = () => {
       )}
 
       <aside
-        className={`fixed inset-y-0 left-0 z-50 w-64 bg-gray-800 transform transition-transform duration-300 ease-in-out lg:static lg:transform-none ${
+        className={`fixed inset-y-0 left-0 z-50 w-72 bg-gray-800 transform transition-transform duration-300 ease-in-out lg:static lg:transform-none ${
           isSidebarOpen ? "translate-x-0" : "-translate-x-full"
         } lg:translate-x-0 border-r border-gray-700 shadow-lg`}
       >
-        <div className="p-6 flex flex-col h-full">
+        <div className="flex flex-col h-full p-6">
           <div className="mb-8 flex items-center gap-3">
             <img
               src="https://static.vecteezy.com/system/resources/previews/024/043/963/original/book-icon-clipart-transparent-background-free-png.png"
@@ -58,296 +66,307 @@ const AdminLayout = () => {
             <h3 className="text-2xl font-bold text-blue-400">Admin Menu</h3>
           </div>
 
-          <ul className="space-y-3 flex-1">
-            <li>
-              <Link
-                to="/admin"
-                className={`flex items-center gap-3 py-3 px-4 rounded-lg transition duration-200 ${
-                  location.pathname === "/admin"
-                    ? "bg-blue-600 text-white shadow-md"
-                    : "text-gray-300 hover:bg-gray-700 hover:text-white"
-                }`}
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
+          <div className="flex-1 max-h-[calc(100vh-200px)] overflow-y-auto scrollbar scrollbar-w-2 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scrollbar-thumb-blue-500 scrollbar-track-gray-800 [scrollbar-color:#808080_#1f2937] lg:scrollbar-w-3 lg:scrollbar-thumb-blue-600 lg:scrollbar-track-gray-800 lg:scrollbar-thumb-hover:blue-700">
+            <ul className="space-y-3">
+              <li>
+                <Link
+                  to="/admin"
+                  className={`flex items-center gap-3 py-3 px-4 rounded-lg transition duration-200 ${
+                    location.pathname === "/admin"
+                      ? "bg-blue-600 text-white shadow-md"
+                      : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                  }`}
+                  onClick={handleMenuClick}
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
-                  />
-                </svg>
-                <span>Dashboard</span>
-              </Link>
-            </li>
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
+                    />
+                  </svg>
+                  <span>Dashboard</span>
+                </Link>
+              </li>
 
-            <li>
-              <div
-                className={`flex items-center justify-between py-3 px-4 rounded-lg cursor-pointer transition duration-200 ${
-                  location.pathname.startsWith("/admin/books")
-                    ? "bg-blue-600 text-white shadow-md"
-                    : "text-gray-300 hover:bg-gray-700 hover:text-white"
-                }`}
-                onClick={() => setIsBookMenuOpen(!isBookMenuOpen)}
-              >
-                <div className="flex items-center gap-3">
-                  <BookOpenIcon className="w-5 h-5" />
-                  <span>Quản lý sách</span>
-                </div>
-                {isBookMenuOpen ? (
-                  <ChevronDownIcon className="w-4 h-4 text-white transition-transform duration-200" />
-                ) : (
-                  <ChevronRightIcon className="w-4 h-4 text-white transition-transform duration-200" />
-                )}
-              </div>
-              {isBookMenuOpen && (
-                <ul className="pl-8 mt-2 space-y-2">
-                  <li>
-                    <Link
-                      to="/admin/books/categorys/list"
-                      className={`flex items-center gap-3 py-2 px-4 rounded-lg transition duration-200 ${
-                        location.pathname === "/admin/books/categorys/list"
-                          ? "bg-blue-600 text-white shadow-sm"
-                          : "text-gray-400 hover:bg-gray-700 hover:text-white"
-                      }`}
-                    >
-                      <PlusIcon className="w-5 h-5" />
-                      <span>Thêm danh mục</span>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      to="/admin/books/create"
-                      className={`flex items-center gap-3 py-2 px-4 rounded-lg transition duration-200 ${
-                        location.pathname === "/admin/books/create"
-                          ? "bg-blue-600 text-white shadow-sm"
-                          : "text-gray-400 hover:bg-gray-700 hover:text-white"
-                      }`}
-                    >
-                      <PlusIcon className="w-5 h-5" />
-                      <span>Thêm sách</span>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      to="/admin/books/list"
-                      className={`flex items-center gap-3 py-2 px-4 rounded-lg transition duration-200 ${
-                        location.pathname === "/admin/books/list"
-                          ? "bg-blue-600 text-white shadow-sm"
-                          : "text-gray-400 hover:bg-gray-700 hover:text-white"
-                      }`}
-                    >
-                      <ListBulletIcon className="w-5 h-5" />
-                      <span>Danh sách sách</span>
-                    </Link>
-                  </li>
-                </ul>
-              )}
-            </li>
-
-            <li>
-              <Link
-                to="/admin/manage/borrow"
-                className={`flex items-center gap-3 py-3 px-4 rounded-lg transition duration-200 ${
-                  location.pathname === "/admin/manage/borrow"
-                    ? "bg-blue-600 text-white shadow-md"
-                    : "text-gray-300 hover:bg-gray-700 hover:text-white"
-                }`}
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
+              <li>
+                <div
+                  className={`flex items-center justify-between py-3 px-4 rounded-lg cursor-pointer transition duration-200 ${
+                    location.pathname.startsWith("/admin/books")
+                      ? "bg-blue-600 text-white shadow-md"
+                      : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                  }`}
+                  onClick={() => setIsBookMenuOpen(!isBookMenuOpen)}
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-                  />
-                </svg>
-                <span>Quản lý mượn, trả</span>
-              </Link>
-            </li>
-
-            <li>
-              <div
-                className={`flex items-center justify-between py-3 px-4 rounded-lg cursor-pointer transition duration-200 ${
-                  location.pathname.startsWith("/admin/documents")
-                    ? "bg-blue-600 text-white shadow-md"
-                    : "text-gray-300 hover:bg-gray-700 hover:text-white"
-                }`}
-                onClick={() => setIsDocumentMenuOpen(!isDocumentMenuOpen)}
-              >
-                <div className="flex items-center gap-3">
-                  <DocumentTextIcon className="w-5 h-5" />
-                  <span>Quản lý tài liệu</span>
+                  <div className="flex items-center gap-3">
+                    <BookOpenIcon className="w-5 h-5" />
+                    <span>Quản lý sách</span>
+                  </div>
+                  {isBookMenuOpen ? (
+                    <ChevronDownIcon className="w-4 h-4 text-white transition-transform duration-200" />
+                  ) : (
+                    <ChevronRightIcon className="w-4 h-4 text-white transition-transform duration-200" />
+                  )}
                 </div>
-                {isDocumentMenuOpen ? (
-                  <ChevronDownIcon className="w-4 h-4 text-white transition-transform duration-200" />
-                ) : (
-                  <ChevronRightIcon className="w-4 h-4 text-white transition-transform duration-200" />
+                {isBookMenuOpen && (
+                  <ul className="pl-8 mt-2 space-y-2">
+                    <li>
+                      <Link
+                        to="/admin/books/categorys/list"
+                        className={`flex items-center gap-3 py-2 px-4 rounded-lg transition duration-200 ${
+                          location.pathname === "/admin/books/categorys/list"
+                            ? "bg-blue-600 text-white shadow-sm"
+                            : "text-gray-400 hover:bg-gray-700 hover:text-white"
+                        }`}
+                        onClick={handleMenuClick}
+                      >
+                        <PlusIcon className="w-5 h-5" />
+                        <span>Thêm danh mục</span>
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        to="/admin/books/create"
+                        className={`flex items-center gap-3 py-2 px-4 rounded-lg transition duration-200 ${
+                          location.pathname === "/admin/books/create"
+                            ? "bg-blue-600 text-white shadow-sm"
+                            : "text-gray-400 hover:bg-gray-700 hover:text-white"
+                        }`}
+                        onClick={handleMenuClick}
+                      >
+                        <PlusIcon className="w-5 h-5" />
+                        <span>Thêm sách</span>
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        to="/admin/books/list"
+                        className={`flex items-center gap-3 py-2 px-4 rounded-lg transition duration-200 ${
+                          location.pathname === "/admin/books/list"
+                            ? "bg-blue-600 text-white shadow-sm"
+                            : "text-gray-400 hover:bg-gray-700 hover:text-white"
+                        }`}
+                        onClick={handleMenuClick}
+                      >
+                        <ListBulletIcon className="w-5 h-5" />
+                        <span>Danh sách sách</span>
+                      </Link>
+                    </li>
+                  </ul>
                 )}
-              </div>
-              {isDocumentMenuOpen && (
-                <ul className="pl-8 mt-2 space-y-2">
-                  <li>
-                    <Link
-                      to="/admin/documents/create"
-                      className={`flex items-center gap-3 py-2 px-4 rounded-lg transition duration-200 ${
-                        location.pathname === "/admin/documents/create"
-                          ? "bg-blue-600 text-white shadow-sm"
-                          : "text-gray-400 hover:bg-gray-700 hover:text-white"
-                      }`}
-                    >
-                      <DocumentPlusIcon className="w-5 h-5" />
-                      <span>Thêm tài liệu</span>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      to="/admin/documents/list"
-                      className={`flex items-center gap-3 py-2 px-4 rounded-lg transition duration-200 ${
-                        location.pathname === "/admin/documents/list"
-                          ? "bg-blue-600 text-white shadow-sm"
-                          : "text-gray-400 hover:bg-gray-700 hover:text-white"
-                      }`}
-                    >
-                      <ListBulletIcon className="w-5 h-5" />
-                      <span>Danh sách tài liệu</span>
-                    </Link>
-                  </li>
-                </ul>
-              )}
-            </li>
+              </li>
 
-            {/* Thêm mục Quản lý đánh giá và bình luận */}
-            <li>
-              <div
-                className={`flex items-center justify-between py-3 px-4 rounded-lg cursor-pointer transition duration-200 ${
-                  location.pathname.startsWith("/admin/reviews")
-                    ? "bg-blue-600 text-white shadow-md"
-                    : "text-gray-300 hover:bg-gray-700 hover:text-white"
-                }`}
-                onClick={() => setIsReviewMenuOpen(!isReviewMenuOpen)}
-              >
-                <div className="flex items-center gap-3">
-                  <ChatBubbleLeftRightIcon className="w-5 h-5" />
-                  <span>Quản lý đánh giá</span>
-                </div>
-                {isReviewMenuOpen ? (
-                  <ChevronDownIcon className="w-4 h-4 text-white transition-transform duration-200" />
-                ) : (
-                  <ChevronRightIcon className="w-4 h-4 text-white transition-transform duration-200" />
-                )}
-              </div>
-              {isReviewMenuOpen && (
-                <ul className="pl-8 mt-2 space-y-2">
-                  <li>
-                    <Link
-                      to="/admin/reviews/books"
-                      className={`flex items-center gap-3 py-2 px-4 rounded-lg transition duration-200 ${
-                        location.pathname === "/admin/reviews/books"
-                          ? "bg-blue-600 text-white shadow-sm"
-                          : "text-gray-400 hover:bg-gray-700 hover:text-white"
-                      }`}
-                    >
-                      <BookOpenIcon className="w-5 h-5" />
-                      <span>Book</span>
-                    </Link>
-                  </li>
-                  <li>
-                    <Link
-                      to="/admin/reviews/documents"
-                      className={`flex items-center gap-3 py-2 px-4 rounded-lg transition duration-200 ${
-                        location.pathname === "/admin/reviews/documents"
-                          ? "bg-blue-600 text-white shadow-sm"
-                          : "text-gray-400 hover:bg-gray-700 hover:text-white"
-                      }`}
-                    >
-                      <DocumentTextIcon className="w-5 h-5" />
-                      <span>Document</span>
-                    </Link>
-                  </li>
-                </ul>
-              )}
-            </li>            
-
-            <li>
-              <div
-                className={`flex items-center justify-between py-3 px-4 rounded-lg cursor-pointer transition duration-200 ${
-                  location.pathname.startsWith("/admin/manage-revenue")
-                    ? "bg-blue-600 text-white shadow-md"
-                    : "text-gray-300 hover:bg-gray-700 hover:text-white"
-                }`}
-                onClick={() => setIsRevenueOpen(!isRevenueOpen)}
-              >
-                <div className="flex items-center gap-3">
-                  <ChatBubbleLeftRightIcon className="w-5 h-5" />
-                  <span>Quản lý doanh thu</span>
-                </div>
-                {isRevenueOpen ? (
-                  <ChevronDownIcon className="w-4 h-4 text-white transition-transform duration-200" />
-                ) : (
-                  <ChevronRightIcon className="w-4 h-4 text-white transition-transform duration-200" />
-                )}
-              </div>
-              {isRevenueOpen && (
-                <ul className="pl-8 mt-2 space-y-2">
-                  <li>
-                    <Link
-                      to="/admin/manage-revenue/revenue"
-                      className={`flex items-center gap-3 py-2 px-4 rounded-lg transition duration-200 ${
-                        location.pathname === "/admin/manage-revenue/revenue"
-                          ? "bg-blue-600 text-white shadow-sm"
-                          : "text-gray-400 hover:bg-gray-700 hover:text-white"
-                      }`}
-                    >
-                      <BookOpenIcon className="w-5 h-5" />
-                      <span>Doanh thu sánh</span>
-                    </Link>
-                  </li>
-                
-                </ul>
-              )}
-            </li>
-
-            <li>
-              <Link
-                to="/admin/users"
-                className={`flex items-center gap-3 py-3 px-4 rounded-lg transition duration-200 ${
-                  location.pathname === "/admin/users"
-                    ? "bg-blue-600 text-white shadow-md"
-                    : "text-gray-300 hover:bg-gray-700 hover:text-white"
-                }`}
-              >
-                <svg
-                  className="w-5 h-5"
-                  fill="none"
-                  stroke="currentColor"
-                  viewBox="0 0 24 24"
-                  xmlns="http://www.w3.org/2000/svg"
+              <li>
+                <Link
+                  to="/admin/manage/borrow"
+                  className={`flex items-center gap-3 py-3 px-4 rounded-lg transition duration-200 ${
+                    location.pathname === "/admin/manage/borrow"
+                      ? "bg-blue-600 text-white shadow-md"
+                      : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                  }`}
+                  onClick={handleMenuClick}
                 >
-                  <path
-                    strokeLinecap="round"
-                    strokeLinejoin="round"
-                    strokeWidth="2"
-                    d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
-                  />
-                </svg>
-                <span>Quản lý người dùng</span>
-              </Link>
-            </li>
-          </ul>
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                    />
+                  </svg>
+                  <span>Quản lý mượn, trả</span>
+                </Link>
+              </li>
 
-          <div className="mt-auto">
+              <li>
+                <div
+                  className={`flex items-center justify-between py-3 px-4 rounded-lg cursor-pointer transition duration-200 ${
+                    location.pathname.startsWith("/admin/documents")
+                      ? "bg-blue-600 text-white shadow-md"
+                      : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                  }`}
+                  onClick={() => setIsDocumentMenuOpen(!isDocumentMenuOpen)}
+                >
+                  <div className="flex items-center gap-3">
+                    <DocumentTextIcon className="w-5 h-5" />
+                    <span>Quản lý tài liệu</span>
+                  </div>
+                  {isDocumentMenuOpen ? (
+                    <ChevronDownIcon className="w-4 h-4 text-white transition-transform duration-200" />
+                  ) : (
+                    <ChevronRightIcon className="w-4 h-4 text-white transition-transform duration-200" />
+                  )}
+                </div>
+                {isDocumentMenuOpen && (
+                  <ul className="pl-8 mt-2 space-y-2">
+                    <li>
+                      <Link
+                        to="/admin/documents/create"
+                        className={`flex items-center gap-3 py-2 px-4 rounded-lg transition duration-200 ${
+                          location.pathname === "/admin/documents/create"
+                            ? "bg-blue-600 text-white shadow-sm"
+                            : "text-gray-400 hover:bg-gray-700 hover:text-white"
+                        }`}
+                        onClick={handleMenuClick}
+                      >
+                        <DocumentPlusIcon className="w-5 h-5" />
+                        <span>Thêm tài liệu</span>
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        to="/admin/documents/list"
+                        className={`flex items-center gap-3 py-2 px-4 rounded-lg transition duration-200 ${
+                          location.pathname === "/admin/documents/list"
+                            ? "bg-blue-600 text-white shadow-sm"
+                            : "text-gray-400 hover:bg-gray-700 hover:text-white"
+                        }`}
+                        onClick={handleMenuClick}
+                      >
+                        <ListBulletIcon className="w-5 h-5" />
+                        <span>Danh sách tài liệu</span>
+                      </Link>
+                    </li>
+                  </ul>
+                )}
+              </li>
+
+              <li>
+                <div
+                  className={`flex items-center justify-between py-3 px-4 rounded-lg cursor-pointer transition duration-200 ${
+                    location.pathname.startsWith("/admin/reviews")
+                      ? "bg-blue-600 text-white shadow-md"
+                      : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                  }`}
+                  onClick={() => setIsReviewMenuOpen(!isReviewMenuOpen)}
+                >
+                  <div className="flex items-center gap-3">
+                    <ChatBubbleLeftRightIcon className="w-5 h-5" />
+                    <span>Quản lý đánh giá</span>
+                  </div>
+                  {isReviewMenuOpen ? (
+                    <ChevronDownIcon className="w-4 h-4 text-white transition-transform duration-200" />
+                  ) : (
+                    <ChevronRightIcon className="w-4 h-4 text-white transition-transform duration-200" />
+                  )}
+                </div>
+                {isReviewMenuOpen && (
+                  <ul className="pl-8 mt-2 space-y-2">
+                    <li>
+                      <Link
+                        to="/admin/reviews/books"
+                        className={`flex items-center gap-3 py-2 px-4 rounded-lg transition duration-200 ${
+                          location.pathname === "/admin/reviews/books"
+                            ? "bg-blue-600 text-white shadow-sm"
+                            : "text-gray-400 hover:bg-gray-700 hover:text-white"
+                        }`}
+                        onClick={handleMenuClick}
+                      >
+                        <BookOpenIcon className="w-5 h-5" />
+                        <span>Book</span>
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
+                        to="/admin/reviews/documents"
+                        className={`flex items-center gap-3 py-2 px-4 rounded-lg transition duration-200 ${
+                          location.pathname === "/admin/reviews/documents"
+                            ? "bg-blue-600 text-white shadow-sm"
+                            : "text-gray-400 hover:bg-gray-700 hover:text-white"
+                        }`}
+                        onClick={handleMenuClick}
+                      >
+                        <DocumentTextIcon className="w-5 h-5" />
+                        <span>Document</span>
+                      </Link>
+                    </li>
+                  </ul>
+                )}
+              </li>            
+
+              <li>
+                <div
+                  className={`flex items-center justify-between py-3 px-4 rounded-lg cursor-pointer transition duration-200 ${
+                    location.pathname.startsWith("/admin/manage-revenue")
+                      ? "bg-blue-600 text-white shadow-md"
+                      : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                  }`}
+                  onClick={() => setIsRevenueOpen(!isRevenueOpen)}
+                >
+                  <div className="flex items-center gap-3">
+                    <ChartBarIcon className="w-5 h-5" />
+                    <span>Quản lý doanh thu</span>
+                  </div>
+                  {isRevenueOpen ? (
+                    <ChevronDownIcon className="w-4 h-4 text-white transition-transform duration-200" />
+                  ) : (
+                    <ChevronRightIcon className="w-4 h-4 text-white transition-transform duration-200" />
+                  )}
+                </div>
+                {isRevenueOpen && (
+                  <ul className="pl-8 mt-2 space-y-2">
+                    <li>
+                      <Link
+                        to="/admin/manage-revenue/revenue"
+                        className={`flex items-center gap-3 py-2 px-4 rounded-lg transition duration-200 ${
+                          location.pathname === "/admin/manage-revenue/revenue"
+                            ? "bg-blue-600 text-white shadow-sm"
+                            : "text-gray-400 hover:bg-gray-700 hover:text-white"
+                        }`}
+                        onClick={handleMenuClick}
+                      >
+                        <CurrencyDollarIcon className="w-5 h-5" />
+                        <span>Doanh thu sách</span>
+                      </Link>
+                    </li>
+                  </ul>
+                )}
+              </li>
+
+              <li>
+                <Link
+                  to="/admin/users"
+                  className={`flex items-center gap-3 py-3 px-4 rounded-lg transition duration-200 ${
+                    location.pathname === "/admin/users"
+                      ? "bg-blue-600 text-white shadow-md"
+                      : "text-gray-300 hover:bg-gray-700 hover:text-white"
+                  }`}
+                  onClick={handleMenuClick}
+                >
+                  <svg
+                    className="w-5 h-5"
+                    fill="none"
+                    stroke="currentColor"
+                    viewBox="0 0 24 24"
+                    xmlns="http://www.w3.org/2000/svg"
+                  >
+                    <path
+                      strokeLinecap="round"
+                      strokeLinejoin="round"
+                      strokeWidth="2"
+                      d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"
+                    />
+                  </svg>
+                  <span>Quản lý người dùng</span>
+                </Link>
+              </li>
+            </ul>
+          </div>
+
+          <div className="mt-6 sticky bottom-0 bg-gray-800 z-10">
             <button
               className="w-full flex items-center gap-3 py-3 px-4 text-gray-300 hover:bg-red-600 hover:text-white rounded-lg transition duration-200"
               onClick={handleLogout}
