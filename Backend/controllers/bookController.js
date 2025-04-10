@@ -18,10 +18,10 @@ const bookController = {
   // Tạo sách mới
   createBook: async (req, res) => {
     try {
-      const { title, author, description, price, category, quantity } = req.body;
+      const { title, author, description, price, category, quantity, publishedYear} = req.body;
       const image = req.file ? `/uploads/${req.file.filename}` : "";
 
-      const newBook = new Book({ title, author, description, price, image, category,  quantity: Number(quantity) || 1});
+      const newBook = new Book({ title, author, description, price, image, category,  quantity: Number(quantity) || 1, publishedYear});
       const savedBook = await newBook.save();
 
       res.status(201).json(savedBook);
@@ -56,12 +56,12 @@ const bookController = {
   // Cập nhật sách
   updateBook: async (req, res) => {
     try {
-      const { title, author, description, price, category, quantity } = req.body;
+      const { title, author, description, price, category, quantity, publishedYear } = req.body;
       const image = req.file ? `/uploads/${req.file.filename}` : req.body.image;
 
       const updatedBook = await Book.findByIdAndUpdate(
         req.params.id,
-        { title, author, description, price, image , category, quantity: Number(quantity)},
+        { title, author, description, price, image , category, quantity: Number(quantity), publishedYear},
         { new: true }
       );
 

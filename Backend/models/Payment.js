@@ -27,8 +27,12 @@ const paymentSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ["success", "failed"],
+    enum: ["success", "failed", "pending"],
     default: "success",
+  },
+  vnpayTxnRef: {
+    type: String,
+    default: null,
   },
 }, { timestamps: true });
 

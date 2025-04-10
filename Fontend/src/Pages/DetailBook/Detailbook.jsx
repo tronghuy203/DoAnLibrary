@@ -236,7 +236,7 @@ const DetailBook = () => {
             <div className="flex flex-col sm:flex-row gap-4 text-gray-600 dark:text-gray-400 text-base">
               <span>
                 <span className="font-semibold">Năm xuất bản:</span>{" "}
-                {book.publishDate || "Không rõ"}
+                {book.publishedYear || "Không rõ"}
               </span>
               <span>
                 <span className="font-semibold">Đã mượn:</span>{" "}

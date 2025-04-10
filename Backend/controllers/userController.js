@@ -51,6 +51,7 @@ const userController = {
                 {
                     fullName: req.body.fullName,
                     dob: req.body.dob,
+                    gender: req.body.gender,
                     phone: req.body.phone,
                     avatar: req.body.avatar
                 },
