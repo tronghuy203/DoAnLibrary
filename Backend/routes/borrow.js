@@ -20,6 +20,8 @@ router.post("/pay-penalty/:penaltyId", middlewareController.verifyToken, borrowC
 
 router.get("/all", middlewareController.verifyAdmin, borrowController.getAllBorrowRecords);
 
+router.get("/check-payment-status", middlewareController.verifyToken, borrowController.checkPaymentStatus);
+
 router.get("/revenue/total", middlewareController.verifyAdmin, borrowController.getTotalRevenue);
 
 router.get("/revenue/daily", middlewareController.verifyAdmin, borrowController.getDailyRevenue);

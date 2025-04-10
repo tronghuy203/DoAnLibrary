@@ -173,6 +173,7 @@ const borrowController = {
         return res.status(200).json({
           message: "Vui lòng hoàn tất thanh toán qua VNPay",
           paymentUrl: vnpayUrl,
+          payment,
         });
       } else {
         // Xử lý phương thức khác (nếu có)
@@ -266,15 +267,18 @@ const borrowController = {
         book.quantity -= 1;
         await book.save();
 
-        res.status(200).json({
-          message: "Thanh toán VNPay thành công",
-          borrowRecord,
-          payment,
-        });
+        // res.status(200).json({
+        //   message: "Thanh toán VNPay thành công",
+        //   borrowRecord,
+        //   payment,
+        // });
+
+      res.redirect(`http://localhost:3000/payment-redirect?txnRef=${txnRef}`);
       } else {
         payment.status = "failed";
         await payment.save();
-        res.status(400).json({ message: "Thanh toán thất bại" });
+        // res.status(400).json({ message: "Thanh toán thất bại" });
+        res.redirect("http://localhost:3000/payment-failed");
       }
     } catch (err) {
       res.status(500).json({ message: "Lỗi xử lý callback", error: err.message });
@@ -410,6 +414,37 @@ const borrowController = {
     }
   },
 
+  checkPaymentStatus: async (req, res) => {
+    try {
+      const { txnRef } = req.query;
+      const payment = await Payment.findOne({ vnpayTxnRef: txnRef })
+        .populate("userId", "username email");
+      if (!payment) {
+        console.error("Không tìm thấy payment với txnRef:", txnRef); // Log lỗi
+        return res.status(404).json({ message: "Không tìm thấy giao dịch" });
+      }
+  
+      if (payment.status === "success") {
+        const borrowRecord = await BorrowRecord.findOne({
+          userId: payment.userId,
+          createdAt: { $gte: payment.createdAt },
+        }).populate("bookId", "title price");
+  
+        return res.status(200).json({
+          message: "Thanh toán thành công",
+          payment,
+          borrowRecord,
+        });
+      } else if (payment.status === "failed") {
+        return res.status(400).json({ message: "Thanh toán thất bại" });
+      } else {
+        return res.status(202).json({ message: "Giao dịch đang xử lý" });
+      }
+    } catch (err) {
+      console.error("Lỗi trong checkPaymentStatus:", err.message); // Log lỗi
+      res.status(500).json({ message: "Lỗi kiểm tra trạng thái", error: err.message });
+    }
+  },
   getTotalRevenue: async (req, res) => {
     try {
       const result = await Payment.aggregate([
