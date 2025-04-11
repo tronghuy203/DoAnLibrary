@@ -1,15 +1,16 @@
 import React, { useState } from "react";
 import { useDispatch } from "react-redux";
-import { resetPassword } from "../../redux/apiRequest";
 import { useLocation, useNavigate } from "react-router-dom";
-import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai"; // Thêm icon để hiển thị/ẩn mật khẩu
+import { resetPassword } from "../../redux/apiRequest";
+import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
+import { motion, AnimatePresence } from "framer-motion";
 
 const ResetPassword = () => {
   const [newPassword, setNewPassword] = useState("");
   const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState("");
-  const [showNewPassword, setShowNewPassword] = useState(false); // Trạng thái hiển thị mật khẩu mới
-  const [showConfirmPassword, setShowConfirmPassword] = useState(false); // Trạng thái hiển thị xác nhận mật khẩu
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -25,7 +26,10 @@ const ResetPassword = () => {
     }
 
     try {
-      await resetPassword({ email, newPassword, confirmNewPassword: confirmPassword }, dispatch);
+      await resetPassword(
+        { email, newPassword, confirmNewPassword: confirmPassword },
+        dispatch
+      );
       alert("Mật khẩu đã được đặt lại thành công!");
       navigate("/login");
     } catch (err) {
@@ -44,25 +48,45 @@ const ResetPassword = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300 dark:from-zinc-800 dark:via-zinc-700 dark:to-zinc-600 flex justify-center items-center p-4 transition-all duration-300">
-      <div className="relative bg-white dark:bg-zinc-800 p-8 rounded-2xl shadow-xl w-full max-w-md transform transition-all duration-500 hover:shadow-2xl">
-        {/* Gradient Overlay */}
-        <div className="absolute inset-0 bg-gradient-to-br from-blue-50/50 via-transparent to-blue-50/50 dark:from-blue-900/20 dark:to-blue-900/20 rounded-2xl pointer-events-none"></div>
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 dark:from-zinc-900 dark:via-zinc-800 dark:to-zinc-700 flex items-center justify-center py-6 px-4 sm:px-6 lg:px-8">
+      <motion.div
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        transition={{ duration: 0.6, ease: "easeOut" }}
+        className="relative bg-white dark:bg-zinc-900 p-6 sm:p-8 rounded-3xl shadow-lg w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg"
+      >
+        {/* Gradient Border Effect */}
+        <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-blue-400/30 to-cyan-500/30 blur-xl opacity-50 dark:from-blue-600/20 dark:to-cyan-600/20 -z-10"></div>
 
-        {/* Content */}
         <div className="relative z-10">
-          <h2 className="text-3xl font-bold text-center text-gray-800 dark:text-white mb-6 tracking-tight">
+          <motion.h2
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.2, duration: 0.5 }}
+            className="text-2xl sm:text-3xl font-bold text-center text-gray-800 dark:text-white mb-4 sm:mb-6 tracking-tight"
+          >
             Đặt Lại Mật Khẩu
-          </h2>
+          </motion.h2>
 
-          {error && (
-            <div className="mb-6 p-3 bg-red-50 dark:bg-red-900/30 text-red-600 dark:text-red-300 text-sm rounded-lg text-center animate-fade-in">
-              {error}
-            </div>
-          )}
+          <AnimatePresence>
+            {error && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="mb-4 sm:mb-6 p-3 bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-300 text-xs sm:text-sm rounded-lg text-center"
+              >
+                {error}
+              </motion.div>
+            )}
+          </AnimatePresence>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
-            <div>
+          <form onSubmit={handleSubmit} className="space-y-4 sm:space-y-6">
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.3, duration: 0.5 }}
+            >
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Mật khẩu mới
               </label>
@@ -73,11 +97,13 @@ const ResetPassword = () => {
                   value={newPassword}
                   onChange={(e) => setNewPassword(e.target.value)}
                   required
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-700 text-gray-800 dark:text-white border border-gray-200 dark:border-zinc-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 shadow-sm hover:shadow-md pr-10"
+                  className="w-full px-4 py-3 bg-gray-100 dark:bg-zinc-800 text-gray-800 dark:text-white border border-gray-200 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 hover:shadow-md pr-12"
                 />
-                <button
+                <motion.button
                   type="button"
                   onClick={toggleNewPasswordVisibility}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
                   className="absolute inset-y-0 right-3 flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors duration-200 focus:outline-none"
                 >
                   {showNewPassword ? (
@@ -85,11 +111,15 @@ const ResetPassword = () => {
                   ) : (
                     <AiOutlineEye className="w-5 h-5" />
                   )}
-                </button>
+                </motion.button>
               </div>
-            </div>
+            </motion.div>
 
-            <div>
+            <motion.div
+              initial={{ opacity: 0, x: -20 }}
+              animate={{ opacity: 1, x: 0 }}
+              transition={{ delay: 0.4, duration: 0.5 }}
+            >
               <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Xác nhận mật khẩu
               </label>
@@ -100,11 +130,13 @@ const ResetPassword = () => {
                   value={confirmPassword}
                   onChange={(e) => setConfirmPassword(e.target.value)}
                   required
-                  className="w-full px-4 py-3 bg-gray-50 dark:bg-zinc-700 text-gray-800 dark:text-white border border-gray-200 dark:border-zinc-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 shadow-sm hover:shadow-md pr-10"
+                  className="w-full px-4 py-3 bg-gray-100 dark:bg-zinc-800 text-gray-800 dark:text-white border border-gray-200 dark:border-zinc-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-blue-500 focus:border-transparent transition-all duration-300 hover:shadow-md pr-12"
                 />
-                <button
+                <motion.button
                   type="button"
                   onClick={toggleConfirmPasswordVisibility}
+                  whileHover={{ scale: 1.1 }}
+                  whileTap={{ scale: 0.9 }}
                   className="absolute inset-y-0 right-3 flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors duration-200 focus:outline-none"
                 >
                   {showConfirmPassword ? (
@@ -112,19 +144,40 @@ const ResetPassword = () => {
                   ) : (
                     <AiOutlineEye className="w-5 h-5" />
                   )}
-                </button>
+                </motion.button>
               </div>
-            </div>
+            </motion.div>
 
-            <button
+            <motion.button
               type="submit"
-              className="w-full py-3 bg-gradient-to-r from-blue-500 to-blue-700 dark:from-blue-600 dark:to-blue-800 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-blue-800 dark:hover:from-blue-700 dark:hover:to-blue-900 transition-all duration-300 shadow-md hover:shadow-lg transform hover:-translate-y-1"
+              whileHover={{ scale: 1.02, boxShadow: "0 8px 20px rgba(0, 0, 0, 0.15)" }}
+              whileTap={{ scale: 0.98 }}
+              initial={{ opacity: 0 }}
+              animate={{ opacity: 1 }}
+              transition={{ delay: 0.5, duration: 0.5 }}
+              className="w-full py-3 bg-gradient-to-r from-blue-500 to-cyan-600 dark:from-blue-600 dark:to-cyan-700 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-cyan-700 dark:hover:from-blue-700 dark:hover:to-cyan-800 transition-all duration-300 shadow-md"
             >
               Đặt Lại Mật Khẩu
-            </button>
+            </motion.button>
           </form>
+
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            transition={{ delay: 0.6, duration: 0.5 }}
+            className="mt-4 sm:mt-6 text-center text-sm text-gray-600 dark:text-gray-400"
+          >
+            Quay lại{" "}
+            <a
+              href="/login"
+              className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-all duration-200 relative group"
+            >
+              Đăng nhập
+              <span className="absolute left-0 bottom-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 group-hover:w-full transition-all duration-300"></span>
+            </a>
+          </motion.div>
         </div>
-      </div>
+      </motion.div>
     </div>
   );
 };

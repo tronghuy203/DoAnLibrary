@@ -105,7 +105,7 @@ const PaymentPage = () => {
             <option value="">-- Chọn phương thức --</option>
             <option value="vnpay">Thẻ tín dụng (VNPay)</option>
             <option value="cash">Tiền mặt</option>
-            <option value="momo">MoMo</option>
+            {/* <option value="momo">MoMo</option> */}
           </select>
         </div>
         <button

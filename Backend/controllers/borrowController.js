@@ -195,6 +195,8 @@ const borrowController = {
         });
         await borrowRecord.save();
 
+        const populatedBorrowRecord = await BorrowRecord.findById(borrowRecord._id).populate("bookId");
+
         request.status = "paid";
         await request.save();
 
@@ -203,7 +205,7 @@ const borrowController = {
 
         res.status(201).json({
           message: "Thanh toán thành công, đã tạo đơn mượn",
-          borrowRecord,
+          borrowRecord: populatedBorrowRecord,
           payment,
         });
       }
