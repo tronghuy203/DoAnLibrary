@@ -10,6 +10,7 @@ const createAdmin = async () => {
                 username: "myadmin",
                 email: "admin@gmail.com",
                 password: hashedPassword,
+                phone: "0123456789",
                 admin: true,
             });
             await admin.save();

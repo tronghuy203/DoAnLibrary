@@ -74,8 +74,8 @@ const Register = () => {
   const handleVerifyEmail = async (e) => {
     e.preventDefault();
     const code = verificationCode.join("");
-    if (!code) {
-      setErrors({ verificationCode: "Mã xác thực không được để trống." });
+    if (!code || code.length !== 6) {
+      setErrors({ verificationCode: "Mã xác thực phải có 6 chữ số." });
       return;
     }
 
@@ -119,6 +119,18 @@ const Register = () => {
     }
   };
 
+  const handlePaste = (e) => {
+    e.preventDefault();
+    const pastedData = e.clipboardData.getData("text").trim();
+    if (/^\d{6}$/.test(pastedData)) {
+      const newCode = pastedData.split("");
+      setVerificationCode(newCode);
+      inputRefs.current[5].focus();
+    } else {
+      setErrors({ verificationCode: "Mã xác thực phải là 6 chữ số." });
+    }
+  };
+
   const handleKeyDown = (index, e) => {
     if (e.key === "Backspace" && !verificationCode[index] && index > 0) {
       inputRefs.current[index - 1].focus();
@@ -153,7 +165,6 @@ const Register = () => {
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(0,255,255,0.15),_transparent_70%)] opacity-40 animate-pulse-slow"></div>
 
       {/* Form Container */}
-
       <div className="relative mt-10 z-10 w-full max-w-md bg-white/95 dark:bg-zinc-800/95 backdrop-blur-xl rounded-3xl shadow-2xl p-8 sm:p-10 transition-all duration-500 hover:shadow-[0_0_30px_rgba(0,255,255,0.25)] animate-slide-up">
         <h2 className="text-4xl font-bold text-center text-gray-900 dark:text-white mb-10 tracking-wide bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent leading-tight pb-1">
           {step === 1 ? "Đăng Ký" : "Xác Thực Email"}
@@ -164,7 +175,7 @@ const Register = () => {
             <div>
               <label htmlFor="email" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Email
-              </label> 
+              </label>
               <input
                 id="email"
                 type="email"
@@ -278,7 +289,7 @@ const Register = () => {
               <label htmlFor="verificationCode" className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-2">
                 Mã xác thực
               </label>
-              <div className="flex justify-center space-x-3">
+              <div className="flex justify-center gap-1.5 sm:gap-2">
                 {verificationCode.map((digit, index) => (
                   <input
                     key={index}
@@ -287,8 +298,9 @@ const Register = () => {
                     value={digit}
                     onChange={(e) => handleCodeChange(index, e.target.value)}
                     onKeyDown={(e) => handleKeyDown(index, e)}
+                    onPaste={index === 0 ? handlePaste : undefined}
                     ref={(el) => (inputRefs.current[index] = el)}
-                    className="w-14 h-14 text-center text-xl font-medium bg-gray-50 dark:bg-zinc-700 text-gray-900 dark:text-white border border-gray-200 dark:border-zinc-600 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-300 shadow-sm hover:shadow-md"
+                    className="w-11/12 h-10 sm:w-12/14 sm:h-14 text-center text-base sm:text-lg font-medium bg-gray-50 dark:bg-zinc-700 text-gray-900 dark:text-white border border-gray-200 dark:border-zinc-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 focus:border-transparent transition-all duration-300 shadow-sm hover:shadow-md"
                   />
                 ))}
               </div>
