@@ -83,7 +83,8 @@ export const payRentalFeeAndCreateBorrow = async (
   method,
   accessToken,
   dispatch,
-  axiosJWT
+  axiosJWT,
+  navigate
 ) => {
   try {
     const res = await axiosJWT.post(
@@ -94,6 +95,18 @@ export const payRentalFeeAndCreateBorrow = async (
       }
     );
     dispatch(payRentalSuccess(res.data));
+
+    if (method === "vnpay" && res.data.paymentUrl) {
+      console.log("Chuyển hướng đến VNPay với paymentUrl:", res.data.paymentUrl);
+      window.location.href = res.data.paymentUrl; // Chuyển hướng đến VNPay
+    } else if (method === "cash") {
+      navigate("/payment-success", {
+        state: {
+          payment: res.data.payment,
+          borrowRecord: res.data.borrowRecord,
+        },
+      });
+    }
     return res.data;
   } catch (err) {
     dispatch(payRentalFailed());
@@ -102,7 +115,22 @@ export const payRentalFeeAndCreateBorrow = async (
   }
 };
 
-
+// redux/apiBorrow.js
+export const checkPaymentStatus = async (txnRef, accessToken, dispatch, axiosJWT) => {
+  try {
+    const res = await axiosJWT.get(
+      `http://localhost:8000/v1/borrow/check-payment-status?txnRef=${txnRef}`,
+      {
+        headers: { token: `Bearer ${accessToken}` },
+      }
+    );
+    console.log("Phản hồi từ API checkPaymentStatus:", res.data); // Log dữ liệu trả về
+    return res.data;
+  } catch (err) {
+    console.error("Lỗi từ API checkPaymentStatus:", err.response?.data || err);
+    throw err;
+  }
+};
 export const confirmPickup = async (
   borrowId,
   accessToken,

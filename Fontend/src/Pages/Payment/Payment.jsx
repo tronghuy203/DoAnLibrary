@@ -1,3 +1,4 @@
+// src/components/PaymentPage.js
 import { useEffect, useState } from "react";
 import { useParams, useNavigate } from "react-router-dom";
 import { useDispatch, useSelector } from "react-redux";
@@ -27,18 +28,7 @@ const PaymentPage = () => {
     }
 
     if (!requestDetails || requestDetails._id !== requestId) {
-      const fetchRequestDetails = async () => {
-        try {
-          await getBorrowRequestDetails(requestId, user.accessToken, dispatch, axiosJWT);
-        } catch (err) {
-          const bookId = err.response?.data?.bookId || "";
-          console.error("Lỗi khi lấy thông tin yêu cầu:", err);
-          alert("Không thể tải thông tin yêu cầu mượn. Vui lòng thử lại!");
-          navigate(`/books/${bookId}`);
-        }
-      };
-
-      fetchRequestDetails();
+      getBorrowRequestDetails(requestId, user.accessToken, dispatch, axiosJWT);
     }
   }, [requestId, user, requestDetails, navigate, axiosJWT, dispatch]);
 
@@ -54,10 +44,14 @@ const PaymentPage = () => {
         paymentMethod,
         user.accessToken,
         dispatch,
-        axiosJWT
+        axiosJWT,
+        navigate
       );
-      alert("Thanh toán thành công! Đơn mượn đã được tạo.");
-      navigate("/all-books");
+      if (paymentMethod === "cash") {
+        alert("Thanh toán bằng tiền mặt thành công!");
+      } else if (paymentMethod === "vnpay") {
+        alert("Đang chuyển hướng đến VNPay...");
+      }
     } catch (err) {
       const errorMessage = err.response?.data?.message || "Lỗi thanh toán. Vui lòng thử lại!";
       console.error("Lỗi khi thanh toán:", err);
@@ -66,23 +60,11 @@ const PaymentPage = () => {
   };
 
   if (isFetching || !requestDetails) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-300 dark:from-zinc-900 dark:to-zinc-800 transition-all duration-300">
-        <p className="text-gray-600 dark:text-gray-300 text-lg font-medium animate-pulse">
-          Đang tải thông tin thanh toán...
-        </p>
-      </div>
-    );
+    return <div>Đang tải thông tin thanh toán...</div>;
   }
 
   if (error) {
-    return (
-      <div className="min-h-screen flex items-center justify-center bg-gradient-to-br from-gray-100 to-gray-300 dark:from-zinc-900 dark:to-zinc-800 transition-all duration-300">
-        <p className="text-red-500 dark:text-red-400 text-lg font-medium animate-fade-in">
-          Có lỗi xảy ra khi tải thông tin!
-        </p>
-      </div>
-    );
+    return <div>Có lỗi xảy ra khi tải thông tin!</div>;
   }
 
   return (
@@ -91,7 +73,6 @@ const PaymentPage = () => {
         <h1 className="text-3xl font-bold mb-8 text-center text-gray-900 dark:text-white bg-clip-text bg-gradient-to-r from-orange-500 to-pink-500">
           Thanh Toán Phí Mượn Sách
         </h1>
-
         <div className="space-y-6 mb-8">
           <div className="flex items-center justify-between p-4 bg-gray-50 dark:bg-zinc-700 rounded-lg shadow-inner transition-all duration-300 hover:shadow-md">
             <span className="text-gray-700 dark:text-gray-300 font-semibold">Tên người nhận:</span>
@@ -112,7 +93,6 @@ const PaymentPage = () => {
             </span>
           </div>
         </div>
-
         <div className="mb-8">
           <label className="block text-gray-700 dark:text-gray-300 font-semibold mb-3 text-lg">
             Chọn phương thức thanh toán
@@ -128,7 +108,6 @@ const PaymentPage = () => {
             <option value="momo">MoMo</option>
           </select>
         </div>
-
         <button
           onClick={handlePayment}
           disabled={isFetching}
@@ -138,7 +117,6 @@ const PaymentPage = () => {
         >
           {isFetching ? "Đang xử lý..." : "Thanh toán ngay"}
         </button>
-
         <button
           onClick={() => navigate(`/books/${requestDetails.bookId?._id || ""}`)}
           className="w-full mt-4 text-gray-600 dark:text-gray-400 hover:text-orange-500 dark:hover:text-orange-400 font-medium underline transition-all duration-300"

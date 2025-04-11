@@ -234,6 +234,24 @@ const UpdateBook = () => {
         </div>
 
         <div className="mb-6">
+          <label className="block text-gray-200 text-sm font-medium mb-2" htmlFor="publishedYear">
+            Năm xuất bản
+          </label>
+          <div className="relative">
+            <DocumentTextIcon className="absolute left-3 top-4 w-5 h-5 text-cyan-400" />
+            <textarea
+              id="publishedYear"
+              name="publishedYear"
+              value={book.publishedYear}
+              onChange={handleChange}
+              className="w-full pl-10 pr-4 py-3 bg-gray-800 text-gray-100 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 resize-y placeholder-gray-500 transition-all duration-200"
+              placeholder="Nhập năm xuất bản"
+              rows="4"
+            />
+          </div>
+        </div>
+
+        <div className="mb-6">
           <label className="block text-gray-200 text-sm font-medium mb-2" htmlFor="quantity">
             Số lượng
           </label>

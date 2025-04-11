@@ -23,6 +23,7 @@ const CreateBook = () => {
     title: "",
     author: "",
     description: "",
+    publishedYear: 0,
     price: "0",
     quantity: "1",
     category: "",
@@ -132,6 +133,7 @@ const CreateBook = () => {
         title: "",
         author: "",
         description: "",
+        publishedYear: 0,
         price: "0",
         category: "",
         image: null,
@@ -217,6 +219,24 @@ const CreateBook = () => {
               className="w-full pl-10 pr-4 py-3 bg-gray-800 text-gray-100 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 resize-y placeholder-gray-500 transition-all duration-200"
               placeholder="Nhập mô tả sách"
               rows="4"
+            />
+          </div>
+        </div>
+
+        <div className="mb-6">
+          <label className="block text-gray-200 text-sm font-medium mb-2" htmlFor="publishedYear">
+            Năm xuất bản
+          </label>
+          <div className="relative">
+            <UserIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-cyan-400" />
+            <input
+              id="publishedYear"
+              name="publishedYear"
+              value={book.publishedYear}
+              onChange={handleChange}
+              required
+              className="w-full pl-10 pr-4 py-3 bg-gray-800 text-gray-100 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-gray-500 transition-all duration-200"
+              placeholder="Nhập năm xuất bản"
             />
           </div>
         </div>

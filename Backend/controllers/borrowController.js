@@ -1,9 +1,50 @@
+const vnpayConfig = require("../config/vnpay");
 const BorrowRequest = require("../models/BorrowRequest");
 const BorrowRecord = require("../models/BorrowRecord");
 const Penalty = require("../models/Penalty");
 const Payment = require("../models/Payment");
 const Book = require("../models/Book");
+
 const { v4: uuidv4 } = require("uuid");
+
+function sortObject(obj) {
+  let sorted = {};
+  let keys = Object.keys(obj).sort();
+  for (let i = 0; i < keys.length; i++) {
+    sorted[keys[i]] = obj[keys[i]];
+  }
+  return sorted;
+}
+
+function createVnpayUrl(paymentData, ipAddr) {
+  let vnpParams = {};
+  vnpParams["vnp_Version"] = "2.1.0";
+  vnpParams["vnp_Command"] = "pay";
+  vnpParams["vnp_TmnCode"] = vnpayConfig.vnp_TmnCode;
+  vnpParams["vnp_Amount"] = paymentData.amount * 100; // VNPay yêu cầu nhân 100
+  vnpParams["vnp_CreateDate"] = new Date()
+    .toISOString()
+    .replace(/[^0-9]/g, '')
+    .slice(0, 14);
+  vnpParams["vnp_CurrCode"] = "VND";
+  vnpParams["vnp_IpAddr"] = ipAddr;
+  vnpParams["vnp_Locale"] = "vn";
+  vnpParams["vnp_OrderInfo"] = `Thanhtoanphimuonsach${paymentData.requestId}`;
+  vnpParams["vnp_OrderType"] = "128000";
+  vnpParams["vnp_ReturnUrl"] = vnpayConfig.vnp_ReturnUrl;
+  vnpParams["vnp_TxnRef"] = paymentData.vnp_TxnRef; // Mã giao dịch duy nhất
+
+  vnpParams = sortObject(vnpParams);
+
+  const querystring = require("qs");
+  const crypto = require("crypto");
+  let signData = querystring.stringify(vnpParams);
+  let hmac = crypto.createHmac("sha512", vnpayConfig.vnp_HashSecret);
+  let signed = hmac.update(Buffer.from(signData, "utf-8")).digest("hex");
+  vnpParams["vnp_SecureHash"] = signed;
+
+  return `${vnpayConfig.vnp_Url}?${querystring.stringify(vnpParams)}`;
+}
 
 const borrowController = {
   requestBorrow: async (req, res) => {
@@ -92,6 +133,8 @@ const borrowController = {
       const { requestId } = req.params;
       const { method } = req.body;
       const userId = req.user.id;
+      const ipAddr =
+        req.headers["x-forwarded-for"] || req.connection.remoteAddress;
 
       const request = await BorrowRequest.findById(requestId);
       if (!request)
@@ -102,54 +145,143 @@ const borrowController = {
       const book = await Book.findById(request.bookId);
       if (!book)
         return res.status(404).json({ message: "Không tìm thấy sách" });
+      if (book.quantity <= 0)
+        return res.status(400).json({ message: "Sách đã hết, không thể mượn" });
 
-      // Kiểm tra sách còn không
-      if (book.quantity <= 0) {
-        return res.status(400).json({ message: "Sách đã hết, không thể mượn." });
-      }
-
-      // Số tiền thanh toán chính là giá sách
       const rentalFee = book.price;
 
-      // Tạo bản ghi thanh toán
-      const payment = new Payment({
-        userId,
-        amount: rentalFee,
-        paymentType: "rental_fee",
-        method,
-        status: "success",
-      });
+      if (method === "vnpay") {
+        const vnp_TxnRef = `${requestId}_${Date.now()}`;
+        const paymentData = {
+          amount: rentalFee,
+          requestId: requestId,
+          vnp_TxnRef: vnp_TxnRef,
+        };
+        const vnpayUrl = createVnpayUrl(paymentData, ipAddr);
 
-      await payment.save();
+        // Lưu tạm Payment với trạng thái pending
+        const payment = new Payment({
+          userId,
+          amount: rentalFee,
+          paymentType: "rental_fee",
+          method,
+          status: "pending",
+          vnpayTxnRef: vnp_TxnRef,
+        });
+        await payment.save();
 
-      // Tạo đơn mượn
-      const borrowRecord = new BorrowRecord({
-        userId: request.userId,
-        bookId: request.bookId,
-        borrowDate: new Date(),
-        dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // 7 ngày
-        status: "waiting_pickup",
-      });
+        return res.status(200).json({
+          message: "Vui lòng hoàn tất thanh toán qua VNPay",
+          paymentUrl: vnpayUrl,
+          payment,
+        });
+      } else {
+        // Xử lý phương thức khác (nếu có)
+        const payment = new Payment({
+          userId,
+          amount: rentalFee,
+          paymentType: "rental_fee",
+          method,
+          status: "success",
+        });
+        await payment.save();
 
-      await borrowRecord.save();
+        const borrowRecord = new BorrowRecord({
+          userId: request.userId,
+          bookId: request.bookId,
+          borrowDate: new Date(),
+          dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+          status: "waiting_pickup",
+        });
+        await borrowRecord.save();
 
-      // Cập nhật trạng thái yêu cầu
-      request.status = "paid";
-      await request.save();
+        request.status = "paid";
+        await request.save();
 
-      // Giảm số lượng sách
-      book.quantity -= 1;
-      await book.save();
+        book.quantity -= 1;
+        await book.save();
 
-      res.status(201).json({
-        message: "Thanh toán thành công, đã tạo đơn mượn",
-        borrowRecord,
-        payment,
-      });
+        res.status(201).json({
+          message: "Thanh toán thành công, đã tạo đơn mượn",
+          borrowRecord,
+          payment,
+        });
+      }
     } catch (err) {
       res
         .status(500)
         .json({ message: "Lỗi thanh toán và tạo đơn", error: err.message });
+    }
+  },
+
+  vnpayReturn: async (req, res) => {
+    try {
+      let vnpParams = req.query;
+      let secureHash = vnpParams["vnp_SecureHash"];
+
+      delete vnpParams["vnp_SecureHash"];
+      delete vnpParams["vnp_SecureHashType"];
+
+      vnpParams = sortObject(vnpParams);
+
+      const querystring = require("qs");
+      const crypto = require("crypto");
+      let signData = querystring.stringify(vnpParams, { encode: false });
+      let hmac = crypto.createHmac("sha512", vnpayConfig.vnp_HashSecret);
+      let signed = hmac.update(Buffer.from(signData, "utf-8")).digest("hex");
+
+      if (secureHash !== signed) {
+        return res.status(400).json({ message: "Chữ ký không hợp lệ" });
+      }
+
+      const txnRef = vnpParams["vnp_TxnRef"];
+      const responseCode = vnpParams["vnp_ResponseCode"];
+
+      const payment = await Payment.findOne({ vnpayTxnRef: txnRef });
+      if (!payment) {
+        return res.status(404).json({ message: "Không tìm thấy giao dịch" });
+      }
+
+      if (responseCode === "00") {
+        // Thanh toán thành công
+        payment.status = "success";
+        await payment.save();
+
+        const request = await BorrowRequest.findById(
+          txnRef.split("_")[0]
+        );
+        const book = await Book.findById(request.bookId);
+
+        const borrowRecord = new BorrowRecord({
+          userId: request.userId,
+          bookId: request.bookId,
+          borrowDate: new Date(),
+          dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+          status: "waiting_pickup",
+        });
+        await borrowRecord.save();
+
+        request.status = "paid";
+        await request.save();
+
+        book.quantity -= 1;
+        await book.save();
+
+        // res.status(200).json({
+        //   message: "Thanh toán VNPay thành công",
+        //   borrowRecord,
+        //   payment,
+        // });
+
+      res.redirect(`http://localhost:3000/payment-redirect?txnRef=${txnRef}`);
+      } else {
+        payment.status = "failed";
+        await payment.save();
+        // res.status(400).json({ message: "Thanh toán thất bại" });
+        res.redirect("http://localhost:3000/payment-failed");
+      }
+    } catch (err) {
+      res.status(500).json({ message: "Lỗi xử lý callback", error: err.message });
     }
   },
 
@@ -282,6 +414,37 @@ const borrowController = {
     }
   },
 
+  checkPaymentStatus: async (req, res) => {
+    try {
+      const { txnRef } = req.query;
+      const payment = await Payment.findOne({ vnpayTxnRef: txnRef })
+        .populate("userId", "username email");
+      if (!payment) {
+        console.error("Không tìm thấy payment với txnRef:", txnRef); // Log lỗi
+        return res.status(404).json({ message: "Không tìm thấy giao dịch" });
+      }
+  
+      if (payment.status === "success") {
+        const borrowRecord = await BorrowRecord.findOne({
+          userId: payment.userId,
+          createdAt: { $gte: payment.createdAt },
+        }).populate("bookId", "title price");
+  
+        return res.status(200).json({
+          message: "Thanh toán thành công",
+          payment,
+          borrowRecord,
+        });
+      } else if (payment.status === "failed") {
+        return res.status(400).json({ message: "Thanh toán thất bại" });
+      } else {
+        return res.status(202).json({ message: "Giao dịch đang xử lý" });
+      }
+    } catch (err) {
+      console.error("Lỗi trong checkPaymentStatus:", err.message); // Log lỗi
+      res.status(500).json({ message: "Lỗi kiểm tra trạng thái", error: err.message });
+    }
+  },
   getTotalRevenue: async (req, res) => {
     try {
       const result = await Payment.aggregate([

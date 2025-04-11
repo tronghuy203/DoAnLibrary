@@ -10,6 +10,8 @@ router.get("/request/:requestId", middlewareController.verifyToken, borrowContro
 
 router.post("/pay-rental/:requestId", middlewareController.verifyToken, borrowController.payRentalFeeAndCreateBorrow);
 
+router.get("/vnpay_return", borrowController.vnpayReturn);
+
 router.put("/confirm-pickup/:borrowId", middlewareController.verifyAdmin, borrowController.confirmPickup);
 
 router.put("/confirm-return/:borrowId", middlewareController.verifyToken, borrowController.confirmReturn);
@@ -17,6 +19,8 @@ router.put("/confirm-return/:borrowId", middlewareController.verifyToken, borrow
 router.post("/pay-penalty/:penaltyId", middlewareController.verifyToken, borrowController.payPenalty);
 
 router.get("/all", middlewareController.verifyAdmin, borrowController.getAllBorrowRecords);
+
+router.get("/check-payment-status", middlewareController.verifyToken, borrowController.checkPaymentStatus);
 
 router.get("/revenue/total", middlewareController.verifyAdmin, borrowController.getTotalRevenue);
 

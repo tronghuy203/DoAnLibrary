@@ -33,6 +33,10 @@ const bookSchema = new mongoose.Schema(
       default: 1,
       min: 0,
     },
+    publishedYear: {
+      type: Number,
+      required: true,
+    },
   },
   { timestamps: true }
 );
