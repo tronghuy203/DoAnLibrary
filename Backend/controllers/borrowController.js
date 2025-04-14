@@ -24,7 +24,7 @@ function createVnpayUrl(paymentData, ipAddr) {
   vnpParams["vnp_Amount"] = paymentData.amount * 100; // VNPay yêu cầu nhân 100
   vnpParams["vnp_CreateDate"] = new Date()
     .toISOString()
-    .replace(/[^0-9]/g, '')
+    .replace(/[^0-9]/g, "")
     .slice(0, 14);
   vnpParams["vnp_CurrCode"] = "VND";
   vnpParams["vnp_IpAddr"] = ipAddr;
@@ -85,7 +85,9 @@ const borrowController = {
       }
 
       if (book.quantity <= 0) {
-        return res.status(400).json({ message: "Sách đã hết, không thể mượn." });
+        return res
+          .status(400)
+          .json({ message: "Sách đã hết, không thể mượn." });
       }
 
       // Tạo yêu cầu mới
@@ -107,7 +109,9 @@ const borrowController = {
       const requests = await BorrowRequest.find({ userId });
       res.status(200).json(requests);
     } catch (err) {
-      res.status(500).json({ message: "Lỗi khi lấy danh sách yêu cầu", error: err.message });
+      res
+        .status(500)
+        .json({ message: "Lỗi khi lấy danh sách yêu cầu", error: err.message });
     }
   },
 
@@ -115,16 +119,20 @@ const borrowController = {
     try {
       const { requestId } = req.params;
       const userId = req.user.id;
-  
-      const request = await BorrowRequest.findOne({ _id: requestId, userId })
-        .populate("bookId", "title price"); // Lấy thêm thông tin sách nếu cần
+
+      const request = await BorrowRequest.findOne({
+        _id: requestId,
+        userId,
+      }).populate("bookId", "title price"); // Lấy thêm thông tin sách nếu cần
       if (!request) {
         return res.status(404).json({ message: "Không tìm thấy yêu cầu mượn" });
       }
-  
+
       res.status(200).json(request);
     } catch (err) {
-      res.status(500).json({ message: "Lỗi khi lấy thông tin yêu cầu", error: err.message });
+      res
+        .status(500)
+        .json({ message: "Lỗi khi lấy thông tin yêu cầu", error: err.message });
     }
   },
   // Người dùng thanh toán phí mượn và hệ thống tự tạo BorrowRecord
@@ -177,15 +185,6 @@ const borrowController = {
         });
       } else {
         // Xử lý phương thức khác (nếu có)
-        const payment = new Payment({
-          userId,
-          amount: rentalFee,
-          paymentType: "rental_fee",
-          method,
-          status: "success",
-        });
-        await payment.save();
-
         const borrowRecord = new BorrowRecord({
           userId: request.userId,
           bookId: request.bookId,
@@ -195,7 +194,19 @@ const borrowController = {
         });
         await borrowRecord.save();
 
-        const populatedBorrowRecord = await BorrowRecord.findById(borrowRecord._id).populate("bookId");
+        const payment = new Payment({
+          userId,
+          amount: rentalFee,
+          paymentType: "rental_fee",
+          method,
+          status: "success",
+          borrowRecordId: borrowRecord._id, // Liên kết với BorrowRecord
+        });
+        await payment.save();
+
+        const populatedBorrowRecord = await BorrowRecord.findById(
+          borrowRecord._id
+        ).populate("bookId");
 
         request.status = "paid";
         await request.save();
@@ -247,11 +258,8 @@ const borrowController = {
       if (responseCode === "00") {
         // Thanh toán thành công
         payment.status = "success";
-        await payment.save();
 
-        const request = await BorrowRequest.findById(
-          txnRef.split("_")[0]
-        );
+        const request = await BorrowRequest.findById(txnRef.split("_")[0]);
         const book = await Book.findById(request.bookId);
 
         const borrowRecord = new BorrowRecord({
@@ -262,6 +270,9 @@ const borrowController = {
           status: "waiting_pickup",
         });
         await borrowRecord.save();
+
+        payment.borrowRecordId = borrowRecord._id;
+        await payment.save();
 
         request.status = "paid";
         await request.save();
@@ -275,7 +286,7 @@ const borrowController = {
         //   payment,
         // });
 
-      res.redirect(`http://localhost:3000/payment-redirect?txnRef=${txnRef}`);
+        res.redirect(`http://localhost:3000/payment-redirect?txnRef=${txnRef}`);
       } else {
         payment.status = "failed";
         await payment.save();
@@ -283,7 +294,9 @@ const borrowController = {
         res.redirect("http://localhost:3000/payment-failed");
       }
     } catch (err) {
-      res.status(500).json({ message: "Lỗi xử lý callback", error: err.message });
+      res
+        .status(500)
+        .json({ message: "Lỗi xử lý callback", error: err.message });
     }
   },
 
@@ -329,7 +342,9 @@ const borrowController = {
       }
 
       if (record.status !== "borrowing") {
-        return res.status(400).json({ message: "Trạng thái không hợp lệ để xác nhận trả sách." });
+        return res
+          .status(400)
+          .json({ message: "Trạng thái không hợp lệ để xác nhận trả sách." });
       }
 
       const returnDate = new Date();
@@ -356,7 +371,7 @@ const borrowController = {
           amount: penaltyAmount,
           code: uuidv4(),
           dueAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // hạn đóng phạt 7 ngày
-          status: "unpaid"
+          status: "unpaid",
         });
 
         await penalty.save();
@@ -366,9 +381,13 @@ const borrowController = {
 
       await record.save();
 
-      res.status(200).json({ message: "Đã xác nhận trả sách thành công", record });
+      res
+        .status(200)
+        .json({ message: "Đã xác nhận trả sách thành công", record });
     } catch (err) {
-      res.status(500).json({ message: "Lỗi xác nhận trả sách", error: err.message });
+      res
+        .status(500)
+        .json({ message: "Lỗi xác nhận trả sách", error: err.message });
     }
   },
 
@@ -419,19 +438,21 @@ const borrowController = {
   checkPaymentStatus: async (req, res) => {
     try {
       const { txnRef } = req.query;
-      const payment = await Payment.findOne({ vnpayTxnRef: txnRef })
-        .populate("userId", "username email");
+      const payment = await Payment.findOne({ vnpayTxnRef: txnRef }).populate(
+        "userId",
+        "username email"
+      );
       if (!payment) {
         console.error("Không tìm thấy payment với txnRef:", txnRef); // Log lỗi
         return res.status(404).json({ message: "Không tìm thấy giao dịch" });
       }
-  
+
       if (payment.status === "success") {
         const borrowRecord = await BorrowRecord.findOne({
           userId: payment.userId,
           createdAt: { $gte: payment.createdAt },
         }).populate("bookId", "title price");
-  
+
         return res.status(200).json({
           message: "Thanh toán thành công",
           payment,
@@ -444,7 +465,9 @@ const borrowController = {
       }
     } catch (err) {
       console.error("Lỗi trong checkPaymentStatus:", err.message); // Log lỗi
-      res.status(500).json({ message: "Lỗi kiểm tra trạng thái", error: err.message });
+      res
+        .status(500)
+        .json({ message: "Lỗi kiểm tra trạng thái", error: err.message });
     }
   },
   getTotalRevenue: async (req, res) => {
@@ -454,44 +477,71 @@ const borrowController = {
         {
           $group: {
             _id: null,
-            totalRevenue: { $sum: "$amount" }
-          }
-        }
+            totalRevenue: { $sum: "$amount" },
+          },
+        },
       ]);
 
       const total = result[0]?.totalRevenue || 0;
       res.status(200).json({ totalRevenue: total });
     } catch (err) {
-      res.status(500).json({ message: "Lỗi khi tính tổng doanh thu", error: err.message });
+      res
+        .status(500)
+        .json({ message: "Lỗi khi tính tổng doanh thu", error: err.message });
+    }
+  },
+  historyPayment: async (req, res) => {
+    try {
+      const { userId } = req.params;
+  
+      // Kiểm tra quyền truy cập (giả sử middleware xác thực đã thêm user vào req)
+      if (req.user.id !== userId && !req.user.isAdmin) {
+        return res.status(403).json({ message: "Không có quyền truy cập" });
+      }
+  
+      const payments = await Payment.find({ userId })
+        .populate({
+          path: "borrowRecordId",
+          populate: { path: "bookId", select: "title" },
+        })
+        .sort({ createdAt: -1 });
+  
+      res.status(200).json(payments);
+    } catch (err) {
+      res.status(500).json({ message: "Lỗi khi lấy lịch sử thanh toán", error: err.message });
     }
   },
 
-    // Tổng doanh thu theo ngày
-    getDailyRevenue: async (req, res) => {
-      try {
-        const result = await Payment.aggregate([
-          {
-            $match: { status: "success" }
+  // Tổng doanh thu theo ngày
+  getDailyRevenue: async (req, res) => {
+    try {
+      const result = await Payment.aggregate([
+        {
+          $match: { status: "success" },
+        },
+        {
+          $group: {
+            _id: {
+              $dateToString: { format: "%Y-%m-%d", date: "$createdAt" },
+            },
+            totalRevenue: { $sum: "$amount" },
           },
-          {
-            $group: {
-              _id: {
-                $dateToString: { format: "%Y-%m-%d", date: "$createdAt" }
-              },
-              totalRevenue: { $sum: "$amount" }
-            }
-          },
-          {
-            $sort: { _id: 1 } // Sắp xếp theo ngày tăng dần
-          }
-        ]);
-  
-        res.status(200).json(result);
-      } catch (err) {
-        res.status(500).json({ message: "Lỗi khi tính tổng doanh thu theo ngày", error: err.message });
-      }
-    },
-  
+        },
+        {
+          $sort: { _id: 1 }, // Sắp xếp theo ngày tăng dần
+        },
+      ]);
+
+      res.status(200).json(result);
+    } catch (err) {
+      res
+        .status(500)
+        .json({
+          message: "Lỗi khi tính tổng doanh thu theo ngày",
+          error: err.message,
+        });
+    }
+  },
 };
 
 module.exports = borrowController;

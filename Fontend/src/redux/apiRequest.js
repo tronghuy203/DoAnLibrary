@@ -185,6 +185,19 @@ export const updateUserProfile = async (userId, data, accessToken, axiosJWT, dis
     }
 };
 
+// apiRequest.js
+export const getBorrowHistory = async (userId, accessToken, axiosJWT) => {
+    try {
+      const res = await axiosJWT.get(`/v1/user/history/${userId}`, {
+        headers: { token: `Bearer ${accessToken}` },
+      });
+      return res.data;
+    } catch (error) {
+      console.error("Error fetching borrow history:", error);
+      throw new Error("Không thể lấy lịch sử mượn sách");
+    }
+  };
+
 
 export const logOut = async(dispatch,id,navigate,accessToken,axiosJWT) =>{
     dispatch(logoutStart());
