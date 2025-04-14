@@ -200,10 +200,10 @@ const Login = () => {
             />
             <button
               onClick={handleFacebookLogin}
-              className="w-full flex items-center justify-start gap-16 py-2.5 px-3 bg-white dark:bg-zinc-800 text-gray-700 dark:text-gray-200 font-medium border border-gray-300 dark:border-zinc-600 rounded-md hover:bg-gray-100 dark:hover:bg-zinc-700 transition-all duration-200 shadow-sm"
+              className="w-full flex items-center justify-start py-2.5 px-3 bg-white dark:bg-zinc-800 text-gray-700 dark:text-gray-200 font-medium border border-gray-300 dark:border-zinc-600 rounded-md hover:bg-gray-100 dark:hover:bg-zinc-700 transition-all duration-200 shadow-sm"
             >
               <FaFacebook className="w-5 h-5 text-blue-600" />
-              Đăng nhập bằng Facebook
+              <p className="text-sm text-center mx-auto font-mono">Đăng nhập bằng Facebook</p>
             </button>
           </div>
 
