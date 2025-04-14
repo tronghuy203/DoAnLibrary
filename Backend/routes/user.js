@@ -11,4 +11,6 @@ router.delete("/:id",middlewareController.verifyTokenAndAdminAuth, userControlle
 
 router.put("/update-profile/:id", middlewareController.verifyToken, userController.updateProfile);
 
+router.get("/history/:userId", middlewareController.verifyToken, userController.getBorrowHistory);
+
 module.exports = router;

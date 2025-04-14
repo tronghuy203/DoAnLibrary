@@ -22,6 +22,8 @@ router.get("/all", middlewareController.verifyAdmin, borrowController.getAllBorr
 
 router.get("/check-payment-status", middlewareController.verifyToken, borrowController.checkPaymentStatus);
 
+router.get("/history/:userId", middlewareController.verifyToken, borrowController.historyPayment);
+
 router.get("/revenue/total", middlewareController.verifyAdmin, borrowController.getTotalRevenue);
 
 router.get("/revenue/daily", middlewareController.verifyAdmin, borrowController.getDailyRevenue);

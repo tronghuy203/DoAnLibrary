@@ -30,7 +30,12 @@ const PaymentSuccess = () => {
     const fetchPaymentData = async () => {
       if (txnRef && axiosJWT) {
         try {
-          const res = await checkPaymentStatus(txnRef, user.accessToken, dispatch, axiosJWT);
+          const res = await checkPaymentStatus(
+            txnRef,
+            user.accessToken,
+            dispatch,
+            axiosJWT
+          );
           setPaymentData(res);
         } catch (err) {
           console.error("Lỗi khi lấy dữ liệu thanh toán:", err);
@@ -45,7 +50,21 @@ const PaymentSuccess = () => {
     };
 
     fetchPaymentData();
-  }, [txnRef, payment, borrowRecord, user?.accessToken, axiosJWT, dispatch, navigate]);
+  }, [
+    txnRef,
+    payment,
+    borrowRecord,
+    user?.accessToken,
+    axiosJWT,
+    dispatch,
+    navigate,
+  ]);
+  const shortenTxnRef = (txnRef) => {
+    if (!txnRef) return "N/A";
+    if (txnRef.length <= 18) return txnRef; // Nếu chuỗi ngắn, trả về nguyên bản
+    return `${txnRef.slice(0, 10)}...${txnRef.slice(-8)}`; // Lấy 10 ký tự đầu + ... + 8 ký tự cuối
+  };
+
 
   if (!paymentData) {
     return (
@@ -111,7 +130,7 @@ const PaymentSuccess = () => {
             <div className="space-y-3 text-gray-600 dark:text-gray-300 text-sm sm:text-base">
               <p className="flex justify-between">
                 <span className="font-medium">Mã giao dịch:</span>
-                <span>{paymentInfo.vnpayTxnRef || "N/A"}</span>
+                <span>{shortenTxnRef(paymentInfo.vnpayTxnRef || "N/A")}</span>
               </p>
               <p className="flex justify-between">
                 <span className="font-medium">Số tiền:</span>
@@ -119,12 +138,18 @@ const PaymentSuccess = () => {
               </p>
               <p className="flex justify-between">
                 <span className="font-medium">Phương thức:</span>
-                <span>{paymentInfo.method}</span>
+                <span>
+                  {paymentInfo.method === "cash"
+                    ? "Tiền mặt"
+                    : paymentInfo.method === "vnpay"
+                    ? "Thẻ ngân hàng"
+                    : "N/A"}
+                </span>
               </p>
               <p className="flex justify-between">
                 <span className="font-medium">Trạng thái:</span>
                 <span className="text-green-500 dark:text-green-400 font-semibold">
-                  {paymentInfo.status}
+                  {paymentInfo.status === "success" ? "Thành công" : "N/A"}
                 </span>
               </p>
             </div>
@@ -155,7 +180,9 @@ const PaymentSuccess = () => {
               <p className="flex justify-between">
                 <span className="font-medium">Ngày mượn:</span>
                 <span>
-                  {borrow ? new Date(borrow.borrowDate).toLocaleString() : "N/A"}
+                  {borrow
+                    ? new Date(borrow.borrowDate).toLocaleString()
+                    : "N/A"}
                 </span>
               </p>
               <p className="flex justify-between">
@@ -166,7 +193,9 @@ const PaymentSuccess = () => {
               </p>
               <p className="flex justify-between">
                 <span className="font-medium">Trạng thái:</span>
-                <span>{borrow?.status || "N/A"}</span>
+                <span>
+                  {borrow?.status === "waiting_pickup" ? "Chờ nhận" : "N/A"}
+                </span>
               </p>
             </div>
           </div>
