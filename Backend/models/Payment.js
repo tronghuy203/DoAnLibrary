@@ -20,6 +20,7 @@ const paymentSchema = new mongoose.Schema({
     ref: "Penalty",
     default: null,
   },
+  borrowRecordId: { type: mongoose.Schema.Types.ObjectId, ref: "BorrowRecord" },
   method: {
     type: String,
     enum: ["momo", "vnpay", "cash", "bank_transfer"],

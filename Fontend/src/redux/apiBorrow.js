@@ -230,6 +230,20 @@ export const getTotalRevenue = async (accessToken, dispatch, axiosJWT) => {
   }
 };
 
+export const getPaymentHistory = async (userId, accessToken, axiosJWT) => {
+  try {
+    const res = await axiosJWT.get(`http://localhost:8000/v1/borrow/history/${userId}`,
+      {
+        headers: { token: `Bearer ${accessToken}` },
+      }
+    );
+    return res.data;
+  } catch (err) {
+    console.error("Lỗi khi lấy lịch sử thanh toán:", err);
+    throw err;
+  }
+};
+
 export const getDailyRevenue = async (accessToken, dispatch, axiosJWT) => {
   dispatch(getDailyRevenueStart());
   try {
@@ -244,4 +258,3 @@ export const getDailyRevenue = async (accessToken, dispatch, axiosJWT) => {
     throw err;
   }
 };
-
