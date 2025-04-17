@@ -206,8 +206,7 @@ export const getAllBorrowRecords = async (accessToken, dispatch, axiosJWT) => {
   try {
     const res = await axiosJWT.get("http://localhost:8000/v1/borrow/all", {
       headers: { token: `Bearer ${accessToken}` },
-    });
-    console.log("📦 Dữ liệu đơn mượn trả về từ API:", res.data);
+    }); 
     dispatch(getBorrowsSuccess(res.data));
   } catch (err) {
     dispatch(getBorrowsFailed());

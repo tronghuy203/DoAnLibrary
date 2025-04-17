@@ -29,13 +29,8 @@ const Register = () => {
     else if (!emailRegex.test(fields.email)) newErrors.email = "Email không đúng định dạng.";
 
     if (!fields.username) newErrors.username = "Tên tài khoản không được để trống.";
-    else if (fields.username.length < 6) newErrors.username = "Tên tài khoản phải có ít nhất 6 ký tự.";
-
     if (!fields.password) newErrors.password = "Mật khẩu không được để trống.";
-    else if (fields.password.length < 6) newErrors.password = "Mật khẩu phải có ít nhất 6 ký tự.";
-
     if (!fields.confirmPassword) newErrors.confirmPassword = "Xác nhận mật khẩu không được để trống.";
-    else if (fields.password !== fields.confirmPassword) newErrors.confirmPassword = "Mật khẩu không khớp.";
 
     return newErrors;
   };
@@ -44,28 +39,33 @@ const Register = () => {
     e.preventDefault();
     const fields = { email, username, password, confirmPassword };
     const validationErrors = validateFields(fields);
-
+  
     if (Object.keys(validationErrors).length > 0) {
       setErrors(validationErrors);
       return;
     }
-
+  
     const newUser = { email, username, password, confirmPassword };
     try {
+      console.log("Sending to server:", newUser);
       await registerUser(newUser, dispatch, navigate);
       setStep(2);
       setVerificationCode(["", "", "", "", "", ""]);
       setCountdown(60);
       setErrors({});
     } catch (err) {
+      console.log("Server response:", err.response);
       const serverError = err.response?.data || "Đăng ký thất bại. Vui lòng thử lại.";
+      console.log("Server error:", serverError);
       setErrors(
-        serverError === "Email đã được sử dụng. Vui lòng chọn email khác."
-          ? { email: serverError }
+        serverError === "Email đã tồn tại"
+          ? { email: "Email đã tồn tại" }
+          : serverError === "Tên tài khoản phải ít nhất 6 ký tự"
+          ? { username: "Tên tài khoản phải có ít nhất 6 ký tự." }
+          : serverError === "Mật khẩu phải có ít nhất 6 ký tự"
+          ? { password: "Mật khẩu phải có ít nhất 6 ký tự" }
           : serverError === "Sai mật khẩu"
           ? { confirmPassword: "Mật khẩu không khớp." }
-          : serverError.includes("username must be at least 6 characters")
-          ? { username: "Tên tài khoản phải có ít nhất 6 ký tự." }
           : { general: serverError }
       );
     }
