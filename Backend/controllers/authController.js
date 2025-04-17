@@ -12,7 +12,7 @@ let resetCodes = {};
 const googleClient = new OAuth2Client({
     clientId: process.env.GOOGLE_CLIENT_ID,
     clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-    redirectUri: 'http://localhost:8000/v1/auth/google/callback' // Thay bằng URL thực tế của bạn
+    redirectUri: 'http://localhost:8000/v1/auth/google/callback'
 });
 
 const transporter = nodemailer.createTransport({
@@ -28,11 +28,23 @@ const transporter = nodemailer.createTransport({
 const authController = {
     registerUser: async (req, res) => {
         try {
+            const user = await User.findOne({ email: req.body.email });
+            if (user) {
+                return res.status(400).json("Email đã tồn tại");
+            }
             const { username, email, password, confirmPassword } = req.body;
 
             // Kiểm tra các trường bắt buộc
             if (!username || !email || !password || !confirmPassword) {
                 return res.status(400).json("Thiếu thông tin: username, email, password, confirmPassword");
+            }
+            
+            if(username.length < 6){
+                return res.status(400).json("Tên tài khoản phải ít nhất 6 ký tự");
+            }
+
+            if(password.length < 6 ){
+                return res.status(400).json("Mật khẩu phải có ít nhất 6 ký tự");
             }
 
             if (password !== confirmPassword) {

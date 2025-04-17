@@ -1,5 +1,5 @@
 
-import { useEffect, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { UserGroupIcon, BookOpenIcon, ClockIcon } from "@heroicons/react/24/outline";
@@ -27,14 +27,13 @@ const AdminDashboard = () => {
   const user = useSelector((state) => state.auth.login.currentUser);
   const { allBooks, isFetching: booksFetching, error: booksError } = useSelector((state) => state.books);
   const usersState = useSelector((state) => state.users); // Đổi từ state.user thành state.users
-  const { borrowRecords, isFetching: borrowsFetching, error: borrowsError, totalRevenue, dailyRevenue } = useSelector((state) => state.borrow);
+  const { borrowRecords, isFetching: borrowsFetching, error: borrowsError } = useSelector((state) => state.borrow);
 
   // Kiểm tra và lấy dữ liệu người dùng
   const allUsers = usersState?.users?.allUsers || [];
   const usersFetching = usersState?.users?.isFetching || false;
   const usersError = usersState?.users?.error || false;
-  const axiosJWT = createAxios(user, dispatch);
-
+  const axiosJWT = useMemo(() => (createAxios(user, dispatch)),[user, dispatch]);
   const [mostBorrowedBook, setMostBorrowedBook] = useState(null)
   const [mostActiveUser, setMostActiveUser] = useState(null);
 
@@ -47,14 +46,13 @@ const AdminDashboard = () => {
 
   useEffect(() => {
     if (user?.accessToken) {
-      console.log("Calling APIs with token:", user.accessToken);
       getAllBooks(user.accessToken, dispatch, axiosJWT);
       getAllUsers(user.accessToken, dispatch, axiosJWT);
       getAllBorrowRecords(user.accessToken, dispatch, axiosJWT);
       getTotalRevenue(user.accessToken, dispatch, axiosJWT);
       getDailyRevenue(user.accessToken, dispatch, axiosJWT);
     }
-  }, [dispatch, user?.accessToken]);
+  }, [dispatch, user?.accessToken,axiosJWT]);
 
 
   const totalUsers = allUsers?.length || 0;
@@ -69,8 +67,6 @@ const AdminDashboard = () => {
         acc[bookId] = (acc[bookId] || 0) + 1;
         return acc;
       }, {});
-      console.log("Borrow Counts:", borrowCounts);
-      console.log("All Books IDs:", allBooks.map((b) => b._id));
   
       const mostBorrowedId = Object.keys(borrowCounts).reduce(
         (a, b) => (borrowCounts[a] > borrowCounts[b] ? a : b),
