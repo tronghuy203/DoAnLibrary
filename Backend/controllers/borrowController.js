@@ -212,6 +212,7 @@ const borrowController = {
         await request.save();
 
         book.quantity -= 1;
+        book.sold = (book.sold || 0) + 1;
         await book.save();
 
         res.status(201).json({
@@ -278,6 +279,7 @@ const borrowController = {
         await request.save();
 
         book.quantity -= 1;
+        book.sold = (book.sold || 0) + 1;
         await book.save();
 
         // res.status(200).json({

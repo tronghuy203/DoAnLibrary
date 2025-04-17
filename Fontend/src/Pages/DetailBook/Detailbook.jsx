@@ -240,7 +240,7 @@ const DetailBook = () => {
               </span>
               <span>
                 <span className="font-semibold">Đã mượn:</span>{" "}
-                {book.sold || "0"} bản
+                {book.sold || "0"} lượt
               </span>
               <span>
                 <span className="font-semibold">Đăng ngày:</span>{" "}

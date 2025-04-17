@@ -55,16 +55,17 @@ export const facebookLogin = async (data, dispatch, navigate) => {
 
 
 
-export const registerUser = async(user, dispatch, navigate)=>{
+export const registerUser = async (user, dispatch, navigate) => {
     dispatch(registerStart());
-    try{
-        await axios.post("/v1/auth/register",user);
-        dispatch(registerSuccess());
-    }catch(err){
-        dispatch(registerFailed());
-
+    try {
+      const res = await axios.post("/v1/auth/register", user);
+      dispatch(registerSuccess());
+      return res.data;
+    } catch (err) {
+      dispatch(registerFailed());
+      throw err; 
     }
-};
+  };
 
 export const forgotPassword = async (email, dispatch) => {
     dispatch(forgotPasswordStart());

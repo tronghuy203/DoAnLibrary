@@ -11,6 +11,9 @@ const documentSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
+    coverUrl: {
+      type: String, 
+    },
     uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // Ai đã upload?
     views: {
       type: Number,

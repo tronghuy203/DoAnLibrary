@@ -134,6 +134,16 @@ const UserDocumentList = () => {
                         {doc.title}
                       </h3>
                     </div>
+                    {/* {doc.coverUrl && (
+                      <div className="mb-4">
+                        <img
+                          src={doc.coverUrl}
+                          alt={`Cover of ${doc.title}`}
+                          className="w-full h-48 object-cover rounded-lg"
+                        />
+                      </div>
+                    )} */}
+
                     <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-2 text-sm">
                       {doc.description}
                     </p>
