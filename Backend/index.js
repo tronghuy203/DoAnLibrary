@@ -10,6 +10,7 @@ const categoryRoute = require("./routes/category");
 const documentRoute = require("./routes/document");
 const reviewRoute = require("./routes/review");
 const borrowRoute = require("./routes/borrow");
+const membershipRoute = require("./routes/membership");
 const path = require("path");
 
 dotenv.config();
@@ -31,6 +32,7 @@ app.use("/v1/categorys", categoryRoute);
 app.use("/v1/documents", documentRoute);
 app.use("/v1/reviews", reviewRoute);
 app.use("/v1/borrow", borrowRoute);
+app.use("/v1/membership", membershipRoute);
 
 app.listen(8000, () => {
     console.log("Server is running");

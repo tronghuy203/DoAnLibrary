@@ -20,6 +20,7 @@ const Payment = lazy(() => import("../Pages/Payment/Payment"));
 const PaymentSuccess = lazy(() => import("../Pages/Payment/PaymentSuccess"));
 const PaymentRedirect = lazy(() => import("../Pages/Payment/PaymentRedirect"));
 const PaymentFailed = lazy(() => import("../Pages/Payment/PaymentFailed"));
+const MembershipList = lazy(() => import("../Pages/Membership/MembershipList"));
 const UserRoutes = () => {
   return (
     <UserLayout>
@@ -42,6 +43,7 @@ const UserRoutes = () => {
           <Route path="/payment-success" element={<PaymentSuccess />} />
           <Route path="/payment-redirect" element={<PaymentRedirect />}/>
           <Route path="/payment-failed" element={<PaymentFailed />}/>
+          <Route path="/membership-list" element={<MembershipList />}/>
         </Routes>
       </Suspense>
     </UserLayout>

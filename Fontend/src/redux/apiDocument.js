@@ -151,7 +151,6 @@ export const viewDocument = async (documentId, accessToken, dispatch, axiosJWT) 
     dispatch(incrementViewSuccess({ id: _id, views, viewHistory }));
     return res.data; // Trả về dữ liệu để component có thể sử dụng nếu cần
   } catch (err) {
-    console.error("Lỗi khi xem tài liệu:", err);
     throw err;
   }
 };

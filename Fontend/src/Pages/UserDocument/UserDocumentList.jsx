@@ -5,6 +5,7 @@ import { getAllDocumentsUser, viewDocument } from "../../redux/apiDocument";
 import { createAxios } from "../../createInstance";
 import { loginSuccess } from "../../redux/authSlice";
 import { FaFilePdf, FaFileWord, FaFileExcel, FaSearch } from "react-icons/fa";
+import { toast } from "react-toastify";
 
 const UserDocumentList = () => {
   const user = useSelector((state) => state.auth.login?.currentUser);
@@ -17,6 +18,7 @@ const UserDocumentList = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [visibleDocs, setVisibleDocs] = useState(6);
+  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (!user) {
@@ -28,8 +30,7 @@ const UserDocumentList = () => {
 
   const filteredDocuments = useMemo(() => {
     let result = documents || [];
-    // Chỉ hiển thị tài liệu có status: 'approved'
-    result = result.filter((doc) => doc.status === 'approved');
+    result = result.filter((doc) => doc.status === "approved");
     if (searchQuery) {
       result = result.filter((doc) =>
         doc.title.toLowerCase().includes(searchQuery.toLowerCase())
@@ -45,13 +46,33 @@ const UserDocumentList = () => {
     navigate("/upload-document");
   };
 
-  const handleDetailClick = (id) => {
-    if (user?.accessToken) {
-      viewDocument(id, user?.accessToken, dispatch, axiosJWT).catch((err) => {
-        console.error("Error viewing document:", err);
+  const handleDetailClick = async (id) => {
+    if (!user?.accessToken) {
+      const errorMessage = "Vui lòng đăng nhập để xem tài liệu.";
+      setError(errorMessage);
+      toast.error(errorMessage, {
+        position: "top-center",
+        autoClose: 3000,
       });
+      navigate("/login");
+      return;
     }
-    navigate(`/document/${id}`);
+    try {
+      await viewDocument(id, user.accessToken, dispatch, axiosJWT);
+      setError(null);
+      navigate(`/document/${id}`);
+    } catch (err) {
+      const errorMessage = err.response?.data?.message || "Lỗi khi xem tài liệu. Vui lòng thử lại.";
+      setError(errorMessage);
+      toast.error(errorMessage, {
+        position: "top-center",
+        autoClose: 3000,
+      });
+      if (err.response?.status === 403 || err.response?.status === 500) {
+        return;
+      }
+      navigate(`/document/${id}`);
+    }
   };
 
   const handleLoadMore = () => {
@@ -92,6 +113,12 @@ const UserDocumentList = () => {
             <div className="absolute inset-0 bg-white opacity-20 transform -skew-x-12 animate-shimmer"></div>
           </button>
         </div>
+
+        {error && (
+          <div className="bg-red-100 dark:bg-red-900 border border-red-500 dark:border-red-700 rounded-lg p-4 text-center text-lg font-medium text-red-500 dark:text-red-400 animate-fade-in">
+            {error}
+          </div>
+        )}
 
         <div className="mb-10 flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">

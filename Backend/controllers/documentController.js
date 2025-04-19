@@ -1,6 +1,9 @@
 const Document = require("../models/Document");
 const multer = require("multer");
 const path = require("path");
+const User = require("../models/User");
+const Membership = require("../models/Membership");
+const UserMembership = require("../models/UserMembership");
 
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
@@ -12,6 +15,84 @@ const storage = multer.diskStorage({
 });
 
 const upload = multer({ storage });
+
+const assignFreeMembership = async (userId) => {
+  const freeMembership = await Membership.findOne({ name: "Free" });
+  if (!freeMembership) {
+    throw new Error("Không tìm thấy gói Free");
+  }
+
+  const startDate = new Date();
+  const endDate = new Date(startDate.getTime() + freeMembership.duration * 24 * 60 * 60 * 1000);
+
+  const userMembership = new UserMembership({
+    userId,
+    membershipId: freeMembership._id,
+    startDate,
+    endDate,
+    viewCount: [{ date: startDate, count: 0 }],
+    downloadCount: [{ date: startDate, count: 0 }],
+  });
+  await userMembership.save();
+
+  await User.findByIdAndUpdate(userId, {
+    membership: {
+      membershipId: freeMembership._id,
+      userMembershipId: userMembership._id,
+    },
+  });
+
+  return { userMembership, membership: freeMembership };
+};
+
+const checkMembershipLimits = async (userId, action) => {
+  try {
+    const user = await User.findById(userId).populate("membership.userMembershipId membership.membershipId");
+
+    if (user.admin) {
+      return { userMembership: null, countField: null, today: null };
+    }
+
+    if (!user || !user.membership) {
+      const { userMembership, membership } = await assignFreeMembership(userId);
+      const today = new Date().toISOString().split("T")[0];
+      const countField = action === "view" ? "viewCount" : "downloadCount";
+      return { userMembership, countField, today, membership };
+    }
+
+    const userMembership = await UserMembership.findById(user.membership.userMembershipId);
+    const membership = await Membership.findById(user.membership.membershipId);
+    const today = new Date().toISOString().split("T")[0];
+
+    const countField = action === "view" ? "viewCount" : "downloadCount";
+    const limitField = action === "view" ? "viewLimit" : "downloadLimit";
+
+    userMembership[countField] = userMembership[countField].filter(
+      (entry) => entry.date.toISOString().split("T")[0] === today
+    );
+
+    let countEntry = userMembership[countField].find(
+      (entry) => entry.date.toISOString().split("T")[0] === today
+    );
+
+    if (!countEntry) {
+      countEntry = { date: new Date(), count: 0 };
+      userMembership[countField].push(countEntry);
+    }
+
+    if (countEntry.count >= membership[limitField]) {
+      throw Object.assign(new Error(`Đã vượt quá giới hạn ${action === "view" ? "xem" : "tải"} trong ngày`), {
+        status: 403,
+      });
+    }
+
+    await userMembership.save();
+    return { userMembership, countField, today, membership };
+  } catch (err) {
+    err.status = err.status || 500;
+    throw err;
+  }
+};
 
 const documentController = {
   uploadDocument: async (req, res) => {
@@ -102,26 +183,70 @@ const documentController = {
 
   viewDocument: async (req, res) => {
     try {
+      console.log("viewDocument - Request user:", req.user);
+      if (!req.user || !req.user.id) {
+        console.error("viewDocument - req.user is undefined or missing id");
+        return res.status(401).json({ message: "Không thể xác thực người dùng" });
+      }
+
       const document = await Document.findById(req.params.id);
-      if (!document) return res.status(404).json({ message: "Tài liệu không tồn tại" });
-      if (document.status !== 'approved' && !req.user.admin) {
+      if (!document) {
+        console.log("viewDocument - Document not found:", req.params.id);
+        return res.status(404).json({ message: "Tài liệu không tồn tại" });
+      }
+      if (document.status !== "approved" && !req.user.admin) {
+        console.log("viewDocument - Document not approved:", document.status);
         return res.status(403).json({ message: "Tài liệu chưa được duyệt" });
       }
-      const today = new Date().toISOString().split("T")[0];
-      const viewEntry = document.viewHistory.find(
+
+      let userMembership, countField, today;
+      if (!req.user.admin) {
+        console.log("viewDocument - Checking membership limits for user:", req.user.id);
+        const limits = await checkMembershipLimits(req.user.id, "view");
+        userMembership = limits.userMembership;
+        countField = limits.countField;
+        today = limits.today;
+
+        if (userMembership) {
+          const viewEntry = userMembership[countField].find(
+            (v) => v.date.toISOString().split("T")[0] === today
+          );
+          if (viewEntry) {
+            viewEntry.count += 1;
+          } else {
+            userMembership[countField].push({ date: new Date(), count: 1 });
+          }
+          await userMembership.save();
+        }
+      }
+
+      const docViewEntry = document.viewHistory.find(
         (v) => v.date.toISOString().split("T")[0] === today
       );
-      if (viewEntry) {
-        viewEntry.count += 1;
+      if (docViewEntry) {
+        docViewEntry.count += 1;
       } else {
         document.viewHistory.push({ date: new Date(), count: 1 });
       }
       document.views += 1;
       await document.save();
 
-      res.sendFile(path.join(__dirname, "../uploads", path.basename(document.fileUrl)));
+      const filePath = path.join(__dirname, "../uploads", path.basename(document.fileUrl));
+      console.log("viewDocument - Sending file:", filePath);
+      const fs = require("fs");
+      if (!fs.existsSync(filePath)) {
+        console.error("viewDocument - File not found:", filePath);
+        return res.status(404).json({ message: "File tài liệu không tồn tại" });
+      }
+      res.sendFile(filePath, (err) => {
+        if (err) {
+          console.error("viewDocument - Error sending file:", err.message);
+          res.status(500).json({ message: "Lỗi khi gửi file", error: err.message });
+        }
+      });
     } catch (err) {
-      res.status(500).json({ message: "Lỗi khi mở tài liệu", error: err });
+      console.error("viewDocument - Error:", err.message, err.stack);
+      res.status(err.status || 500).json({ message: err.message });
     }
   },
 
@@ -129,15 +254,35 @@ const documentController = {
     try {
       const document = await Document.findById(req.params.id);
       if (!document) return res.status(404).json({ message: "Tài liệu không tồn tại" });
-      if (document.status !== 'approved' && !req.user.admin) {
+      if (document.status !== "approved" && !req.user.admin) {
         return res.status(403).json({ message: "Tài liệu chưa được duyệt" });
       }
-      const today = new Date().toISOString().split("T")[0];
-      const downloadEntry = document.downloadHistory.find(
+
+      let userMembership, countField, today;
+      if (!req.user.admin) {
+        const limits = await checkMembershipLimits(req.user.id, "download");
+        userMembership = limits.userMembership;
+        countField = limits.countField;
+        today = limits.today;
+
+        if (userMembership) {
+          const downloadEntry = userMembership[countField].find(
+            (d) => d.date.toISOString().split("T")[0] === today
+          );
+          if (downloadEntry) {
+            downloadEntry.count += 1;
+          } else {
+            userMembership[countField].push({ date: new Date(), count: 1 });
+          }
+          await userMembership.save();
+        }
+      }
+
+      const docDownloadEntry = document.downloadHistory.find(
         (d) => d.date.toISOString().split("T")[0] === today
       );
-      if (downloadEntry) {
-        downloadEntry.count += 1;
+      if (docDownloadEntry) {
+        docDownloadEntry.count += 1;
       } else {
         document.downloadHistory.push({ date: new Date(), count: 1 });
       }
@@ -146,7 +291,8 @@ const documentController = {
 
       res.download(path.join(__dirname, "../uploads", path.basename(document.fileUrl)));
     } catch (err) {
-      res.status(500).json({ message: "Lỗi khi tải tài liệu", error: err });
+      console.error("downloadDocument - Error:", err.message, err.stack);
+      res.status(err.status || 500).json({ message: err.message });
     }
   },
 

@@ -1,5 +1,7 @@
 require("dotenv").config();
 const User = require("../models/User");
+const Membership = require("../models/Membership");
+const UserMembership = require("../models/UserMembership");
 const bcrypt = require("bcrypt");
 const jwt = require("jsonwebtoken");
 const nodemailer = require("nodemailer");
@@ -24,6 +26,35 @@ const transporter = nodemailer.createTransport({
         pass: process.env.EMAIL_PASS,
     },
 });
+
+const assignFreeMembership = async (userId) => {
+    const freeMembership = await Membership.findOne({ name: "Free" });
+    if (!freeMembership) {
+      throw new Error("Không tìm thấy gói Free");
+    }
+  
+    const startDate = new Date();
+    const endDate = new Date(startDate.getTime() + freeMembership.duration * 24 * 60 * 60 * 1000);
+  
+    const userMembership = new UserMembership({
+      userId,
+      membershipId: freeMembership._id,
+      startDate,
+      endDate,
+      viewCount: [{ date: startDate, count: 0 }],
+      downloadCount: [{ date: startDate, count: 0 }],
+    });
+    await userMembership.save();
+  
+    await User.findByIdAndUpdate(userId, {
+      membership: {
+        membershipId: freeMembership._id,
+        userMembershipId: userMembership._id,
+      },
+    });
+  
+    return userMembership;
+};
 
 const authController = {
     registerUser: async (req, res) => {
@@ -107,9 +138,9 @@ const authController = {
                 isVerified: true,
                 verificationCode: null,
             });
-            console.log("Dữ liệu trước khi lưu:", newUser); // Log trước khi lưu
             const user = await newUser.save();
-            console.log("User đã lưu:", user);
+            await assignFreeMembership(user._id);
+      
             delete tempUsers[email];
             return res.status(200).json("Xác thực thành công! Tài khoản đã được tạo.");
         } catch (err) {
@@ -254,11 +285,15 @@ const authController = {
                     isVerified: true, // Google đã xác thực email
                 });
                 await user.save();
+                await assignFreeMembership(user._id);
             } else if (!user.googleId) {
                 // Nếu tài khoản đã tồn tại qua đăng ký thường, liên kết với googleId
                 user.googleId = googleId;
                 user.isVerified = true; // Đánh dấu đã xác thực nếu chưa
                 await user.save();
+                if (!user.membership) {
+                   await assignFreeMembership(user._id);
+                }
             }
 
             const accessToken = authController.generateAccessToken(user);
@@ -309,11 +344,15 @@ const authController = {
                     isVerified: true,
                 });
                 await user.save();
+                await assignFreeMembership(user._id);
             } else if (!user.facebookId) {
                 // Liên kết facebookId nếu tài khoản đã tồn tại qua cách khác
                 user.facebookId = facebookId;
                 user.isVerified = true;
                 await user.save();
+                if (!user.membership) {
+                    await assignFreeMembership(user._id);
+                }
             }
 
             const accessTokenJwt = authController.generateAccessToken(user);
