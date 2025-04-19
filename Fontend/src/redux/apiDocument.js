@@ -2,6 +2,15 @@ import {
   getDocumentsStart,
   getDocumentsSuccess,
   getDocumentsFailed,
+  getPendingDocumentsStart,
+  getPendingDocumentsSuccess,
+  getPendingDocumentsFailed,
+  approveDocumentStart,
+  approveDocumentSuccess,
+  approveDocumentFailed,
+  rejectDocumentStart,
+  rejectDocumentSuccess,
+  rejectDocumentFailed,
   getDocumentDetailStart,
   getDocumentDetailSuccess,
   getDocumentDetailFailed,
@@ -32,7 +41,7 @@ export const getAllDocumentsAdmin = async (accessToken, dispatch, axiosJWT) => {
   };
   
   // Lấy danh sách tài liệu có thể tải xuống (User)
-  export const getAllDocumentsUser = async (accessToken, dispatch, axiosJWT) => {
+export const getAllDocumentsUser = async (accessToken, dispatch, axiosJWT) => {
     dispatch(getDocumentsStart());
     try {
       const res = await axiosJWT.get("http://localhost:8000/v1/documents", {
@@ -45,8 +54,64 @@ export const getAllDocumentsAdmin = async (accessToken, dispatch, axiosJWT) => {
       console.error("Lỗi khi tải danh sách tài liệu (User):", err);
       return [];
     }
-  };
+};
   
+// Lấy danh sách tài liệu chờ duyệt (Admin)
+export const getPendingDocuments = async (accessToken, dispatch, axiosJWT) => {
+  dispatch(getPendingDocumentsStart());
+  try {
+    const res = await axiosJWT.get("http://localhost:8000/v1/documents/pending", {
+      headers: { token: `Bearer ${accessToken}` },
+    });
+    dispatch(getPendingDocumentsSuccess(res.data));
+    return res.data;
+  } catch (err) {
+    dispatch(getPendingDocumentsFailed());
+    console.error("Lỗi khi tải danh sách tài liệu chờ duyệt:", err);
+    return [];
+  }
+};
+
+// Phê duyệt tài liệu (Admin)
+export const approveDocument = async (documentId, accessToken, dispatch, axiosJWT) => {
+  dispatch(approveDocumentStart());
+  try {
+    const res = await axiosJWT.put(
+      `http://localhost:8000/v1/documents/approve/${documentId}`,
+      {},
+      {
+        headers: { token: `Bearer ${accessToken}` },
+      }
+    );
+    dispatch(approveDocumentSuccess(res.data.document));
+    return res.data;
+  } catch (err) {
+    dispatch(approveDocumentFailed());
+    console.error("Lỗi khi phê duyệt tài liệu:", err);
+    throw err;
+  }
+};
+
+// Từ chối tài liệu (Admin)
+export const rejectDocument = async (documentId, accessToken, dispatch, axiosJWT) => {
+  dispatch(rejectDocumentStart());
+  try {
+    const res = await axiosJWT.put(
+      `http://localhost:8000/v1/documents/reject/${documentId}`,
+      {},
+      {
+        headers: { token: `Bearer ${accessToken}` },
+      }
+    );
+    dispatch(rejectDocumentSuccess(res.data.document));
+    return res.data;
+  } catch (err) {
+    dispatch(rejectDocumentFailed());
+    console.error("Lỗi khi từ chối tài liệu:", err);
+    throw err;
+  }
+};
+
   
 // Lấy chi tiết tài liệu
 export const getDocumentDetail = async (documentId, accessToken, dispatch, axiosJWT) => {
@@ -64,6 +129,17 @@ export const getDocumentDetail = async (documentId, accessToken, dispatch, axios
   }
 };
 
+export const getUserDocuments = async (userId, accessToken, axiosJWT) => {
+  try {
+    const res = await axiosJWT.get(`http://localhost:8000/v1/documents/user/${userId}`, {
+      headers: { token: `Bearer ${accessToken}` },
+    });
+    return res.data;
+  } catch (err) {
+    console.error("Lỗi khi lấy tài liệu của người dùng:", err.response ? err.response.data : err.message);
+    return [];
+  }
+};
 
 // Tăng lượt xem tài liệu
 export const viewDocument = async (documentId, accessToken, dispatch, axiosJWT) => {

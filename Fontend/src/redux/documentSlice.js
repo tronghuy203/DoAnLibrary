@@ -4,6 +4,7 @@ const documentSlice = createSlice({
   name: "document",
   initialState: {
     documents: [],
+    pendingDocuments: [],
     documentDetail: null,
     isFetching: false,
     error: false,
@@ -19,6 +20,56 @@ const documentSlice = createSlice({
       state.documents = action.payload;
     },
     getDocumentsFailed: (state) => {
+      state.isFetching = false;
+      state.error = true;
+    },
+
+    // Lấy danh sách tài liệu chờ duyệt
+    getPendingDocumentsStart: (state) => {
+      state.isFetching = true;
+      state.error = false;
+    },
+    getPendingDocumentsSuccess: (state, action) => {
+      state.isFetching = false;
+      state.pendingDocuments = action.payload;
+    },
+    getPendingDocumentsFailed: (state) => {
+      state.isFetching = false;
+      state.error = true;
+    },
+
+    // Phê duyệt tài liệu
+    approveDocumentStart: (state) => {
+      state.isFetching = true;
+      state.error = false;
+    },
+    approveDocumentSuccess: (state, action) => {
+      state.isFetching = false;
+      // Cập nhật trạng thái tài liệu trong pendingDocuments
+      state.pendingDocuments = state.pendingDocuments.filter(
+        (doc) => doc._id !== action.payload._id
+      );
+      // Thêm tài liệu vào documents nếu cần
+      state.documents.push(action.payload);
+    },
+    approveDocumentFailed: (state) => {
+      state.isFetching = false;
+      state.error = true;
+    },
+
+    // Từ chối tài liệu
+    rejectDocumentStart: (state) => {
+      state.isFetching = true;
+      state.error = false;
+    },
+    rejectDocumentSuccess: (state, action) => {
+      state.isFetching = false;
+      // Xóa tài liệu khỏi pendingDocuments
+      state.pendingDocuments = state.pendingDocuments.filter(
+        (doc) => doc._id !== action.payload._id
+      );
+    },
+    rejectDocumentFailed: (state) => {
       state.isFetching = false;
       state.error = true;
     },
@@ -95,6 +146,15 @@ export const {
   getDocumentsStart,
   getDocumentsSuccess,
   getDocumentsFailed,
+  getPendingDocumentsStart,
+  getPendingDocumentsSuccess,
+  getPendingDocumentsFailed,
+  approveDocumentStart,
+  approveDocumentSuccess,
+  approveDocumentFailed,
+  rejectDocumentStart,
+  rejectDocumentSuccess,
+  rejectDocumentFailed,
   getDocumentDetailStart,
   getDocumentDetailSuccess,
   getDocumentDetailFailed,

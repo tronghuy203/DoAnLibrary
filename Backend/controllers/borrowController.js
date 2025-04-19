@@ -497,7 +497,7 @@ const borrowController = {
       const { userId } = req.params;
   
       // Kiểm tra quyền truy cập (giả sử middleware xác thực đã thêm user vào req)
-      if (req.user.id !== userId && !req.user.isAdmin) {
+      if (req.user.id !== userId && !req.user.admin) {
         return res.status(403).json({ message: "Không có quyền truy cập" });
       }
   

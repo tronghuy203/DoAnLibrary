@@ -28,6 +28,8 @@ const UserDocumentList = () => {
 
   const filteredDocuments = useMemo(() => {
     let result = documents || [];
+    // Chỉ hiển thị tài liệu có status: 'approved'
+    result = result.filter((doc) => doc.status === 'approved');
     if (searchQuery) {
       result = result.filter((doc) =>
         doc.title.toLowerCase().includes(searchQuery.toLowerCase())
@@ -45,7 +47,9 @@ const UserDocumentList = () => {
 
   const handleDetailClick = (id) => {
     if (user?.accessToken) {
-      viewDocument(id, user?.accessToken, dispatch, axiosJWT);
+      viewDocument(id, user?.accessToken, dispatch, axiosJWT).catch((err) => {
+        console.error("Error viewing document:", err);
+      });
     }
     navigate(`/document/${id}`);
   };
@@ -72,7 +76,6 @@ const UserDocumentList = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-100 dark:from-gray-900 dark:to-zinc-800 flex justify-center items-start py-32 transition-colors duration-500">
       <div className="container mx-auto px-6">
-
         <div className="flex flex-col sm:flex-row justify-between items-center mb-16 gap-6">
           <h2
             data-aos="slide-up"
@@ -101,7 +104,7 @@ const UserDocumentList = () => {
               className="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 dark:text-white"
             />
           </div>
-          <select 
+          <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
             className="px-6 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 dark:text-white appearance-none bg-[url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20fill%3D%22gray%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20d%3D%22M8%2012L2%206h12z%22%2F%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[right_1rem_center] pr-10"
@@ -134,16 +137,6 @@ const UserDocumentList = () => {
                         {doc.title}
                       </h3>
                     </div>
-                    {/* {doc.coverUrl && (
-                      <div className="mb-4">
-                        <img
-                          src={doc.coverUrl}
-                          alt={`Cover of ${doc.title}`}
-                          className="w-full h-48 object-cover rounded-lg"
-                        />
-                      </div>
-                    )} */}
-
                     <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-2 text-sm">
                       {doc.description}
                     </p>

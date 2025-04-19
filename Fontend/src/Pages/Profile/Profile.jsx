@@ -5,6 +5,7 @@ import {
   updateUserProfile,
   getBorrowHistory,
 } from "../../redux/apiRequest";
+import { getUserDocuments } from "../../redux/apiDocument"; // Import API mới
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { createAxios } from "../../createInstance";
@@ -19,7 +20,6 @@ const Profile = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  // Khởi tạo axiosJWT trong useMemo để tránh tạo mới mỗi lần render
   const axiosJWT = useMemo(
     () => createAxios(user, dispatch, loginSuccess),
     [user, dispatch]
@@ -50,10 +50,10 @@ const Profile = () => {
   const [success, setSuccess] = useState(null);
   const [borrowHistory, setBorrowHistory] = useState([]);
   const [paymentHistory, setPaymentHistory] = useState([]);
+  const [userDocuments, setUserDocuments] = useState([]); // State mới cho tài liệu
   const [loadingHistory, setLoadingHistory] = useState(false);
-  const [hasFetched, setHasFetched] = useState(false); // Trạng thái để kiểm soát việc gọi lại API
+  const [hasFetched, setHasFetched] = useState(false);
 
-  // Định nghĩa fetchData với useCallback
   const fetchData = useCallback(async () => {
     if (!user?.accessToken || !user?._id || hasFetched) {
       return;
@@ -75,7 +75,14 @@ const Profile = () => {
         axiosJWT
       );
       setPaymentHistory(paymentHistoryData || []);
-      setHasFetched(true); // Đánh dấu đã gọi API thành công
+      // Lấy tài liệu của người dùng
+      const documents = await getUserDocuments(
+        user._id,
+        user.accessToken,
+        axiosJWT
+      );
+      setUserDocuments(documents || []);
+      setHasFetched(true);
     } catch (err) {
       console.error("Error fetching data:", err);
       setError(err.message || "Không thể tải dữ liệu. Vui lòng thử lại.");
@@ -93,10 +100,11 @@ const Profile = () => {
 
     fetchData();
   }, [user, fetchData, navigate]);
+
   const shortenTxnRef = (txnRef) => {
     if (!txnRef) return "N/A";
-    if (txnRef.length <= 18) return txnRef; // Nếu chuỗi ngắn, trả về nguyên bản
-    return `${txnRef.slice(0, 7)}...${txnRef.slice(-5)}`; // Lấy 10 ký tự đầu + ... + 8 ký tự cuối
+    if (txnRef.length <= 18) return txnRef;
+    return `${txnRef.slice(0, 7)}...${txnRef.slice(-5)}`;
   };
 
   const handleDelete = (id) => {
@@ -185,6 +193,20 @@ const Profile = () => {
     }
   };
 
+  // Hàm chuyển trạng thái tài liệu thành tiếng Việt
+  const getDocumentStatus = (status) => {
+    switch (status) {
+      case "pending":
+        return "Chờ duyệt";
+      case "approved":
+        return "Đã duyệt";
+      case "rejected":
+        return "Bị từ chối";
+      default:
+        return "Không xác định";
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 px-4 py-6 sm:px-6 md:px-8 lg:px-10 transition-colors duration-300">
       <div className="max-w-7xl mx-auto bg-white dark:bg-gray-800 p-4 sm:p-6 md:p-8 rounded-lg shadow-lg transform transition-all hover:shadow-xl">
@@ -219,6 +241,14 @@ const Profile = () => {
                   className="text-blue-600 dark:text-blue-400 font-semibold px-3 py-2 border border-blue-600 dark:border-blue-400 rounded-full bg-blue-100 dark:bg-blue-900 hover:bg-blue-200 dark:hover:bg-blue-800 transition-all duration-300 block text-center"
                 >
                   Lịch sử hoạt động
+                </a>
+              </li>
+              <li>
+                <a
+                  href="#document-history"
+                  className="text-blue-600 dark:text-blue-400 font-semibold px-3 py-2 border border-blue-600 dark:border-blue-400 rounded-full bg-blue-100 dark:bg-blue-900 hover:bg-blue-200 dark:hover:bg-blue-800 transition-all duration-300 block text-center"
+                >
+                  Tài liệu đã tải lên
                 </a>
               </li>
               <li className="mt-8 sm:mt-10">
@@ -578,10 +608,75 @@ const Profile = () => {
                 </div>
               </div>
 
+              {/* Document History */}
+              <div
+                id="document-history"
+                className="bg-gray-50 dark:bg-gray-700 p-4 sm:p-6 rounded-lg shadow-md transform transition-all hover:scale-[1.01] duration-300 mt-6"
+              >
+                <h3 className="text-base sm:text-lg md:text-xl font-semibold text-gray-900 dark:text-white mb-4">
+                  Tài liệu đã tải lên
+                </h3>
+                {loadingHistory ? (
+                  <p className="text-gray-500 dark:text-gray-400">
+                    Đang tải danh sách tài liệu...
+                  </p>
+                ) : userDocuments.length === 0 ? (
+                  <p className="text-gray-500 dark:text-gray-400">
+                    Bạn chưa tải lên tài liệu nào.
+                  </p>
+                ) : (
+                  <div className="overflow-x-auto">
+                    <table className="w-full text-sm sm:text-base text-left text-gray-900 dark:text-white">
+                      <thead className="text-xs sm:text-sm text-gray-700 dark:text-gray-300 uppercase bg-gray-100 dark:bg-gray-600">
+                        <tr>
+                          <th scope="col" className="px-4 py-3">
+                            Tiêu đề
+                          </th>
+                          <th scope="col" className="px-4 py-3">
+                            Ngày tải lên
+                          </th>
+                          <th scope="col" className="px-4 py-3">
+                            Trạng thái
+                          </th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {userDocuments.map((doc) => (
+                          <tr
+                            key={doc._id}
+                            className="bg-white dark:bg-gray-700 border-b dark:border-gray-600 hover:bg-gray-50 dark:hover:bg-gray-600"
+                          >
+                            <td className="px-4 py-3">{doc.title}</td>
+                            <td className="px-4 py-3">
+                              {new Date(doc.createdAt).toLocaleDateString(
+                                "vi-VN"
+                              )}
+                            </td>
+                            <td className="px-4 py-3">
+                              <span
+                                className={`px-2 py-1 rounded-full text-xs ${
+                                  doc.status === "approved"
+                                    ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+                                    : doc.status === "pending"
+                                    ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
+                                    : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+                                }`}
+                              >
+                                {getDocumentStatus(doc.status)}
+                              </span>
+                            </td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+                )}
+              </div>
+
               {/* Borrow History */}
               <div
                 id="borrow-history"
-                className="bg-gray-50 dark:bg-gray-700 p-4 sm:p-6 rounded-lg shadow-md transform transition-all hover:scale-[1.01] duration-300"
+                className="bg-gray-50 dark:bg-gray-700 p-4 sm:p-6 rounded-lg shadow-md transform transition-all hover:scale-[1.01] duration-300 mt-6"
               >
                 <h3 className="text-base sm:text-lg md:text-xl font-semibold text-gray-900 dark:text-white mb-4">
                   Lịch sử mượn sách
@@ -686,6 +781,8 @@ const Profile = () => {
                   </div>
                 )}
               </div>
+
+              {/* Payment History */}
               <div
                 id="payment-history"
                 className="bg-gray-50 dark:bg-gray-700 p-4 sm:p-6 rounded-lg shadow-md transform transition-all hover:scale-[1.01] duration-300 mt-6"

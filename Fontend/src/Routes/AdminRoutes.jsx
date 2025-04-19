@@ -16,6 +16,7 @@ const BookReview = lazy(() => import("../Pages/Admin/BookReview"));
 const DocumentReview = lazy(() => import("../Pages/Admin/DocumentReview"));
 const ListCategory = lazy(() => import("../Pages/Admin/ListCategory"));
 const RevenueDashboard = lazy(() => import("../Pages/Admin/RevenueDashboard"));
+const AdminDocumentApprove = lazy(() => import("../Pages/Admin/AdminDocumentApprove"));
 
 const AdminRoutes = () => {
   return (
@@ -30,6 +31,7 @@ const AdminRoutes = () => {
             <Route path="users" element={<AdminUserManagement />} />
             <Route path="documents/create" element={<CreateDocument />} />
             <Route path="documents/list" element={<ListDocument />} />
+            <Route path="documents/approve" element={<AdminDocumentApprove />} />
             <Route path="manage/borrow" element={<BorrowBook />} />
             <Route path="manage-revenue/revenue" element={<RevenueDashboard  />} />
             <Route path="books/categorys/list" element={<ListCategory />} />
