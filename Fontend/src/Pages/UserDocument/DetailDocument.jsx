@@ -50,7 +50,6 @@ const DetailDocument = () => {
       }
 
       try {
-        await viewDocument(id, user.accessToken, dispatch, axiosJWT);
         const res = await getDocumentDetail(id, user.accessToken, dispatch, axiosJWT);
         if (res) {
           setDocData(res);

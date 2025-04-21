@@ -183,25 +183,20 @@ const documentController = {
 
   viewDocument: async (req, res) => {
     try {
-      console.log("viewDocument - Request user:", req.user);
       if (!req.user || !req.user.id) {
-        console.error("viewDocument - req.user is undefined or missing id");
         return res.status(401).json({ message: "Không thể xác thực người dùng" });
       }
 
       const document = await Document.findById(req.params.id);
       if (!document) {
-        console.log("viewDocument - Document not found:", req.params.id);
         return res.status(404).json({ message: "Tài liệu không tồn tại" });
       }
       if (document.status !== "approved" && !req.user.admin) {
-        console.log("viewDocument - Document not approved:", document.status);
         return res.status(403).json({ message: "Tài liệu chưa được duyệt" });
       }
 
       let userMembership, countField, today;
       if (!req.user.admin) {
-        console.log("viewDocument - Checking membership limits for user:", req.user.id);
         const limits = await checkMembershipLimits(req.user.id, "view");
         userMembership = limits.userMembership;
         countField = limits.countField;
@@ -232,20 +227,16 @@ const documentController = {
       await document.save();
 
       const filePath = path.join(__dirname, "../uploads", path.basename(document.fileUrl));
-      console.log("viewDocument - Sending file:", filePath);
       const fs = require("fs");
       if (!fs.existsSync(filePath)) {
-        console.error("viewDocument - File not found:", filePath);
         return res.status(404).json({ message: "File tài liệu không tồn tại" });
       }
       res.sendFile(filePath, (err) => {
         if (err) {
-          console.error("viewDocument - Error sending file:", err.message);
           res.status(500).json({ message: "Lỗi khi gửi file", error: err.message });
         }
       });
     } catch (err) {
-      console.error("viewDocument - Error:", err.message, err.stack);
       res.status(err.status || 500).json({ message: err.message });
     }
   },
@@ -291,7 +282,6 @@ const documentController = {
 
       res.download(path.join(__dirname, "../uploads", path.basename(document.fileUrl)));
     } catch (err) {
-      console.error("downloadDocument - Error:", err.message, err.stack);
       res.status(err.status || 500).json({ message: err.message });
     }
   },

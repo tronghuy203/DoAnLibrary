@@ -51,8 +51,8 @@ const UserDocumentList = () => {
       const errorMessage = "Vui lòng đăng nhập để xem tài liệu.";
       setError(errorMessage);
       toast.error(errorMessage, {
-        position: "top-center",
-        autoClose: 3000,
+        position: "top-right",
+        autoClose: 5000,
       });
       navigate("/login");
       return;
@@ -62,11 +62,16 @@ const UserDocumentList = () => {
       setError(null);
       navigate(`/document/${id}`);
     } catch (err) {
-      const errorMessage = err.response?.data?.message || "Lỗi khi xem tài liệu. Vui lòng thử lại.";
+      let errorMessage = err.response?.data?.message || "Lỗi khi xem tài liệu. Vui lòng thử lại.";
+      if (err.response?.status === 403) {
+        errorMessage = "Bạn đã vượt quá giới hạn lượt xem hôm nay. Vui lòng nâng cấp gói hoặc thử lại sau.";
+      } else if (err.response?.status === 500) {
+        errorMessage = "Lỗi server. Vui lòng thử lại sau.";
+      }
       setError(errorMessage);
       toast.error(errorMessage, {
-        position: "top-center",
-        autoClose: 3000,
+        position: "top-right",
+        autoClose: 5000,
       });
       if (err.response?.status === 403 || err.response?.status === 500) {
         return;
