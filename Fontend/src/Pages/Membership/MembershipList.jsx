@@ -1,4 +1,3 @@
-// src/components/MembershipList.js
 import React, { useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -6,6 +5,13 @@ import { getAllMemberships, getMembershipStatus, purchaseMembership } from "../.
 import { createAxios } from "../../createInstance";
 import { loginSuccess } from "../../redux/authSlice";
 import { FaCrown, FaCheckCircle } from "react-icons/fa";
+
+// Định nghĩa thứ tự ưu tiên của các gói
+const membershipPriority = {
+  Free: 0,
+  Basic: 1,
+  Premium: 2,
+};
 
 const MembershipList = () => {
   const user = useSelector((state) => state.auth.login?.currentUser);
@@ -29,6 +35,23 @@ const MembershipList = () => {
 
   const handlePurchase = async (membershipId) => {
     try {
+      const selectedMembership = memberships.find((m) => m._id === membershipId);
+      const currentMembershipName = currentMembership?.membershipId.name;
+      const selectedMembershipName = selectedMembership?.name;
+
+      // Kiểm tra nếu người dùng đang sử dụng gói cao hơn
+      if (
+        currentMembershipName &&
+        membershipPriority[currentMembershipName] > membershipPriority[selectedMembershipName]
+      ) {
+        const confirmDowngrade = window.confirm(
+          `Bạn đang sử dụng gói ${currentMembershipName}, cao hơn gói ${selectedMembershipName}. Việc mua gói thấp hơn sẽ thay thế gói hiện tại. Bạn có chắc chắn muốn tiếp tục?`
+        );
+        if (!confirmDowngrade) {
+          return; // Hủy thao tác nếu người dùng không đồng ý
+        }
+      }
+
       const method = membershipId === memberships.find((m) => m.name === "Free")?._id ? "free" : "vnpay";
       const response = await purchaseMembership(membershipId, method, user.accessToken, dispatch, axiosJWT);
       if (response.paymentUrl) {

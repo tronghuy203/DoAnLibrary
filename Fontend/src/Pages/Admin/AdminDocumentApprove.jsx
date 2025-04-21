@@ -86,11 +86,11 @@ const AdminDocumentApproval = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-100 dark:from-gray-900 dark:to-zinc-800 flex justify-center items-start py-32 transition-colors duration-500">
+    <div className="min-h-screen bg-gradient-to-br from-gray-800 via-gray-900 to-black text-gray-100 flex justify-center items-start py-32 transition-colors duration-500">
       <div className="container mx-auto px-6">
         <h2
           data-aos="slide-up"
-          className="text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight animate-slide-in-left mb-16"
+          className="text-4xl font-extrabold text-cyan-400 dark:text-white tracking-tight animate-slide-in-left mb-16"
         >
           Phê duyệt tài liệu
         </h2>
@@ -167,7 +167,7 @@ const AdminDocumentApproval = () => {
                 </div>
               ))
             ) : (
-              <p className="text-gray-500 dark:text-gray-400 text-center col-span-full text-lg animate-fade-in">
+              <p className="text-gray-300 dark:text-gray-400 text-center col-span-full text-lg animate-fade-in">
                 Không có tài liệu nào đang chờ duyệt.
               </p>
             )}

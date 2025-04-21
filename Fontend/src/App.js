@@ -6,6 +6,8 @@ import React, {useEffect} from "react";
 // aos import
 import AOS from "aos";
 import "aos/dist/aos.css"
+import { ToastContainer } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const App = () => {
 
@@ -22,6 +24,15 @@ const App = () => {
 
   return (
     <Router>
+      <ToastContainer
+        position="top-right" 
+        autoClose={3000} 
+        hideProgressBar={false}
+        closeOnClick={true} 
+        pauseOnHover={true}
+        draggable={true} 
+        theme="light"
+      />
       <Routes>
         <Route path="/*" element={<UserRoutes />} />
         <Route path="/admin/*" element={<AdminRoutes />} />

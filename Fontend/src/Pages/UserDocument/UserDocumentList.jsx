@@ -6,9 +6,11 @@ import { createAxios } from "../../createInstance";
 import { loginSuccess } from "../../redux/authSlice";
 import { FaFilePdf, FaFileWord, FaFileExcel, FaSearch } from "react-icons/fa";
 import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 
 const UserDocumentList = () => {
   const user = useSelector((state) => state.auth.login?.currentUser);
+  const currentMembership = useSelector((state) => state.membership.currentMembership);
   const dispatch = useDispatch();
   const axiosJWT = useMemo(() => createAxios(user, dispatch, loginSuccess), [user, dispatch]);
   const documents = useSelector((state) => state.document.documents);
@@ -18,7 +20,6 @@ const UserDocumentList = () => {
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState("all");
   const [visibleDocs, setVisibleDocs] = useState(6);
-  const [error, setError] = useState(null);
 
   useEffect(() => {
     if (!user) {
@@ -49,30 +50,52 @@ const UserDocumentList = () => {
   const handleDetailClick = async (id) => {
     if (!user?.accessToken) {
       const errorMessage = "Vui lòng đăng nhập để xem tài liệu.";
-      setError(errorMessage);
       toast.error(errorMessage, {
         position: "top-right",
         autoClose: 5000,
+        className: "bg-red-100 dark:bg-red-900 text-red-500 dark:text-red-400 rounded-lg shadow-md",
+        progressClassName: "bg-red-500",
       });
       navigate("/login");
       return;
     }
     try {
       await viewDocument(id, user.accessToken, dispatch, axiosJWT);
-      setError(null);
       navigate(`/document/${id}`);
     } catch (err) {
       let errorMessage = err.response?.data?.message || "Lỗi khi xem tài liệu. Vui lòng thử lại.";
       if (err.response?.status === 403) {
-        errorMessage = "Bạn đã vượt quá giới hạn lượt xem hôm nay. Vui lòng nâng cấp gói hoặc thử lại sau.";
+        errorMessage = `Bạn đã vượt quá giới hạn lượt xem hôm nay${
+          currentMembership ? ` với gói ${currentMembership.membershipId.name}` : ""
+        }. Nâng cấp gói để xem thêm!`;
+        toast(
+          <div className="flex items-center gap-2">
+            <span className="text-sm">{errorMessage}</span>
+            <button
+              onClick={() => navigate("/membership-list")}
+              className="px-3 py-1 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-all duration-300 text-sm"
+            >
+              Nâng cấp gói
+            </button>
+          </div>,
+          {
+            position: "top-right",
+            autoClose: 3000,
+            closeOnClick: true,
+            className:
+              "bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg shadow-md max-w-sm",
+            progressClassName: "bg-teal-500",
+          }
+        );
       } else if (err.response?.status === 500) {
         errorMessage = "Lỗi server. Vui lòng thử lại sau.";
+        toast.error(errorMessage, {
+          position: "top-right",
+          autoClose: 5000,
+          className: "bg-red-100 dark:bg-red-900 text-red-500 dark:text-red-400 rounded-lg shadow-md",
+          progressClassName: "bg-red-500",
+        });
       }
-      setError(errorMessage);
-      toast.error(errorMessage, {
-        position: "top-right",
-        autoClose: 5000,
-      });
       if (err.response?.status === 403 || err.response?.status === 500) {
         return;
       }
@@ -118,12 +141,6 @@ const UserDocumentList = () => {
             <div className="absolute inset-0 bg-white opacity-20 transform -skew-x-12 animate-shimmer"></div>
           </button>
         </div>
-
-        {error && (
-          <div className="bg-red-100 dark:bg-red-900 border border-red-500 dark:border-red-700 rounded-lg p-4 text-center text-lg font-medium text-red-500 dark:text-red-400 animate-fade-in">
-            {error}
-          </div>
-        )}
 
         <div className="mb-10 flex flex-col sm:flex-row gap-4">
           <div className="relative flex-1">
