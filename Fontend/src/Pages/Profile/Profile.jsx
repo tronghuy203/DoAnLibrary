@@ -186,15 +186,15 @@ const Profile = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 px-4 py-6 sm:px-6 lg:px-8 transition-colors duration-500">
       <div className="max-w-7xl mx-auto mt-16 sm:mt-20">
-        <header className="mb-6 flex items-center justify-between">
-          <div className="flex items-center gap-3">
-            <CogIcon className="h-6 w-6 sm:h-8 sm:w-8 text-gray-900 dark:text-white" />
+        <header className="mb-6 flex items-center justify-between group">
+          <div className="flex items-center gap-3 transform group-hover:translate-x-1 transition-transform duration-300">
+            <CogIcon className="h-6 w-6 sm:h-8 sm:w-8 text-gray-900 dark:text-white group-hover:scale-110 transition-transform duration-300" />
             <h1 className="text-2xl sm:text-3xl lg:text-4xl font-extrabold text-gray-900 dark:text-white animate-fade-in">
               Cài đặt tài khoản
             </h1>
           </div>
           <button
-            className="lg:hidden p-2 rounded-md bg-gray-200 dark:bg-gray-700"
+            className="lg:hidden p-2 rounded-md bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 transition-colors duration-200 transform hover:scale-105"
             onClick={() => setIsSidebarOpen(true)}
           >
             <Bars3Icon className="h-6 w-6 text-gray-900 dark:text-white" />
@@ -202,21 +202,21 @@ const Profile = () => {
         </header>
 
         {error && (
-          <div className="mb-4 p-3 sm:p-4 bg-red-50 dark:bg-red-900/50 text-red-700 dark:text-red-300 rounded-xl shadow-md animate-slide-in flex items-center gap-2 sm:gap-3">
-            <XCircleIcon className="h-5 w-5 sm:h-6 sm:w-6" />
+          <div className="mb-4 p-3 sm:p-4 bg-red-50 dark:bg-red-900/50 text-red-700 dark:text-red-300 rounded-xl shadow-md animate-slide-in flex items-center gap-2 sm:gap-3 hover:bg-red-100 dark:hover:bg-red-800/50 transition-colors duration-300">
+            <XCircleIcon className="h-5 w-5 sm:h-6 sm:w-6 transform hover:rotate-12 transition-transform duration-200" />
             <span className="text-sm sm:text-base">{error}</span>
           </div>
         )}
         {success && (
-          <div className="mb-4 p-3 sm:p-4 bg-green-50 dark:bg-green-900/50 text-green-700 dark:text-green-300 rounded-xl shadow-md animate-slide-in flex items-center gap-2 sm:gap-3">
-            <CheckCircleIcon className="h-5 w-5 sm:h-6 sm:w-6" />
+          <div className="mb-4 p-3 sm:p-4 bg-green-50 dark:bg-green-900/50 text-green-700 dark:text-green-300 rounded-xl shadow-md animate-slide-in flex items-center gap-2 sm:gap-3 hover:bg-green-100 dark:hover:bg-green-800/50 transition-colors duration-300">
+            <CheckCircleIcon className="h-5 w-5 sm:h-6 sm:w-6 transform hover:scale-110 transition-transform duration-200" />
             <span className="text-sm sm:text-base">{success}</span>
           </div>
         )}
 
         {showDeleteConfirm && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg max-w-sm w-full">
+          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity duration-300">
+            <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-xl max-w-sm w-full transform scale-95 animate-pop-in">
               <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
                 Xác nhận xóa tài khoản
               </h3>
@@ -226,13 +226,13 @@ const Profile = () => {
               <div className="flex justify-end gap-3">
                 <button
                   onClick={cancelDelete}
-                  className="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-300 dark:hover:bg-gray-500 transition-all duration-300"
+                  className="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-300 dark:hover:bg-gray-500 transition-all duration-300 transform hover:scale-105"
                 >
                   Hủy
                 </button>
                 <button
                   onClick={confirmDelete}
-                  className="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all duration-300"
+                  className="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all duration-300 transform hover:scale-105"
                 >
                   Xác nhận
                 </button>
@@ -249,16 +249,16 @@ const Profile = () => {
             setIsSidebarOpen={setIsSidebarOpen}
           />
           <main className="lg:w-3/4 space-y-6">
-            <section id="profile" className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-2xl shadow-lg animate-fade-in-up">
+            <section id="profile" className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 animate-fade-in-up group">
               <div className="flex items-center justify-between mb-4 sm:mb-6">
-                <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                  <IdentificationIcon className="h-5 w-5 sm:h-6 sm:w-6" />
+                <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white flex items-center gap-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
+                  <IdentificationIcon className="h-5 w-5 sm:h-6 sm:w-6 transform group-hover:scale-110 transition-transform duration-200" />
                   Hồ sơ của tôi
                 </h2>
                 {!editMode.profile ? (
                   <button
                     onClick={() => setEditMode({ ...editMode, profile: true })}
-                    className="flex items-center gap-2 px-3 py-1 sm:px-4 sm:py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300 text-sm sm:text-base"
+                    className="flex items-center gap-2 px-3 py-1 sm:px-4 sm:py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 hover:scale-105 transition-all duration-300 text-sm sm:text-base"
                   >
                     <PencilIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                     Chỉnh sửa
@@ -267,14 +267,14 @@ const Profile = () => {
                   <div className="flex gap-2 sm:gap-3">
                     <button
                       onClick={handleUpdate}
-                      className="flex items-center gap-2 px-3 py-1 sm:px-4 sm:py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-300 text-sm sm:text-base"
+                      className="flex items-center gap-2 px-3 py-1 sm:px-4 sm:py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 hover:scale-105 transition-all duration-300 text-sm sm:text-base"
                     >
                       <CheckIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                       Lưu
                     </button>
                     <button
                       onClick={handleCancel}
-                      className="flex items-center gap-2 px-3 py-1 sm:px-4 sm:py-2 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-300 dark:hover:bg-gray-500 transition-all duration-300 text-sm sm:text-base"
+                      className="flex items-center gap-2 px-3 py-1 sm:px-4 sm:py-2 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-300 dark:hover:bg-gray-500 hover:scale-105 transition-all duration-300 text-sm sm:text-base"
                     >
                       <XMarkIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                       Hủy
@@ -283,14 +283,14 @@ const Profile = () => {
                 )}
               </div>
               <div className="flex flex-col sm:flex-row items-center gap-4 sm:gap-6">
-                <div className="relative">
+                <div className="relative group">
                   <img
                     src={updatedData.avatar}
                     alt="Ảnh đại diện"
-                    className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-4 border-white dark:border-gray-700 shadow-md"
+                    className="w-20 h-20 sm:w-24 sm:h-24 rounded-full object-cover border-4 border-white dark:border-gray-700 shadow-md group-hover:ring-4 group-hover:ring-blue-200 dark:group-hover:ring-blue-800 transition-all duration-300"
                   />
                   {editMode.profile && (
-                    <label className="absolute bottom-0 right-0 bg-blue-500 text-white p-1.5 sm:p-2 rounded-full cursor-pointer hover:bg-blue-600 transition-all duration-300">
+                    <label className="absolute bottom-0 right-0 bg-blue-500 text-white p-1.5 sm:p-2 rounded-full cursor-pointer hover:bg-blue-600 hover:scale-110 transition-all duration-300">
                       <CameraIcon className="h-3 w-3 sm:h-4 sm:w-4" />
                       <input
                         type="file"
@@ -312,17 +312,17 @@ const Profile = () => {
                           username: e.target.value,
                         })
                       }
-                      className="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 transition-all duration-300 text-sm sm:text-base"
+                      className="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 text-sm sm:text-base"
                     />
                   ) : (
                     <div>
-                      <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white">
+                      <h3 className="text-lg sm:text-xl font-bold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
                         {updatedData.username || "Chưa có tên"}
                       </h3>
                       <span
                         className={`mt-2 px-2 sm:px-3 py-1 text-xs sm:text-sm font-semibold text-white rounded-full w-36 flex items-center justify-center sm:justify-start gap-1 sm:gap-2 ${
                           user?.admin ? "bg-indigo-600" : "bg-teal-500"
-                        }`}
+                        } hover:bg-opacity-80 transition-opacity duration-300`}
                       >
                         <IdentificationIcon className="h-4 w-4" />
                         {user?.admin ? "Quản trị viên" : "Người dùng"}
@@ -331,7 +331,7 @@ const Profile = () => {
                   )}
                   {uploading && (
                     <p className="text-amber-500 text-xs sm:text-sm mt-2 animate-pulse flex items-center justify-center sm:justify-start gap-2">
-                      <CloudArrowUpIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                      <CloudArrowUpIcon className="h-4 w-4 sm:h-5 sm:w-5 transform animate-bounce" />
                       Đang tải...
                     </p>
                   )}
@@ -339,16 +339,16 @@ const Profile = () => {
               </div>
             </section>
 
-            <section className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-2xl shadow-lg animate-fade-in-up">
+            <section className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 animate-fade-in-up group">
               <div className="flex items-center justify-between mb-4 sm:mb-6">
-                <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                  <IdentificationIcon className="h-5 w-5 sm:h-6 sm:w-6" />
+                <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white flex items-center gap-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
+                  <IdentificationIcon className="h-5 w-5 sm:h-6 sm:w-6 transform group-hover:scale-110 transition-transform duration-200" />
                   Thông tin cá nhân
                 </h2>
                 {!editMode.personalInfo ? (
                   <button
                     onClick={() => setEditMode({ ...editMode, personalInfo: true })}
-                    className="flex items-center gap-2 px-3 py-1 sm:px-4 sm:py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300 text-sm sm:text-base"
+                    className="flex items-center gap-2 px-3 py-1 sm:px-4 sm:py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 hover:scale-105 transition-all duration-300 text-sm sm:text-base"
                   >
                     <PencilIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                     Chỉnh sửa
@@ -357,14 +357,14 @@ const Profile = () => {
                   <div className="flex gap-2 sm:gap-3">
                     <button
                       onClick={handleUpdate}
-                      className="flex items-center gap-2 px-3 py-1 sm:px-4 sm:py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-300 text-sm sm:text-base"
+                      className="flex items-center gap-2 px-3 py-1 sm:px-4 sm:py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 hover:scale-105 transition-all duration-300 text-sm sm:text-base"
                     >
                       <CheckIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                       Lưu
                     </button>
                     <button
                       onClick={handleCancel}
-                      className="flex items-center gap-2 px-3 py-1 sm:px-4 sm:py-2 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-300 dark:hover:bg-gray-500 transition-all duration-300 text-sm sm:text-base"
+                      className="flex items-center gap-2 px-3 py-1 sm:px-4 sm:py-2 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-300 dark:hover:bg-gray-500 hover:scale-105 transition-all duration-300 text-sm sm:text-base"
                     >
                       <XMarkIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                       Hủy
@@ -373,9 +373,9 @@ const Profile = () => {
                 )}
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                <div>
-                  <label className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 flex items-center gap-2 mb-2">
-                    <IdentificationIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                <div className="group">
+                  <label className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 flex items-center gap-2 mb-2 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors duration-200">
+                    <IdentificationIcon className="h-4 w-4 sm:h-5 sm:w-5 transform group-hover:scale-110 transition-transform duration-200" />
                     Họ và tên
                   </label>
                   {editMode.personalInfo ? (
@@ -388,17 +388,17 @@ const Profile = () => {
                           username: e.target.value,
                         })
                       }
-                      className="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 transition-all duration-300 text-sm sm:text-base"
+                      className="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 text-sm sm:text-base"
                     />
                   ) : (
-                    <p className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
+                    <p className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
                       {updatedData.username || "Chưa có"}
                     </p>
                   )}
                 </div>
-                <div>
-                  <label className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 flex items-center gap-2 mb-2">
-                    <EnvelopeIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                <div className="group">
+                  <label className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 flex items-center gap-2 mb-2 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors duration-200">
+                    <EnvelopeIcon className="h-4 w-4 sm:h-5 sm:w-5 transform group-hover:scale-110 transition-transform duration-200" />
                     Địa chỉ Email
                   </label>
                   {editMode.personalInfo ? (
@@ -406,17 +406,17 @@ const Profile = () => {
                       type="email"
                       value={updatedData.email}
                       onChange={(e) => setUpdatedData({ ...updatedData, email: e.target.value })}
-                      className="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 transition-all duration-300 text-sm sm:text-base"
+                      className="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 text-sm sm:text-base"
                     />
                   ) : (
-                    <p className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
+                    <p className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
                       {updatedData.email || "Chưa có"}
                     </p>
                   )}
                 </div>
-                <div>
-                  <label className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 flex items-center gap-2 mb-2">
-                    <PhoneIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                <div className="group">
+                  <label className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 flex items-center gap-2 mb-2 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors duration-200">
+                    <PhoneIcon className="h-4 w-4 sm:h-5 sm:w-5 transform group-hover:scale-110 transition-transform duration-200" />
                     Số điện thoại
                   </label>
                   {editMode.personalInfo ? (
@@ -424,17 +424,17 @@ const Profile = () => {
                       type="tel"
                       value={updatedData.phone}
                       onChange={(e) => setUpdatedData({ ...updatedData, phone: e.target.value })}
-                      className="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 transition-all duration-300 text-sm sm:text-base"
+                      className="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 text-sm sm:text-base"
                     />
                   ) : (
-                    <p className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
+                    <p className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
                       {updatedData.phone || "Chưa có"}
                     </p>
                   )}
                 </div>
-                <div>
-                  <label className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 flex items-center gap-2 mb-2">
-                    <CalendarIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                <div className="group">
+                  <label className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 flex items-center gap-2 mb-2 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors duration-200">
+                    <CalendarIcon className="h-4 w-4 sm:h-5 sm:w-5 transform group-hover:scale-110 transition-transform duration-200" />
                     Ngày sinh
                   </label>
                   {editMode.personalInfo ? (
@@ -442,10 +442,10 @@ const Profile = () => {
                       type="date"
                       value={updatedData.dob}
                       onChange={(e) => setUpdatedData({ ...updatedData, dob: e.target.value })}
-                      className="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 transition-all duration-300 text-sm sm:text-base"
+                      className="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 text-sm sm:text-base"
                     />
                   ) : (
-                    <p className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
+                    <p className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
                       {updatedData.dob
                         ? new Date(updatedData.dob).toLocaleDateString("vi-VN")
                         : "Chưa có"}
@@ -455,16 +455,16 @@ const Profile = () => {
               </div>
             </section>
 
-            <section className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-2xl shadow-lg animate-fade-in-up">
+            <section className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-2xl shadow-md hover:shadow-lg transition-all duration-300 animate-fade-in-up group">
               <div className="flex items-center justify-between mb-4 sm:mb-6">
-                <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white flex items-center gap-2">
-                  <MapPinIcon className="h-5 w-5 sm:h-6 sm:w-6" />
+                <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white flex items-center gap-2 group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
+                  <MapPinIcon className="h-5 w-5 sm:h-6 sm:w-6 transform group-hover:scale-110 transition-transform duration-200" />
                   Địa chỉ
                 </h2>
                 {!editMode.address ? (
                   <button
                     onClick={() => setEditMode({ ...editMode, address: true })}
-                    className="flex items-center gap-2 px-3 py-1 sm:px-4 sm:py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 transition-all duration-300 text-sm sm:text-base"
+                    className="flex items-center gap-2 px-3 py-1 sm:px-4 sm:py-2 bg-gradient-to-r from-blue-500 to-blue-600 text-white rounded-xl hover:from-blue-600 hover:to-blue-700 hover:scale-105 transition-all duration-300 text-sm sm:text-base"
                   >
                     <PencilIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                     Chỉnh sửa
@@ -473,14 +473,14 @@ const Profile = () => {
                   <div className="flex gap-2 sm:gap-3">
                     <button
                       onClick={handleUpdate}
-                      className="flex items-center gap-2 px-3 py-1 sm:px-4 sm:py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 transition-all duration-300 text-sm sm:text-base"
+                      className="flex items-center gap-2 px-3 py-1 sm:px-4 sm:py-2 bg-gradient-to-r from-green-500 to-green-600 text-white rounded-xl hover:from-green-600 hover:to-green-700 hover:scale-105 transition-all duration-300 text-sm sm:text-base"
                     >
                       <CheckIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                       Lưu
                     </button>
                     <button
                       onClick={handleCancel}
-                      className="flex items-center gap-2 px-3 py-1 sm:px-4 sm:py-2 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-300 dark:hover:bg-gray-500 transition-all duration-300 text-sm sm:text-base"
+                      className="flex items-center gap-2 px-3 py-1 sm:px-4 sm:py-2 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-300 dark:hover:bg-gray-500 hover:scale-105 transition-all duration-300 text-sm sm:text-base"
                     >
                       <XMarkIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                       Hủy
@@ -489,16 +489,16 @@ const Profile = () => {
                 )}
               </div>
               <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 sm:gap-6">
-                <div>
-                  <label className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 flex items-center gap-2 mb-2">
-                    <GlobeAltIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                <div className="group">
+                  <label className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 flex items-center gap-2 mb-2 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors duration-200">
+                    <GlobeAltIcon className="h-4 w-4 sm:h-5 sm:w-5 transform group-hover:scale-110 transition-transform duration-200" />
                     Quốc gia
                   </label>
                   {editMode.address ? (
                     <select
                       value={updatedData.country}
                       onChange={handleCountryChange}
-                      className="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 transition-all duration-300 text-sm sm:text-base"
+                      className="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 text-sm sm:text-base"
                     >
                       <option value="">Chọn quốc gia</option>
                       {countries.map((country) => (
@@ -508,21 +508,21 @@ const Profile = () => {
                       ))}
                     </select>
                   ) : (
-                    <p className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
+                    <p className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
                       {countries.find((c) => c.code === updatedData.country)?.name || "Chưa có"}
                     </p>
                   )}
                 </div>
-                <div>
-                  <label className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 flex items-center gap-2 mb-2">
-                    <BuildingOfficeIcon className="h-4 w-4 sm:h-5 sm:w-5" />
+                <div className="group">
+                  <label className="text-xs sm:text-sm font-medium text-gray-500 dark:text-gray-400 flex items-center gap-2 mb-2 group-hover:text-blue-500 dark:group-hover:text-blue-400 transition-colors duration-200">
+                    <BuildingOfficeIcon className="h-4 w-4 sm:h-5 sm:w-5 transform group-hover:scale-110 transition-transform duration-200" />
                     Thành phố/Khu vực
                   </label>
                   {editMode.address ? (
                     <select
                       value={updatedData.city}
                       onChange={(e) => setUpdatedData({ ...updatedData, city: e.target.value })}
-                      className="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 transition-all duration-300 text-sm sm:text-base"
+                      className="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 text-sm sm:text-base"
                       disabled={!updatedData.country}
                     >
                       <option value="">Chọn thành phố</option>
@@ -534,7 +534,7 @@ const Profile = () => {
                         ))}
                     </select>
                   ) : (
-                    <p className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white">
+                    <p className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
                       {updatedData.city || "Chưa có"}
                     </p>
                   )}
