@@ -7,6 +7,7 @@ import { loginSuccess } from "../../redux/authSlice";
 import { FaFilePdf, FaFileWord, FaFileExcel, FaSearch } from "react-icons/fa";
 import { toast } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from "react-toastify";
 
 const UserDocumentList = () => {
   const user = useSelector((state) => state.auth.login?.currentUser);
@@ -217,6 +218,15 @@ const UserDocumentList = () => {
           </>
         )}
       </div>
+      <ToastContainer
+        position="top-right" 
+        autoClose={3000} 
+        hideProgressBar={false}
+        closeOnClick={true} 
+        pauseOnHover={true}
+        draggable={true} 
+        theme="light"
+      />
     </div>
   );
 };
