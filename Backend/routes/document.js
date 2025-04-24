@@ -4,15 +4,23 @@ const middlewareController = require("../controllers/middlewareController");
 
 router.post("/upload", middlewareController.verifyToken, upload.single("file"), documentController.uploadDocument);
 
-router.get("/", documentController.getAllDocuments);
+router.get("/",middlewareController.verifyToken,documentController.getAllDocuments);
 
-router.get("/:id", documentController.getDocumentById);
+router.get('/pending', middlewareController.verifyAdmin, documentController.getPendingDocuments);
 
-router.get("/view/:id", documentController.viewDocument);
+router.get("/:id", middlewareController.verifyToken,documentController.getDocumentById);
 
-router.get("/download/:id", documentController.downloadDocument);
+router.get("/view/:id",middlewareController.verifyToken, documentController.viewDocument);
+
+router.get("/download/:id",middlewareController.verifyToken, documentController.downloadDocument);
+
+router.get('/user/:userId', middlewareController.verifyToken, documentController.getUserDocuments);
 
 router.delete("/:id", middlewareController.verifyAdmin, documentController.deleteDocument);
+
+router.put('/approve/:id', middlewareController.verifyAdmin, documentController.approveDocument);
+
+router.put('/reject/:id', middlewareController.verifyAdmin, documentController.rejectDocument);
 
 router.get("/stats/total", documentController.getTotalStats);
 

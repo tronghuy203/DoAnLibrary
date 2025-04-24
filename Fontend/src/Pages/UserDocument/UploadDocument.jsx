@@ -5,6 +5,7 @@ import { createAxios } from "../../createInstance";
 import { loginSuccess } from "../../redux/authSlice";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
+import { FaTimes } from "react-icons/fa";
 
 const UploadDocument = () => {
   const user = useSelector((state) => state.auth.login?.currentUser);
@@ -17,11 +18,18 @@ const UploadDocument = () => {
   const [file, setFile] = useState(null);
   const [message, setMessage] = useState("");
 
+  const allowedFileTypes = ["application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"];
+
   const handleUpload = useCallback(
     async (e) => {
       e.preventDefault();
       if (!file || !title || !description) {
-        setMessage("Please fill in all fields.");
+        setMessage("Vui lòng điền đầy đủ tất cả các trường.");
+        return;
+      }
+
+      if (!allowedFileTypes.includes(file.type)) {
+        setMessage("Chỉ hỗ trợ các định dạng: PDF, Word, Excel.");
         return;
       }
 
@@ -32,13 +40,14 @@ const UploadDocument = () => {
 
       try {
         await uploadDocument(formData, user.accessToken, dispatch, axiosJWT);
-        setMessage("Document uploaded successfully!");
+        setMessage("Tài liệu đã được tải lên và đang chờ admin phê duyệt!");
         setTitle("");
         setDescription("");
         setFile(null);
       } catch (error) {
-        console.error("Upload failed", error);
-        setMessage("An error occurred while uploading the document!");
+        console.error("Upload failed:", error);
+        const errorMessage = error.response?.data?.message || "Đã xảy ra lỗi khi tải lên tài liệu!";
+        setMessage(errorMessage);
       }
     },
     [title, description, file, user?.accessToken, dispatch, axiosJWT]
@@ -46,6 +55,10 @@ const UploadDocument = () => {
 
   const handleBackClick = () => {
     navigate("/document-list");
+  };
+
+  const handleClearFile = () => {
+    setFile(null);
   };
 
   useEffect(() => {
@@ -72,7 +85,7 @@ const UploadDocument = () => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
             className={`mb-6 p-4 rounded-xl text-center text-sm font-medium shadow-sm ${
-              message.includes("successfully")
+              message.includes("thành công") || message.includes("phê duyệt")
                 ? "bg-green-100 text-green-900 dark:bg-green-900/70 dark:text-green-100"
                 : "bg-red-100 text-red-900 dark:bg-red-900/70 dark:text-red-100"
             }`}
@@ -94,9 +107,8 @@ const UploadDocument = () => {
           </div>
 
           <div>
-            <input
-              type="text"
-              placeholder="Sự miêu tả"
+            <textarea
+              placeholder="Mô tả"
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               required
@@ -104,13 +116,23 @@ const UploadDocument = () => {
             />
           </div>
 
-          <div>
+          <div className="relative">
             <input
               type="file"
               onChange={(e) => setFile(e.target.files[0])}
               required
+              accept=".pdf,.doc,.docx,.xls,.xlsx"
               className="w-full p-4 rounded-xl bg-gray-100/50 dark:bg-zinc-700/50 text-gray-800 dark:text-white border border-gray-300/50 dark:border-zinc-600/50 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-indigo-500 file:text-white hover:file:bg-indigo-600 transition-all duration-300"
             />
+            {file && (
+              <button
+                type="button"
+                onClick={handleClearFile}
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-red-500"
+              >
+                <FaTimes />
+              </button>
+            )}
           </div>
 
           <motion.button
