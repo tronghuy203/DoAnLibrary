@@ -13,4 +13,6 @@ router.put("/update-profile/:id", middlewareController.verifyToken, userControll
 
 router.get("/history/:userId", middlewareController.verifyToken, userController.getBorrowHistory);
 
+router.get("/admin", middlewareController.verifyToken, userController.getAdmin);
+
 module.exports = router;

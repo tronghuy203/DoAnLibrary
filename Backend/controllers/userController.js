@@ -92,6 +92,18 @@ const userController = {
       res.status(500).json({ message: "Lỗi khi lấy lịch sử mượn sách", error: err.message });
     }
   },
+  getAdmin: async (req, res) => {
+    try {
+      const admin = await User.findOne({ admin: true });
+      if (!admin) {
+        return res.status(404).json({ message: "Không tìm thấy admin" });
+      }
+      res.status(200).json({ _id: admin._id, username: admin.username });
+    } catch (error) {
+      console.error("Lỗi trong getAdmin:", error);
+      res.status(500).json({ message: "Lỗi server", error: error.message });
+    }
+  },
 };
 
 module.exports = userController;
