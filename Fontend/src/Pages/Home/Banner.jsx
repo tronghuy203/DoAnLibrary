@@ -6,11 +6,9 @@ const Banner = () => {
         <div className="py-10 bg-white flex justify-center items-center dark:bg-zinc-900 dark:text-white duration-200">
             <div className="container">
                 <div className="grid grid-cols-1 sm:grid-cols-2 items-center gap-6">
-                    {/* image section */}
                     <div className="">
                         <img data-aos="zoom-in" src={LibraryImg} alt="" className="max-w-[400px] block mx-auto h-[350px] w-full drop-shadow-[-10px_10px_12px_rgba(0,0,0,1)] object-cover"/>
                     </div>
-                    {/* text content section */}
                     <div data-aos="slide-up" className="flex flex-col justify-center gap-6 sm:pt-0">
                         <h1 className="text-3xl sm:text-4xl font-bold">Thư viện trong tầm tay bạn</h1>
                         <p className="text-sm text-gray-500 tracking-wide leading-5">

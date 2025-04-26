@@ -21,7 +21,7 @@ function createVnpayUrl(paymentData, ipAddr) {
   vnpParams["vnp_Version"] = "2.1.0";
   vnpParams["vnp_Command"] = "pay";
   vnpParams["vnp_TmnCode"] = vnpayConfig.vnp_TmnCode;
-  vnpParams["vnp_Amount"] = paymentData.amount * 100; // VNPay yêu cầu nhân 100
+  vnpParams["vnp_Amount"] = paymentData.amount * 100;
   vnpParams["vnp_CreateDate"] = new Date()
     .toISOString()
     .replace(/[^0-9]/g, "")
@@ -32,7 +32,7 @@ function createVnpayUrl(paymentData, ipAddr) {
   vnpParams["vnp_OrderInfo"] = `Thanhtoanphimuonsach${paymentData.requestId}`;
   vnpParams["vnp_OrderType"] = "128000";
   vnpParams["vnp_ReturnUrl"] = vnpayConfig.vnp_ReturnUrl;
-  vnpParams["vnp_TxnRef"] = paymentData.vnp_TxnRef; // Mã giao dịch duy nhất
+  vnpParams["vnp_TxnRef"] = paymentData.vnp_TxnRef;
 
   vnpParams = sortObject(vnpParams);
 
@@ -77,8 +77,6 @@ const borrowController = {
             "Bạn đang mượn hoặc đã thanh toán sách này. Không thể gửi yêu cầu mới.",
         });
       }
-
-      // Kiểm tra sách còn không
       const book = await Book.findById(bookId);
       if (!book) {
         return res.status(404).json({ message: "Không tìm thấy sách." });
@@ -90,7 +88,6 @@ const borrowController = {
           .json({ message: "Sách đã hết, không thể mượn." });
       }
 
-      // Tạo yêu cầu mới
       const request = new BorrowRequest({ userId, bookId, status: "pending" });
       const savedRequest = await request.save();
 
@@ -123,7 +120,7 @@ const borrowController = {
       const request = await BorrowRequest.findOne({
         _id: requestId,
         userId,
-      }).populate("bookId", "title price"); // Lấy thêm thông tin sách nếu cần
+      }).populate("bookId", "title price");
       if (!request) {
         return res.status(404).json({ message: "Không tìm thấy yêu cầu mượn" });
       }
@@ -135,7 +132,6 @@ const borrowController = {
         .json({ message: "Lỗi khi lấy thông tin yêu cầu", error: err.message });
     }
   },
-  // Người dùng thanh toán phí mượn và hệ thống tự tạo BorrowRecord
   payRentalFeeAndCreateBorrow: async (req, res) => {
     try {
       const { requestId } = req.params;
@@ -167,7 +163,6 @@ const borrowController = {
         };
         const vnpayUrl = createVnpayUrl(paymentData, ipAddr);
 
-        // Lưu tạm Payment với trạng thái pending
         const payment = new Payment({
           userId,
           amount: rentalFee,
@@ -184,7 +179,6 @@ const borrowController = {
           payment,
         });
       } else {
-        // Xử lý phương thức khác (nếu có)
         const borrowRecord = new BorrowRecord({
           userId: request.userId,
           bookId: request.bookId,
@@ -200,7 +194,7 @@ const borrowController = {
           paymentType: "rental_fee",
           method,
           status: "success",
-          borrowRecordId: borrowRecord._id, // Liên kết với BorrowRecord
+          borrowRecordId: borrowRecord._id,
         });
         await payment.save();
 
@@ -257,7 +251,6 @@ const borrowController = {
       }
 
       if (responseCode === "00") {
-        // Thanh toán thành công
         payment.status = "success";
 
         const request = await BorrowRequest.findById(txnRef.split("_")[0]);
@@ -310,7 +303,6 @@ const borrowController = {
       if (!record)
         return res.status(404).json({ message: "Không tìm thấy đơn mượn" });
 
-      // Kiểm tra đã thanh toán chưa
       const hasPaid = await Payment.exists({
         userId: record.userId,
         paymentType: "rental_fee",
@@ -352,14 +344,12 @@ const borrowController = {
       const returnDate = new Date();
       record.returnDate = returnDate;
 
-      // Tăng lại số lượng sách
       const book = await Book.findById(record.bookId);
       if (book) {
         book.quantity += 1;
         await book.save();
       }
 
-      // Tính tiền phạt nếu trễ
       if (returnDate > record.dueDate) {
         record.status = "overdue";
 
@@ -372,7 +362,7 @@ const borrowController = {
           borrowRecordId: record._id,
           amount: penaltyAmount,
           code: uuidv4(),
-          dueAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000), // hạn đóng phạt 7 ngày
+          dueAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
           status: "unpaid",
         });
 
@@ -445,7 +435,7 @@ const borrowController = {
         "username email"
       );
       if (!payment) {
-        console.error("Không tìm thấy payment với txnRef:", txnRef); // Log lỗi
+        console.error("Không tìm thấy payment với txnRef:", txnRef);
         return res.status(404).json({ message: "Không tìm thấy giao dịch" });
       }
 
@@ -466,7 +456,7 @@ const borrowController = {
         return res.status(202).json({ message: "Giao dịch đang xử lý" });
       }
     } catch (err) {
-      console.error("Lỗi trong checkPaymentStatus:", err.message); // Log lỗi
+      console.error("Lỗi trong checkPaymentStatus:", err.message);
       res
         .status(500)
         .json({ message: "Lỗi kiểm tra trạng thái", error: err.message });
@@ -496,7 +486,6 @@ const borrowController = {
     try {
       const { userId } = req.params;
   
-      // Kiểm tra quyền truy cập (giả sử middleware xác thực đã thêm user vào req)
       if (req.user.id !== userId && !req.user.admin) {
         return res.status(403).json({ message: "Không có quyền truy cập" });
       }
@@ -530,7 +519,7 @@ const borrowController = {
           },
         },
         {
-          $sort: { _id: 1 }, // Sắp xếp theo ngày tăng dần
+          $sort: { _id: 1 },
         },
       ]);
 

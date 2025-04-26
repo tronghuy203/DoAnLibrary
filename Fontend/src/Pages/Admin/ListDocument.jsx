@@ -43,16 +43,21 @@ const ListDocument = () => {
   };
 
   const groupedData = documents.reduce((acc, doc) => {
-    doc.viewHistory.forEach((v) => {
-      const date = formatDate(v.date);
-      acc[date] = acc[date] || { views: 0, downloads: 0 };
-      acc[date].views += v.count;
-    });
-    doc.downloadHistory.forEach((d) => {
-      const date = formatDate(d.date);
-      acc[date] = acc[date] || { views: 0, downloads: 0 };
-      acc[date].downloads += d.count;
-    });
+    if (Array.isArray(doc.viewHistory)) {
+      doc.viewHistory.forEach((v) => {
+        const date = formatDate(v.date);
+        acc[date] = acc[date] || { views: 0, downloads: 0 };
+        acc[date].views += v.count;
+      });
+    }
+    if (Array.isArray(doc.downloadHistory)) {
+      doc.downloadHistory.forEach((d) => {
+        const date = formatDate(d.date);
+        acc[date] = acc[date] || { views: 0, downloads: 0 };
+        acc[date].downloads += d.count;
+      });
+    }
+  
     return acc;
   }, {});
 

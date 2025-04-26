@@ -100,16 +100,16 @@ const authController = {
         email,
         password: hashed,
         verificationCode,
-        createdAt: new Date(), // Cập nhật thời gian tạo để tránh hết hạn sớm
+        createdAt: new Date(),
       };
 
       await TempUser.findOneAndUpdate(
-        { email }, // Tìm theo email
-        tempUserData, // Dữ liệu cần cập nhật
+        { email },
+        tempUserData,
         {
-          upsert: true, // Tạo mới nếu không tìm thấy
-          new: true, // Trả về bản ghi sau khi cập nhật
-          setDefaultsOnInsert: true, // Áp dụng giá trị mặc định nếu tạo mới
+          upsert: true,
+          new: true,
+          setDefaultsOnInsert: true,
         }
       );
 
@@ -169,7 +169,6 @@ const authController = {
       const user = await newUser.save();
       await assignFreeMembership(user._id);
 
-      // Xóa TempUser sau khi xác thực
       await TempUser.deleteOne({ email });
 
       return res.status(200).json("Xác thực thành công! Tài khoản đã được tạo.");
@@ -228,10 +227,10 @@ const authController = {
         {
           email,
           code: resetCode,
-          createdAt: new Date(), // Cập nhật thời gian để tránh hết hạn sớm
+          createdAt: new Date(),
         },
         {
-          upsert: true, // Tạo mới nếu không tìm thấy
+          upsert: true,
           new: true,
           setDefaultsOnInsert: true,
         }
@@ -288,7 +287,6 @@ const authController = {
   
       await User.findOneAndUpdate({ email }, { password: hashedPassword });
   
-      // Xóa ResetCode sau khi đặt lại mật khẩu
       await ResetCode.deleteOne({ email });
   
       res.status(200).json("Mật khẩu đã được cập nhật.");
@@ -328,23 +326,22 @@ const authController = {
       const payload = ticket.getPayload();
       const { email, name, sub: googleId } = payload;
 
-      // Tìm user bằng email hoặc googleId
       let user = await User.findOne({ $or: [{ email }, { googleId }] });
 
       if (!user) {
         // Nếu không có tài khoản, tạo mới và đăng nhập luôn
         user = new User({
-          username: name || `user_${googleId}`, // Nếu không có name, dùng googleId để tạo username
+          username: name || `user_${googleId}`,
           email,
           googleId,
-          isVerified: true, // Google đã xác thực email
+          isVerified: true,
         });
         await user.save();
         await assignFreeMembership(user._id);
       } else if (!user.googleId) {
         // Nếu tài khoản đã tồn tại qua đăng ký thường, liên kết với googleId
         user.googleId = googleId;
-        user.isVerified = true; // Đánh dấu đã xác thực nếu chưa
+        user.isVerified = true;
         await user.save();
         if (!user.membership) {
           await assignFreeMembership(user._id);
@@ -376,7 +373,6 @@ const authController = {
       if (!accessToken)
         return res.status(400).json({ message: "Thiếu access token Facebook" });
 
-      // Gửi yêu cầu đến Facebook Graph API để xác thực token và lấy thông tin user
       const fbResponse = await fetch(
         `https://graph.facebook.com/me?fields=id,name,email&access_token=${accessToken}`
       );
@@ -388,21 +384,19 @@ const authController = {
 
       const { id: facebookId, name, email } = fbUser;
 
-      // Tìm user bằng email hoặc facebookId
       let user = await User.findOne({ $or: [{ email }, { facebookId }] });
 
       if (!user) {
         // Tạo tài khoản mới nếu chưa tồn tại
         user = new User({
           username: name || `user_${facebookId}`,
-          email: email || `${facebookId}@facebook.com`, // Nếu không có email, tạo email giả
+          email: email || `${facebookId}@facebook.com`,
           facebookId,
           isVerified: true,
         });
         await user.save();
         await assignFreeMembership(user._id);
       } else if (!user.facebookId) {
-        // Liên kết facebookId nếu tài khoản đã tồn tại qua cách khác
         user.facebookId = facebookId;
         user.isVerified = true;
         await user.save();

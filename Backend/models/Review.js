@@ -5,7 +5,7 @@ const ReviewSchema = new mongoose.Schema(
     itemId: { type: String, required: true },
     type: {
       type: String,
-      enum: ["book", "ebook", "document"],
+      enum: ["book", "document"],
       required: true,
     },
     userId: {

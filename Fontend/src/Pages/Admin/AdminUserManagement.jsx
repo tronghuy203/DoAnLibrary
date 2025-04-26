@@ -16,7 +16,6 @@ const AdminUserManagement = () => {
   const [currentPage, setCurrentPage] = useState(1);
   const recordsPerPage = 7;
 
-  // Tính toán dữ liệu hiển thị
   const totalRecords = userList?.length || 0;
   const totalPages = Math.ceil(totalRecords / recordsPerPage);
   const indexOfLastRecord = currentPage * recordsPerPage;
@@ -50,14 +49,12 @@ const AdminUserManagement = () => {
     setEditUserId(user._id);
   };
 
-  // Hàm chuyển trang
   const goToPage = (page) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
     }
   };
 
-  // Tạo danh sách số trang
   const pageNumbers = [];
   for (let i = 1; i <= totalPages; i++) {
     pageNumbers.push(i);

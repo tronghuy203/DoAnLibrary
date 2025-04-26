@@ -22,7 +22,7 @@ const DetailBook = () => {
   const [showShareOptions, setShowShareOptions] = useState(false);
   const [averageRating, setAverageRating] = useState(0);
   const [reviewCount, setReviewCount] = useState(0);
-  const [recommendedRatings, setRecommendedRatings] = useState({}); // Lưu trữ đánh giá của sách đề xuất
+  const [recommendedRatings, setRecommendedRatings] = useState({});
   const shareRef = useRef(null);
   const recommendedRef = useRef(null);
 
@@ -63,10 +63,9 @@ const DetailBook = () => {
         throw new Error("Không nhận được requestId từ server!");
       }
       navigate(`/payment/${borrowData._id}`);
-      // Cuộn lên đầu trang sau khi chuyển hướng
       setTimeout(() => {
         window.scrollTo({ top: 0, behavior: "smooth" });
-      }, 100); // Thêm độ trễ nhỏ để đảm bảo trang đã chuyển xong
+      }, 100); 
     } catch (error) {
       const errorMessage = error.response?.data?.message || "Đã xảy ra lỗi khi gửi yêu cầu mượn sách. Vui lòng thử lại!";
       console.error("Lỗi khi mượn sách:", error.response?.data || error.message);

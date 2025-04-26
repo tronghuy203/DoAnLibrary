@@ -5,7 +5,6 @@ const Map = () => {
     return (
       <div className="py-10 bg-white mx-auto flex justify-center items-center dark:bg-zinc-900 dark:text-white duration-200 ">
         <div className="container">
-            {/* header */}
             <div data-aos="slide-up" className="text-center mb-10 max-w-[400px] mx-auto">
                 <p className="text-sm bg-clip-text text-transparent bg-gradient-to-r from-sky-600 to-cyan-200">
                     Nơi khách hàng muốn đến

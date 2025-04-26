@@ -6,7 +6,6 @@ import AppStoreBanner from "./AppStoreBanner";
 import TopBooks from "./TopBooks";
 import Testimonial from "./Testimonial";
 import Map from "./Map";
-// aos import
 import AOS from "aos";
 import "aos/dist/aos.css"
 

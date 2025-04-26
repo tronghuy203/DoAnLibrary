@@ -1,4 +1,3 @@
-// apiCategory.js
 import {
     getCategoryStart,
     getCategorySuccess,
@@ -14,7 +13,6 @@ import {
     deleteCategoryFailed,
 } from "./categorySlice";
 
-// GET ALL CATEGORIES
 export const getCategory = async (accessToken, dispatch, axiosJWT) => {
     dispatch(getCategoryStart());
     try {
@@ -22,7 +20,7 @@ export const getCategory = async (accessToken, dispatch, axiosJWT) => {
             headers: { token: `Bearer ${accessToken}` },
         });
         dispatch(getCategorySuccess(res.data));
-        return res.data; // Chỉ trả về mảng dữ liệu
+        return res.data;
     } catch (err) {
         dispatch(getCategoryFailed());
         console.error("Lỗi khi tải danh mục:", err);
@@ -30,7 +28,6 @@ export const getCategory = async (accessToken, dispatch, axiosJWT) => {
     }
 };
 
-// CREATE CATEGORY
 export const createCategory = async (dispatch, categoryData, accessToken, axiosJWT) => {
     dispatch(createCategoryStart());
     try {
@@ -46,7 +43,6 @@ export const createCategory = async (dispatch, categoryData, accessToken, axiosJ
     }
 };
 
-// UPDATE CATEGORY
 export const updateCategory = async (categoryId, updatedData, accessToken, dispatch, axiosJWT) => {
     dispatch(updateCategoryStart());
     try {
@@ -62,7 +58,6 @@ export const updateCategory = async (categoryId, updatedData, accessToken, dispa
     }
 };
 
-// DELETE CATEGORY
 export const deleteCategory = async (categoryId, accessToken, dispatch, axiosJWT) => {
     dispatch(deleteCategoryStart());
     try {

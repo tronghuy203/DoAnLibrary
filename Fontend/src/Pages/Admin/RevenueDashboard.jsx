@@ -36,7 +36,7 @@ const RevenueDashboard = () => {
       {
         label: "Doanh thu theo ngày (VNĐ)",
         data: dailyRevenue?.map((item) => item.totalRevenue) || [],
-        backgroundColor: "rgba(34, 197, 94, 0.6)", // Màu xanh lá hiện đại
+        backgroundColor: "rgba(34, 197, 94, 0.6)",
         borderColor: "rgba(34, 197, 94, 1)",
         borderWidth: 1,
         hoverBackgroundColor: "rgba(34, 197, 94, 0.8)",
@@ -50,7 +50,7 @@ const RevenueDashboard = () => {
     plugins: {
       legend: {
         position: "top",
-        labels: { color: "#e5e7eb", font: { size: 14 } }, // Màu chữ sáng hơn
+        labels: { color: "#e5e7eb", font: { size: 14 } },
       },
       tooltip: {
         mode: "index",
@@ -63,7 +63,7 @@ const RevenueDashboard = () => {
     scales: {
       x: {
         ticks: { color: "#e5e7eb" },
-        grid: { color: "rgba(255, 255, 255, 0.05)" }, // Grid nhạt hơn
+        grid: { color: "rgba(255, 255, 255, 0.05)" },
       },
       y: {
         ticks: { color: "#e5e7eb" },
@@ -72,7 +72,7 @@ const RevenueDashboard = () => {
       },
     },
     animation: {
-      duration: 1000, // Thời gian animation
+      duration: 1000,
       easing: "easeOutQuart",
     },
   };
@@ -80,12 +80,10 @@ const RevenueDashboard = () => {
   return (
     <div className="min-h-screen bg-gray-900 text-white px-4 sm:px-6 lg:px-8 py-6 flex items-center justify-center">
       <div className="w-full max-w-6xl space-y-8 animate-fade-in">
-        {/* Tiêu đề */}
         <h2 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-center sm:text-left text-blue-400 transition-transform duration-500 hover:scale-105">
           Bảng điều khiển doanh thu
         </h2>
 
-        {/* Tổng doanh thu */}
         <div
           className="p-4 sm:p-6 bg-gray-800 rounded-xl shadow-lg transform transition-all duration-300 hover:shadow-xl hover:-translate-y-1"
         >
@@ -97,7 +95,6 @@ const RevenueDashboard = () => {
           </h3>
         </div>
 
-        {/* Biểu đồ */}
         {dailyRevenue?.length > 0 ? (
           <div
             className="bg-gray-800 rounded-xl p-4 sm:p-6 shadow-lg transform transition-all duration-300 hover:shadow-xl hover:-translate-y-1"

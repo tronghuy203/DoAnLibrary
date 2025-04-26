@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { createBook } from "../../redux/apiBooks";
-import { getCategory } from "../../redux/apiCategory"; // Import hàm getCategory
+import { getCategory } from "../../redux/apiCategory";
 import { createAxios } from "../../createInstance";
 import { loginSuccess } from "../../redux/authSlice";
 import {
@@ -31,14 +31,12 @@ const CreateBook = () => {
   });
   const [previewImage, setPreviewImage] = useState(null);
   const [message, setMessage] = useState("");
-  const [categories, setCategories] = useState([]); // State để lưu danh mục từ API
-
+  const [categories, setCategories] = useState([]);
   const dispatch = useDispatch();
   const user = useSelector((state) => state.auth.login.currentUser);
   const accessToken = user?.accessToken;
   const axiosJWT = useMemo(() => createAxios(user, dispatch, loginSuccess), [user, dispatch]);
 
-  // Lấy danh sách danh mục khi component mount
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -48,7 +46,7 @@ const CreateBook = () => {
         }
         const data = await getCategory(accessToken, dispatch, axiosJWT);
         if (Array.isArray(data)) {
-          setCategories(data); // Lưu danh mục vào state
+          setCategories(data); 
         } else {
           console.error("Dữ liệu danh mục không hợp lệ:", data);
         }
@@ -70,7 +68,7 @@ const CreateBook = () => {
   
     if (name === "price" || name === "quantity") {
       const rawValue = value.replace(/\./g, "");
-      if (!/^\d*$/.test(rawValue)) return; // chỉ cho nhập số
+      if (!/^\d*$/.test(rawValue)) return;
       const formattedValue = formatPrice(rawValue);
       setBook({ ...book, [name]: formattedValue });
     } else {
@@ -96,7 +94,7 @@ const CreateBook = () => {
   };
   
   const handleDecreaseQuantity = () => {
-    setBook({ ...book, quantity: Math.max(1, book.quantity - 1) }); // Không giảm dưới 1
+    setBook({ ...book, quantity: Math.max(1, book.quantity - 1) });
   };
   
 

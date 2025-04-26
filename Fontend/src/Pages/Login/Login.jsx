@@ -76,7 +76,6 @@ const Login = () => {
       (response) => {
         if (response.status === "connected") {
           const accessToken = response.authResponse.accessToken;
-          // Bọc async trong hàm đồng bộ
           facebookLogin({ accessToken }, dispatch, navigate)
             .then(() => setErrors({}))
             .catch((err) => {
@@ -99,11 +98,9 @@ const Login = () => {
         className="relative min-h-screen bg-cover bg-center flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 overflow-hidden"
         style={{ backgroundImage: `url(${anhnen})` }}
       >
-        {/* Background Overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-gray-900/80 via-gray-800/70 to-black/80 dark:from-zinc-900/80 dark:via-zinc-800/70 dark:to-black/80 backdrop-blur-md transition-all duration-300"></div>
         <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(0,255,255,0.15),_transparent_70%)] opacity-40 animate-pulse-slow"></div>
 
-        {/* Form Container */}
         <div className="relative mt-10 z-10 w-full max-w-md bg-white/95 dark:bg-zinc-800/95 backdrop-blur-xl rounded-3xl shadow-2xl p-8 sm:p-10 transition-all duration-500 hover:shadow-[0_0_30px_rgba(0,255,255,0.25)] animate-slide-up">
           <h2 className="text-4xl font-bold text-center text-gray-900 dark:text-white mb-10 tracking-wide bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent leading-tight pb-1">
             Đăng Nhập
@@ -196,7 +193,6 @@ const Login = () => {
             <GoogleLogin
               onSuccess={handleGoogleSuccess}
               onError={handleGoogleFailure}
-              // Không cần tùy chỉnh thêm vì đây là giao diện mặc định của Google
             />
             <button
               onClick={handleFacebookLogin}
