@@ -17,7 +17,7 @@ const borrowRequestSchema = new mongoose.Schema({
   },
   status: {
     type: String,
-    enum: ["pending", "approved", "rejected", "paid"],
+    enum: ["pending", "paid"],
     default: "pending",
   },
 }, { timestamps: true });

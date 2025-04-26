@@ -191,7 +191,6 @@ const DetailDocument = () => {
           </p>
         ) : (
           <>
-            {/* Header Section */}
             <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 border border-gray-200 dark:border-gray-700">
               <h2 className="text-3xl font-bold text-gray-900 dark:text-white tracking-tight mb-4">
                 {docData.title}
@@ -347,7 +346,6 @@ const DetailDocument = () => {
               </div>
             )}
 
-            {/* Review Section */}
             <div id="review-section">
               <ReviewSection
                 type="document"

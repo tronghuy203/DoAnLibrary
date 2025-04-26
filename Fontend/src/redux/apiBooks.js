@@ -16,7 +16,6 @@ import {
   getBookDetailFailed
 } from "./bookSlice";
 
-// GET ALL BOOKS
 export const getAllBooks = async (accessToken, dispatch,axiosJWT) => {
   dispatch(getBooksStart());
   try {
@@ -47,7 +46,6 @@ export const getBookDetail = async (bookId, accessToken, dispatch, axiosJWT) => 
   }
 };
 
-// CREATE BOOK
 export const createBook = async (book, accessToken, dispatch,axiosJWT) => {
   dispatch(createBookStart());
   try {
@@ -63,7 +61,6 @@ export const createBook = async (book, accessToken, dispatch,axiosJWT) => {
   }
 };
 
-// UPDATE BOOK
 export const updateBook = async (bookId, updatedBook, accessToken, dispatch,axiosJWT) => {
   dispatch(updateBookStart());
   try {
@@ -81,14 +78,13 @@ export const updateBook = async (bookId, updatedBook, accessToken, dispatch,axio
   }
 };
 
-// DELETE BOOK
 export const deleteBook = async (bookId, accessToken, dispatch,axiosJWT) => {
   dispatch(deleteBookStart());
   try {
     await axiosJWT.delete(`http://localhost:8000/v1/books/${bookId}`, {
       headers: { token: `Bearer ${accessToken}` },
     });
-    dispatch(deleteBookSuccess(bookId)); // Xóa sách thành công
+    dispatch(deleteBookSuccess(bookId));
   } catch (err) {
     dispatch(deleteBookFailed());
     console.error("Lỗi khi xóa sách:", err);

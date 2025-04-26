@@ -55,7 +55,6 @@ const ResetPassword = () => {
         transition={{ duration: 0.6, ease: "easeOut" }}
         className="relative bg-white dark:bg-zinc-900 p-6 sm:p-8 rounded-3xl shadow-lg w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg"
       >
-        {/* Gradient Border Effect */}
         <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-blue-400/30 to-cyan-500/30 blur-xl opacity-50 dark:from-blue-600/20 dark:to-cyan-600/20 -z-10"></div>
 
         <div className="relative z-10">

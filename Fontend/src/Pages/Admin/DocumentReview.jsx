@@ -97,11 +97,19 @@ const DocumentReviews = () => {
   };
 
   if (loading) {
-    return <div className="text-center text-gray-200 animate-pulse py-10 text-lg">Đang tải...</div>;
+    return (
+      <div className="text-center text-gray-500 dark:text-gray-300 animate-pulse py-10 text-lg transition-all duration-300 ease-in-out">
+        Đang tải...
+      </div>
+    );
   }
 
   if (error) {
-    return <div className="text-center text-red-400 py-10 animate-fade-in text-lg">Lỗi: {error}</div>;
+    return (
+      <div className="text-center text-red-500 dark:text-red-400 py-10 animate-fade-in text-lg transition-all duration-300 ease-in-out">
+        Lỗi: {error}
+      </div>
+    );
   }
 
   const totalPages = Math.ceil(reviews.length / reviewsPerPage);
@@ -114,22 +122,22 @@ const DocumentReviews = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-950 text-gray-100 flex flex-col items-center py-12 px-4">
-      <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center text-cyan-400 mb-10 tracking-wide drop-shadow-md animate-fade-in-up">
+    <div className="min-h-screen bg-gray-100 dark:bg-gradient-to-br dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 text-gray-900 dark:text-gray-100 flex flex-col items-center py-12 px-4 transition-all duration-300 ease-in-out">
+      <h1 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center text-cyan-500 dark:text-cyan-400 mb-10 tracking-wide drop-shadow-md animate-fade-in-up">
         Quản Lý Đánh Giá Tài Liệu
       </h1>
 
       <div className="w-full max-w-4xl space-y-6">
         {reviews.length === 0 ? (
-          <p className="text-gray-400 text-center italic animate-fade-in text-lg">Chưa có đánh giá nào</p>
+          <p className="text-gray-500 dark:text-gray-400 text-center italic animate-fade-in text-lg transition-all duration-300 ease-in-out">
+            Chưa có đánh giá nào
+          </p>
         ) : (
           <div className="space-y-6">
             {currentReviews.map((review) => (
               <div
                 key={review._id}
-                className="bg-gray-800 rounded-xl shadow-md p-5 sm:p-6 border border-gray-700/50 
-                  hover:shadow-2xl hover:bg-gray-750 hover:-translate-y-1 hover:border-cyan-500/30 
-                  transform transition-all duration-300 ease-out animate-fade-in-up"
+                className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-5 sm:p-6 border border-gray-200 dark:border-gray-700/50 hover:shadow-2xl hover:bg-gray-50 dark:hover:bg-gray-750 hover:-translate-y-1 hover:border-cyan-500/30 transform transition-all duration-300 ease-out animate-fade-in-up"
               >
                 <div className="flex flex-col sm:flex-row sm:items-start sm:justify-between gap-5">
                   <div className="flex-1">
@@ -137,14 +145,13 @@ const DocumentReviews = () => {
                       <img
                         src={getAvatarUrl(review.userId)}
                         alt="User Avatar"
-                        className="w-12 h-12 rounded-full object-cover border-2 border-cyan-500/50 
-                          transition-all duration-300 hover:scale-110 hover:border-cyan-400"
+                        className="w-12 h-12 rounded-full object-cover border-2 border-cyan-500/50 dark:border-cyan-400/50 transition-all duration-300 hover:scale-110 hover:border-cyan-600 dark:hover:border-cyan-400"
                       />
                       <div>
-                        <p className="text-xs sm:text-sm text-gray-500 font-medium transform transition-all duration-300 hover:text-cyan-400">
+                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium transform transition-all duration-300 hover:text-cyan-500 dark:hover:text-cyan-400">
                           ID: {review._id}
                         </p>
-                        <p className="text-xs sm:text-sm text-gray-400 font-medium transition-all duration-300 hover:text-cyan-400">
+                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium transition-all duration-300 hover:text-cyan-500 dark:hover:text-cyan-400">
                           Người dùng: {review.userId?.username || "Ẩn danh"}
                         </p>
                       </div>
@@ -158,8 +165,11 @@ const DocumentReviews = () => {
                               <svg
                                 key={starValue}
                                 onClick={() => setEditRating(starValue)}
-                                className={`w-7 h-7 cursor-pointer transition-all duration-200 hover:scale-110 
-                                  ${starValue <= editRating ? "text-yellow-400 fill-current" : "text-gray-500 fill-none stroke-current"}`}
+                                className={`w-7 h-7 cursor-pointer transition-all duration-200 hover:scale-110 ${
+                                  starValue <= editRating
+                                    ? "text-yellow-400 dark:text-yellow-300 fill-current"
+                                    : "text-gray-400 dark:text-gray-500 fill-none stroke-current"
+                                }`}
                                 xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 24 24"
                               >
@@ -171,26 +181,21 @@ const DocumentReviews = () => {
                         <textarea
                           value={editComment}
                           onChange={(e) => setEditComment(e.target.value)}
-                          className="w-full p-3 bg-gray-900 text-white border border-gray-600 rounded-lg 
-                            focus:outline-none focus:ring-2 focus:ring-cyan-400 transition-all duration-300 
-                            resize-none text-sm shadow-sm hover:border-cyan-500/50"
+                          className="w-full p-3 bg-gray-50 dark:bg-gray-900 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 transition-all duration-300 resize-none text-sm shadow-sm hover:border-cyan-500/50 dark:hover:border-cyan-400/50"
                           rows="3"
                           placeholder="Nhập bình luận của bạn..."
                         />
                         <div className="flex gap-3">
                           <button
                             type="submit"
-                            className="bg-gradient-to-r from-cyan-500 to-teal-500 hover:from-cyan-600 hover:to-teal-600 
-                              text-white font-semibold py-2 px-5 rounded-lg transition-all duration-300 shadow-md 
-                              hover:shadow-lg hover:scale-105 text-sm"
+                            className="bg-gradient-to-r from-cyan-500 dark:from-cyan-400 to-teal-500 dark:to-teal-400 hover:from-cyan-600 dark:hover:from-cyan-500 hover:to-teal-600 dark:hover:to-teal-500 text-white font-semibold py-2 px-5 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 text-sm"
                           >
                             Lưu
                           </button>
                           <button
                             type="button"
                             onClick={() => setEditingReviewId(null)}
-                            className="bg-gray-600 hover:bg-gray-500 text-white font-semibold py-2 px-5 
-                              rounded-lg transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 text-sm"
+                            className="bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 text-gray-900 dark:text-gray-100 font-semibold py-2 px-5 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 text-sm"
                           >
                             Hủy
                           </button>
@@ -204,8 +209,11 @@ const DocumentReviews = () => {
                             return (
                               <svg
                                 key={starValue}
-                                className={`w-5 h-5 transition-all duration-200 hover:scale-110 
-                                  ${starValue <= review.rating ? "text-yellow-400 fill-current" : "text-gray-500 fill-none stroke-current"}`}
+                                className={`w-5 h-5 transition-all duration-200 hover:scale-110 ${
+                                  starValue <= review.rating
+                                    ? "text-yellow-400 dark:text-yellow-300 fill-current"
+                                    : "text-gray-400 dark:text-gray-500 fill-none stroke-current"
+                                }`}
                                 xmlns="http://www.w3.org/2000/svg"
                                 viewBox="0 0 24 24"
                               >
@@ -214,15 +222,14 @@ const DocumentReviews = () => {
                             );
                           })}
                         </div>
-                        <p className="text-sm sm:text-base text-gray-200 leading-relaxed transition-all duration-300 hover:text-gray-100">
+                        <p className="text-sm sm:text-base text-gray-700 dark:text-gray-200 leading-relaxed transition-all duration-300 hover:text-gray-900 dark:hover:text-gray-100">
                           {review.comment}
                         </p>
                         {review.replies && review.replies.length > 0 && (
                           <div className="mt-4">
                             <button
                               onClick={() => toggleReplies(review._id)}
-                              className="text-cyan-400 hover:text-cyan-300 flex items-center gap-1.5 text-sm 
-                                font-medium transition-all duration-200 hover:scale-105"
+                              className="text-cyan-500 dark:text-cyan-400 hover:text-cyan-600 dark:hover:text-cyan-300 flex items-center gap-1.5 text-sm font-medium transition-all duration-200 hover:scale-105"
                             >
                               {visibleReplies[review._id] ? "Thu gọn" : `Xem phản hồi (${review.replies.length})`}
                               <svg
@@ -241,24 +248,21 @@ const DocumentReviews = () => {
                                 {review.replies.map((reply) => (
                                   <div
                                     key={reply._id}
-                                    className="pl-4 py-2 bg-gray-700 rounded-lg text-sm text-gray-300 
-                                      border-l-4 border-cyan-500 shadow-sm transition-all duration-200 
-                                      hover:bg-gray-650 hover:-translate-x-1 flex items-start gap-3"
+                                    className="pl-4 py-2 bg-gray-100 dark:bg-gray-700 rounded-lg text-sm text-gray-600 dark:text-gray-300 border-l-4 border-cyan-500 dark:border-cyan-400 shadow-sm transition-all duration-200 hover:bg-gray-200 dark:hover:bg-gray-650 hover:-translate-x-1 flex items-start gap-3"
                                   >
                                     <img
                                       src={getAvatarUrl(reply.userId)}
                                       alt="Reply Avatar"
-                                      className="w-8 h-8 rounded-full object-cover border-2 border-cyan-500/50 
-                                        transition-all duration-300 hover:scale-110 hover:border-cyan-400"
+                                      className="w-8 h-8 rounded-full object-cover border-2 border-cyan-500/50 dark:border-cyan-400/50 transition-all duration-300 hover:scale-110 hover:border-cyan-600 dark:hover:border-cyan-400"
                                     />
                                     <div>
                                       <p>
-                                        <span className="font-semibold text-white transition-all duration-200 hover:text-cyan-300">
+                                        <span className="font-semibold text-gray-900 dark:text-gray-100 transition-all duration-200 hover:text-cyan-500 dark:hover:text-cyan-400">
                                           {reply.userId?.username || "Ẩn danh"}:
                                         </span>{" "}
                                         {reply.comment}
                                       </p>
-                                      <span className="text-xs text-gray-400 block mt-1 transition-all duration-200 hover:text-cyan-400">
+                                      <span className="text-xs text-gray-500 dark:text-gray-400 block mt-1 transition-all duration-200 hover:text-cyan-500 dark:hover:text-cyan-400">
                                         {reply.createdAt ? formatDate(reply.createdAt) : "Ngày không xác định"}
                                       </span>
                                     </div>
@@ -276,18 +280,14 @@ const DocumentReviews = () => {
                     <div className="flex flex-row sm:flex-col gap-3 self-start sm:self-center">
                       <button
                         onClick={() => handleEdit(review)}
-                        className="flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 to-amber-500 
-                          hover:from-amber-600 hover:to-orange-600 text-white font-semibold py-2 px-4 rounded-lg 
-                          transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 text-sm"
+                        className="flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 dark:from-amber-400 to-amber-500 dark:to-amber-400 hover:from-amber-600 dark:hover:from-amber-500 hover:to-orange-600 dark:hover:to-orange-500 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 text-sm"
                       >
                         <PencilIcon className="w-5 h-5" />
                         <span>Sửa</span>
                       </button>
                       <button
                         onClick={() => handleDelete(review._id)}
-                        className="flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 to-red-500 
-                          hover:from-red-600 hover:to-pink-600 text-white font-semibold py-2 px-4 rounded-lg 
-                          transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 text-sm"
+                        className="flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 dark:from-red-400 to-red-500 dark:to-red-400 hover:from-red-600 dark:hover:from-red-500 hover:to-pink-600 dark:hover:to-pink-500 text-white font-semibold py-2 px-4 rounded-lg transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 text-sm"
                       >
                         <TrashIcon className="w-5 h-5" />
                         <span>Xóa</span>
@@ -304,11 +304,10 @@ const DocumentReviews = () => {
                   <button
                     key={index + 1}
                     onClick={() => handlePageChange(index + 1)}
-                    className={`px-4 py-2 rounded-full font-semibold text-sm transition-all duration-300 shadow-md 
-                      transform hover:scale-105 ${
+                    className={`px-4 py-2 rounded-full font-semibold text-sm transition-all duration-300 shadow-md transform hover:scale-105 ${
                       currentPage === index + 1
-                        ? "bg-gradient-to-r from-cyan-500 to-teal-500 text-white scale-105"
-                        : "bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white"
+                        ? "bg-gradient-to-r from-cyan-500 dark:from-cyan-400 to-teal-500 dark:to-teal-400 text-white scale-105"
+                        : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 hover:text-gray-900 dark:hover:text-white"
                     }`}
                   >
                     {index + 1}

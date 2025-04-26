@@ -1,4 +1,3 @@
-// src/components/PaymentRedirect.js
 import React, { useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 
@@ -14,7 +13,7 @@ const PaymentRedirect = () => {
 
     if (txnRef) {
       navigate("/payment-success", {
-        state: { txnRef }, // Truyền txnRef để PaymentSuccess lấy dữ liệu
+        state: { txnRef },
       });
     } else {
       console.error("Không tìm thấy txnRef trong URL");

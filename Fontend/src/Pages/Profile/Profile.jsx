@@ -72,6 +72,7 @@ const Profile = () => {
   const [success, setSuccess] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
 
+
   useEffect(() => {
     if (!user) {
       navigate("/login");
@@ -444,6 +445,7 @@ const Profile = () => {
                     <GlobeAltIcon className="h-4 w-4 sm:h-5 sm:w-5 transform group-hover:scale-110 transition-transform duration-200" />
                     Quốc gia
                   </label>
+
                   {editMode.address ? (
                     <select
                       value={updatedData.country}

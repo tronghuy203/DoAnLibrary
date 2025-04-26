@@ -75,7 +75,6 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
       });
       setRatingStats(stats);
 
-      // Kiểm tra xem người dùng đã có đánh giá chưa để disable form nếu cần
       const userReview = reviews.find((review) => review.userId?._id === user?._id);
       if (userReview && !editingReviewId) {
         setRating(0);
@@ -149,7 +148,6 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
         await updateReview(editingReviewId, reviewData, user.accessToken, dispatch, axiosJWT);
         setEditingReviewId(null);
       } else {
-        // Kiểm tra xem người dùng đã có đánh giá trước đó chưa
         const existingReview = reviews.find((review) => review.userId?._id === user._id);
         if (existingReview) {
           alert("Bạn đã đánh giá trước đó. Vui lòng xóa đánh giá cũ để tạo đánh giá mới!");
@@ -170,7 +168,7 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
     if (window.confirm("Xóa đánh giá này?")) {
       try {
         await deleteReview(id, { userId: user._id }, user.accessToken, dispatch, axiosJWT);
-        setEditingReviewId(null); // Reset nếu đang chỉnh sửa
+        setEditingReviewId(null);
         setComment("");
         setRating(0);
         getReviews(type, itemId, dispatch);

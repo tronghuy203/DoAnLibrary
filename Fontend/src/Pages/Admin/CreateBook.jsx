@@ -1,7 +1,7 @@
 import React, { useMemo, useState, useEffect } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { createBook } from "../../redux/apiBooks";
-import { getCategory } from "../../redux/apiCategory"; // Import hàm getCategory
+import { getCategory } from "../../redux/apiCategory";
 import { createAxios } from "../../createInstance";
 import { loginSuccess } from "../../redux/authSlice";
 import {
@@ -31,14 +31,12 @@ const CreateBook = () => {
   });
   const [previewImage, setPreviewImage] = useState(null);
   const [message, setMessage] = useState("");
-  const [categories, setCategories] = useState([]); // State để lưu danh mục từ API
-
+  const [categories, setCategories] = useState([]);
   const dispatch = useDispatch();
   const user = useSelector((state) => state.auth.login.currentUser);
   const accessToken = user?.accessToken;
   const axiosJWT = useMemo(() => createAxios(user, dispatch, loginSuccess), [user, dispatch]);
 
-  // Lấy danh sách danh mục khi component mount
   useEffect(() => {
     const fetchCategories = async () => {
       try {
@@ -48,7 +46,7 @@ const CreateBook = () => {
         }
         const data = await getCategory(accessToken, dispatch, axiosJWT);
         if (Array.isArray(data)) {
-          setCategories(data); // Lưu danh mục vào state
+          setCategories(data);
         } else {
           console.error("Dữ liệu danh mục không hợp lệ:", data);
         }
@@ -67,17 +65,16 @@ const CreateBook = () => {
 
   const handleChange = (e) => {
     const { name, value } = e.target;
-  
+
     if (name === "price" || name === "quantity") {
       const rawValue = value.replace(/\./g, "");
-      if (!/^\d*$/.test(rawValue)) return; // chỉ cho nhập số
+      if (!/^\d*$/.test(rawValue)) return;
       const formattedValue = formatPrice(rawValue);
       setBook({ ...book, [name]: formattedValue });
     } else {
       setBook({ ...book, [name]: value });
     }
   };
-  
 
   const handleIncrease = () => {
     const rawValue = parseInt(book.price.replace(/\./g, "")) || 0;
@@ -92,13 +89,16 @@ const CreateBook = () => {
   };
 
   const handleIncreaseQuantity = () => {
-    setBook({ ...book, quantity: book.quantity + 1 });
+    const rawValue = parseInt(book.quantity.replace(/\./g, "")) || 1;
+    const newValue = rawValue + 1;
+    setBook({ ...book, quantity: newValue.toString() });
   };
-  
+
   const handleDecreaseQuantity = () => {
-    setBook({ ...book, quantity: Math.max(1, book.quantity - 1) }); // Không giảm dưới 1
+    const rawValue = parseInt(book.quantity.replace(/\./g, "")) || 1;
+    const newValue = Math.max(1, rawValue - 1);
+    setBook({ ...book, quantity: newValue.toString() });
   };
-  
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -135,6 +135,7 @@ const CreateBook = () => {
         description: "",
         publishedYear: 0,
         price: "0",
+        quantity: "1",
         category: "",
         image: null,
       });
@@ -146,15 +147,17 @@ const CreateBook = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-800 via-gray-900 to-black text-gray-100 flex flex-col items-center py-12 px-4 sm:px-8 lg:px-12">
-      <h2 className="text-4xl sm:text-5xl font-extrabold text-center text-cyan-400 mb-12 tracking-tight drop-shadow-lg">
+    <div className="min-h-screen bg-gray-100 dark:bg-gradient-to-br dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 text-gray-900 dark:text-gray-100 flex flex-col items-center py-12 px-4 sm:px-8 lg:px-12 transition-all duration-300 ease-in-out">
+      <h2 className="text-4xl sm:text-5xl font-extrabold text-center text-cyan-500 dark:text-cyan-400 mb-12 tracking-tight drop-shadow-lg animate-fade-in-up">
         Tạo sách mới
       </h2>
 
       {message && (
         <div
-          className={`flex items-center gap-2 w-full max-w-2xl text-center text-base mb-8 px-6 py-3 rounded-lg shadow-xl ${
-            message.includes("thành công") ? "bg-teal-500 text-white" : "bg-red-500 text-white"
+          className={`flex items-center gap-2 w-full max-w-2xl text-center text-base mb-8 px-6 py-3 rounded-lg shadow-xl transition-all duration-300 ease-in-out ${
+            message.includes("thành công")
+              ? "bg-teal-500 dark:bg-teal-400 text-white"
+              : "bg-red-500 dark:bg-red-400 text-white"
           }`}
         >
           {message.includes("thành công") ? (
@@ -166,13 +169,13 @@ const CreateBook = () => {
         </div>
       )}
 
-      <div className="w-full max-w-2xl bg-gray-900 p-8 rounded-2xl shadow-2xl border border-gray-800 transform transition-all hover:shadow-[0_0_20px_rgba(0,255,255,0.1)]">
+      <div className="w-full max-w-2xl bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700/50 transform transition-all duration-300 ease-in-out hover:shadow-[0_0_20px_rgba(0,255,255,0.1)]">
         <div className="mb-6">
-          <label className="block text-gray-200 text-sm font-medium mb-2" htmlFor="title">
+          <label className="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2" htmlFor="title">
             Tiêu đề
           </label>
           <div className="relative">
-            <BookOpenIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-cyan-400" />
+            <BookOpenIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-cyan-500 dark:text-cyan-400" />
             <input
               type="text"
               id="title"
@@ -180,18 +183,18 @@ const CreateBook = () => {
               value={book.title}
               onChange={handleChange}
               required
-              className="w-full pl-10 pr-4 py-3 bg-gray-800 text-gray-100 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-gray-500 transition-all duration-200"
+              className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200"
               placeholder="Nhập tiêu đề sách"
             />
           </div>
         </div>
 
         <div className="mb-6">
-          <label className="block text-gray-200 text-sm font-medium mb-2" htmlFor="author">
+          <label className="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2" htmlFor="author">
             Tác giả
           </label>
           <div className="relative">
-            <UserIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-cyan-400" />
+            <UserIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-cyan-500 dark:text-cyan-400" />
             <input
               type="text"
               id="author"
@@ -199,24 +202,24 @@ const CreateBook = () => {
               value={book.author}
               onChange={handleChange}
               required
-              className="w-full pl-10 pr-4 py-3 bg-gray-800 text-gray-100 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-gray-500 transition-all duration-200"
+              className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200"
               placeholder="Nhập tên tác giả"
             />
           </div>
         </div>
 
         <div className="mb-6">
-          <label className="block text-gray-200 text-sm font-medium mb-2" htmlFor="description">
+          <label className="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2" htmlFor="description">
             Mô tả
           </label>
           <div className="relative">
-            <DocumentTextIcon className="absolute left-3 top-4 w-5 h-5 text-cyan-400" />
+            <DocumentTextIcon className="absolute left-3 top-4 w-5 h-5 text-cyan-500 dark:text-cyan-400" />
             <textarea
               id="description"
               name="description"
               value={book.description}
               onChange={handleChange}
-              className="w-full pl-10 pr-4 py-3 bg-gray-800 text-gray-100 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 resize-y placeholder-gray-500 transition-all duration-200"
+              className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 resize-y placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200"
               placeholder="Nhập mô tả sách"
               rows="4"
             />
@@ -224,29 +227,30 @@ const CreateBook = () => {
         </div>
 
         <div className="mb-6">
-          <label className="block text-gray-200 text-sm font-medium mb-2" htmlFor="publishedYear">
+          <label className="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2" htmlFor="publishedYear">
             Năm xuất bản
           </label>
           <div className="relative">
-            <UserIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-cyan-400" />
+            <UserIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-cyan-500 dark:text-cyan-400" />
             <input
               id="publishedYear"
               name="publishedYear"
               value={book.publishedYear}
               onChange={handleChange}
               required
-              className="w-full pl-10 pr-4 py-3 bg-gray-800 text-gray-100 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-gray-500 transition-all duration-200"
+              type="number"
+              className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200"
               placeholder="Nhập năm xuất bản"
             />
           </div>
         </div>
 
         <div className="mb-6">
-          <label className="block text-gray-200 text-sm font-medium mb-2" htmlFor="quantity">
+          <label className="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2" htmlFor="quantity">
             Số lượng
           </label>
           <div className="relative flex items-center">
-          <HashtagIcon className="absolute left-3 w-5 h-5 text-cyan-400" />
+            <HashtagIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-cyan-500 dark:text-cyan-400" />
             <input
               id="quantity"
               name="quantity"
@@ -254,26 +258,26 @@ const CreateBook = () => {
               onChange={handleChange}
               min="1"
               required
-              className="w-full pl-10 pr-16 py-3 bg-gray-800 text-gray-100 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-gray-500 transition-all duration-200"
+              type="text"
+              className="w-full pl-10 pr-16 py-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200"
               onKeyPress={(e) => {
                 if (!/[0-9]/.test(e.key)) {
                   e.preventDefault();
                 }
               }}
             />
-            
             <div className="absolute right-2 flex flex-col">
               <button
                 type="button"
                 onClick={handleIncreaseQuantity}
-                className="p-0.5 text-cyan-400 hover:text-cyan-300 transition-colors duration-200"
+                className="p-0.5 text-cyan-500 dark:text-cyan-400 hover:text-cyan-600 dark:hover:text-cyan-300 transition-colors duration-200"
               >
                 <ChevronUpIcon className="w-4 h-4" />
               </button>
               <button
                 type="button"
                 onClick={handleDecreaseQuantity}
-                className="p-0.5 text-cyan-400 hover:text-cyan-300 transition-colors duration-200"
+                className="p-0.5 text-cyan-500 dark:text-cyan-400 hover:text-cyan-600 dark:hover:text-cyan-300 transition-colors duration-200"
               >
                 <ChevronDownIcon className="w-4 h-4" />
               </button>
@@ -281,13 +285,12 @@ const CreateBook = () => {
           </div>
         </div>
 
-
         <div className="mb-6">
-          <label className="block text-gray-200 text-sm font-medium mb-2" htmlFor="price">
+          <label className="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2" htmlFor="price">
             Giá
           </label>
           <div className="relative flex items-center">
-            <CurrencyDollarIcon className="absolute left-3 w-5 h-5 text-cyan-400" />
+            <CurrencyDollarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-cyan-500 dark:text-cyan-400" />
             <input
               type="text"
               id="price"
@@ -295,7 +298,7 @@ const CreateBook = () => {
               value={book.price}
               onChange={handleChange}
               required
-              className="w-full pl-10 pr-16 py-3 bg-gray-800 text-gray-100 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 placeholder-gray-500 transition-all duration-200"
+              className="w-full pl-10 pr-16 py-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200"
               placeholder="Nhập giá sách"
               onKeyPress={(e) => {
                 if (!/[0-9]/.test(e.key)) {
@@ -307,14 +310,14 @@ const CreateBook = () => {
               <button
                 type="button"
                 onClick={handleIncrease}
-                className="p-0.5 text-cyan-400 hover:text-cyan-300 transition-colors duration-200"
+                className="p-0.5 text-cyan-500 dark:text-cyan-400 hover:text-cyan-600 dark:hover:text-cyan-300 transition-colors duration-200"
               >
                 <ChevronUpIcon className="w-4 h-4" />
               </button>
               <button
                 type="button"
                 onClick={handleDecrease}
-                className="p-0.5 text-cyan-400 hover:text-cyan-300 transition-colors duration-200"
+                className="p-0.5 text-cyan-500 dark:text-cyan-400 hover:text-cyan-600 dark:hover:text-cyan-300 transition-colors duration-200"
               >
                 <ChevronDownIcon className="w-4 h-4" />
               </button>
@@ -323,18 +326,18 @@ const CreateBook = () => {
         </div>
 
         <div className="mb-6">
-          <label className="block text-gray-200 text-sm font-medium mb-2" htmlFor="category">
+          <label className="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2" htmlFor="category">
             Danh mục
           </label>
           <div className="relative">
-            <TagIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-cyan-400" />
+            <TagIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-cyan-500 dark:text-cyan-400" />
             <select
               id="category"
               name="category"
               value={book.category}
               onChange={handleChange}
               required
-              className="w-full pl-10 pr-4 py-3 bg-gray-800 text-gray-100 border border-gray-700 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 appearance-none placeholder-gray-500 transition-all duration-200"
+              className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 appearance-none placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200"
             >
               <option value="">Chọn danh mục</option>
               {categories.map((cat) => (
@@ -347,11 +350,11 @@ const CreateBook = () => {
         </div>
 
         <div className="mb-8">
-          <label className="block text-gray-200 text-sm font-medium mb-2">Hình ảnh</label>
+          <label className="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2">Hình ảnh</label>
           <div className="relative">
             <label
               htmlFor="image"
-              className="group flex items-center justify-center w-full h-48 bg-gray-800 border-2 border-gray-700 rounded-xl cursor-pointer hover:bg-gray-700 hover:border-cyan-500 transition-all duration-300 shadow-md"
+              className="group flex items-center justify-center w-full h-48 bg-gray-50 dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-xl cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 hover:border-cyan-500 dark:hover:border-cyan-400 transition-all duration-300 shadow-md"
             >
               {previewImage ? (
                 <div className="relative w-full h-full">
@@ -361,13 +364,13 @@ const CreateBook = () => {
                     className="w-full h-full object-cover rounded-xl opacity-80 group-hover:opacity-100 transition-opacity duration-300"
                   />
                   <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <span className="text-cyan-400 font-medium bg-gray-900/70 px-3 py-1 rounded-full">Thay ảnh</span>
+                    <span className="text-cyan-500 dark:text-cyan-400 font-medium bg-gray-900/70 dark:bg-gray-800/70 px-3 py-1 rounded-full">Thay ảnh</span>
                   </div>
                 </div>
               ) : (
                 <div className="text-center">
-                  <PhotoIcon className="w-12 h-12 mx-auto text-cyan-400 group-hover:text-cyan-300 transition-colors duration-200" />
-                  <p className="mt-2 text-gray-400 group-hover:text-gray-300 transition-colors duration-200">
+                  <PhotoIcon className="w-12 h-12 mx-auto text-cyan-500 dark:text-cyan-400 group-hover:text-cyan-600 dark:group-hover:text-cyan-300 transition-colors duration-200" />
+                  <p className="mt-2 text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors duration-200">
                     Nhấp để chọn hoặc kéo ảnh vào đây
                   </p>
                 </div>
@@ -382,13 +385,15 @@ const CreateBook = () => {
             </label>
           </div>
           {book.image && (
-            <p className="mt-2 text-sm text-gray-400 truncate">Đã chọn: {book.image.name}</p>
+            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 truncate transition-all duration-300 ease-in-out">
+              Đã chọn: {book.image.name}
+            </p>
           )}
         </div>
 
         <button
           onClick={handleSubmit}
-          className="w-full flex items-center justify-center gap-2 bg-cyan-500 hover:bg-cyan-600 text-white font-semibold py-3 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl"
+          className="w-full flex items-center justify-center gap-2 bg-cyan-500 dark:bg-cyan-400 hover:bg-cyan-600 dark:hover:bg-cyan-500 text-white font-semibold py-3 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl"
         >
           <BookOpenIcon className="w-5 h-5" />
           Tạo sách

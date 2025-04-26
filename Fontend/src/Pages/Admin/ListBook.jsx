@@ -27,7 +27,7 @@ const ListBook = () => {
         console.error("Error fetching categories:", err);
       }
     };
-  
+
     fetchCategories();
     const fetchBooks = async () => {
       if (!user?.accessToken) return;
@@ -74,35 +74,35 @@ const ListBook = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-950 text-gray-100 py-12 px-4 sm:px-6 lg:px-8">
-      <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center text-cyan-400 mb-10 tracking-wide drop-shadow-md animate-fade-in-up">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-500">
+      <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center text-cyan-500 dark:text-cyan-300 mb-10 tracking-wide drop-shadow-md animate-fade-in-up">
         Danh Sách Sách
       </h2>
 
       <div className="w-full max-w-2xl mx-auto mb-8">
         <div className="relative">
-          <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-400" />
+          <MagnifyingGlassIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-gray-500 dark:text-gray-400" />
           <input
             type="text"
-            placeholder="Tìm kiếm sách theo dạng tiêu đề, tác giả hoặc danh mục..."
+            placeholder="Tìm kiếm sách theo tiêu đề, tác giả hoặc danh mục..."
             value={searchTerm}
             onChange={(e) => {
               setSearchTerm(e.target.value);
               setCurrentPage(1);
             }}
-            className="w-full pl-10 pr-4 py-2 bg-gray-700 text-gray-100 border border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 transition-all duration-200 hover:border-cyan-500/50"
+            className="w-full pl-10 pr-4 py-2 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200 hover:border-cyan-500/50 dark:hover:border-cyan-500/50"
           />
         </div>
       </div>
 
       <div className="w-full max-w-5xl mx-auto">
         {filteredBooks.length === 0 ? (
-          <div className="text-center text-gray-400 py-10 animate-slide-in text-lg">
+          <div className="text-center text-gray-500 dark:text-gray-400 py-10 animate-slide-in text-lg">
             Không tìm thấy sách nào
           </div>
         ) : (
-          <div className="bg-gray-800 rounded-xl shadow-md border border-gray-700/50 overflow-hidden">
-            <div className="hidden sm:grid sm:grid-cols-[0.5fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr] bg-gray-700 text-gray-200 font-semibold p-4">
+          <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700/50 overflow-hidden">
+            <div className="hidden sm:grid sm:grid-cols-[0.5fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr] bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-200 font-semibold p-4">
               <div className="text-base">Ảnh</div>
               <div className="text-base">Tiêu đề</div>
               <div className="text-base">Tác giả</div>
@@ -113,30 +113,30 @@ const ListBook = () => {
               <div className="text-base">Hành động</div>
             </div>
 
-            <div className="divide-y divide-gray-700">
+            <div className="divide-y divide-gray-200 dark:divide-gray-700">
               {currentBooks.map((book) => (
                 <div
                   key={book._id}
-                  className="flex flex-col sm:grid sm:grid-cols-[0.5fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr] p-4 hover:bg-gray-750 hover:-translate-y-1 transition-all duration-300 animate-slide-in"
+                  className="flex flex-col sm:grid sm:grid-cols-[0.5fr_1fr_1fr_1fr_1fr_1fr_1fr_1fr] p-4 hover:bg-gray-50 dark:hover:bg-gray-750 hover:-translate-y-1 transition-all duration-300 animate-slide-in"
                 >
                   <div className="py-2 flex items-center">
-                    <span className="sm:hidden font-semibold text-cyan-400 mr-2">Ảnh:</span>
+                    <span className="sm:hidden font-semibold text-cyan-400 dark:text-cyan-300 mr-2">Ảnh:</span>
                     <img
                       src={book.image || "https://png.pngtree.com/png-vector/20220220/ourmid/pngtree-vector-design-with-pattern-element-for-minimalisticluxurious-cover-menu-invitation-card-bannerbook-vector-png-image_34179868.jpg"}
                       alt={book.title}
                       className="w-12 h-15 object-cover rounded-md"
                     />
                   </div>
-                  <div className="py-2 text-gray-200 flex items-center">
-                    <span className="sm:hidden font-semibold text-cyan-400 mr-2">Tiêu đề:</span>
+                  <div className="py-2 text-gray-900 dark:text-gray-200 flex items-center">
+                    <span className="sm:hidden font-semibold text-cyan-400 dark:text-cyan-300 mr-2">Tiêu đề:</span>
                     <span className="text-base break-words">{book.title}</span>
                   </div>
-                  <div className="py-2 text-gray-200 flex items-center">
-                    <span className="sm:hidden font-semibold text-cyan-400 mr-2">Tác giả:</span>
+                  <div className="py-2 text-gray-900 dark:text-gray-200 flex items-center">
+                    <span className="sm:hidden font-semibold text-cyan-400 dark:text-cyan-300 mr-2">Tác giả:</span>
                     <span className="text-base break-words">{book.author}</span>
                   </div>
-                  <div className="py-2 text-gray-200 flex items-center">
-                    <span className="sm:hidden font-semibold text-cyan-400 mr-2">Danh mục:</span>
+                  <div className="py-2 text-gray-900 dark:text-gray-200 flex items-center">
+                    <span className="sm:hidden font-semibold text-cyan-400 dark:text-cyan-300 mr-2">Danh mục:</span>
                     <span className="text-base">
                       {
                         book.category
@@ -145,28 +145,28 @@ const ListBook = () => {
                       }
                     </span>
                   </div>
-                  <div className="py-2 text-gray-200 flex items-center">
-                    <span className="sm:hidden font-semibold text-cyan-400 mr-2">Năm xuất bản:</span>
+                  <div className="py-2 text-gray-900 dark:text-gray-200 flex items-center">
+                    <span className="sm:hidden font-semibold text-cyan-400 dark:text-cyan-300 mr-2">Năm xuất bản:</span>
                     <span className="text-base md:mx-auto">{book.publishedYear}</span>
                   </div>
-                  <div className="py-2 text-gray-200 flex items-center">
-                    <span className="sm:hidden font-semibold text-cyan-400 mr-2">Số lượng:</span>
+                  <div className="py-2 text-gray-900 dark:text-gray-200 flex items-center">
+                    <span className="sm:hidden font-semibold text-cyan-400 dark:text-cyan-300 mr-2">Số lượng:</span>
                     <span className="text-base md:mx-auto">{book.quantity.toLocaleString("vi-VN")}</span>
                   </div>
-                  <div className="py-2 text-gray-200 flex items-center">
-                    <span className="sm:hidden font-semibold text-cyan-400 mr-2">Giá:</span>
+                  <div className="py-2 text-gray-900 dark:text-gray-200 flex items-center">
+                    <span className="sm:hidden font-semibold text-cyan-400 dark:text-cyan-300 mr-2">Giá:</span>
                     <span className="text-base md:mx-auto">{book.price.toLocaleString("vi-VN")}</span>
                   </div>
                   <div className="py-2 flex items-center gap-2">
                     <Link to={`/admin/books/update/${book._id}`}>
-                      <button className="bg-amber-500 hover:bg-amber-600 text-white font-semibold py-1 px-3 rounded-md transition-all duration-200 hover:shadow-md flex items-center gap-1 text-sm">
+                      <button className="bg-amber-400 dark:bg-amber-500 hover:bg-amber-500 dark:hover:bg-amber-600 text-white font-semibold py-1 px-3 rounded-md transition-all duration-200 hover:shadow-md flex items-center gap-1 text-sm">
                         <PencilIcon className="w-4 h-4" />
                         Sửa
                       </button>
                     </Link>
                     <button
                       onClick={() => handleDelete(book._id)}
-                      className="bg-red-500 hover:bg-red-600 text-white font-semibold py-1 px-3 rounded-md transition-all duration-200 hover:shadow-md flex items-center gap-1 text-sm"
+                      className="bg-red-400 dark:bg-red-500 hover:bg-red-500 dark:hover:bg-red-600 text-white font-semibold py-1 px-3 rounded-md transition-all duration-200 hover:shadow-md flex items-center gap-1 text-sm"
                     >
                       <TrashIcon className="w-4 h-4" />
                       Xóa
@@ -186,8 +186,8 @@ const ListBook = () => {
                 onClick={() => handlePageChange(index + 1)}
                 className={`px-3 py-1 rounded-full font-medium text-sm transition-all duration-300 shadow-md ${
                   currentPage === index + 1
-                    ? "bg-cyan-500 text-white scale-105"
-                    : "bg-gray-700 text-gray-300 hover:bg-gray-600 hover:text-white"
+                    ? "bg-cyan-500 dark:bg-cyan-600 text-white scale-105"
+                    : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 hover:text-gray-900 dark:hover:text-white"
                 }`}
               >
                 {index + 1}

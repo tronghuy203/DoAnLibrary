@@ -196,7 +196,7 @@ const documentController = {
       }
 
       let userMembership, countField, today;
-      if (!req.user.admin) {
+      if (!req.user.admin && document.uploadedBy.toString() !== req.user.id) {
         const limits = await checkMembershipLimits(req.user.id, "view");
         userMembership = limits.userMembership;
         countField = limits.countField;
@@ -250,7 +250,7 @@ const documentController = {
       }
 
       let userMembership, countField, today;
-      if (!req.user.admin) {
+      if (!req.user.admin && document.uploadedBy.toString() !== req.user.id) {
         const limits = await checkMembershipLimits(req.user.id, "download");
         userMembership = limits.userMembership;
         countField = limits.countField;

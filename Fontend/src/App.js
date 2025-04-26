@@ -1,9 +1,8 @@
-// src/App.jsx
 import { BrowserRouter as Router, Routes, Route } from "react-router-dom";
 import UserRoutes from "./Routes/UserRoutes";
 import AdminRoutes from "./Routes/AdminRoutes";
 import React, {useEffect} from "react";
-// aos import
+
 import AOS from "aos";
 import "aos/dist/aos.css"
 

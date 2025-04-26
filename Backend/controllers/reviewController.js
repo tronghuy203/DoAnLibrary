@@ -3,19 +3,16 @@ const Reply = require("../models/Reply");
 const User = require("../models/User");
 
 const reviewController = {
-  // 📌 Lấy danh sách đánh giá kèm phản hồi
   getReviews: async (req, res) => {
     try {
       const { type, itemId } = req.params;
 
       let reviews;
       if (itemId === "all") {
-        // Lấy tất cả đánh giá theo type
         reviews = await Review.find({ type })
           .populate("userId", "username avatar")
           .lean();
       } else {
-        // Lấy đánh giá theo type và itemId cụ thể
         reviews = await Review.find({ type, itemId })
           .populate("userId", "username avatar")
           .lean();
@@ -26,7 +23,6 @@ const reviewController = {
         .populate("userId", "username avatar")
         .sort({ createdAt: 1 });
 
-      // Gắn reply vào review
       const reviewMap = {};
       reviews.forEach((r) => (reviewMap[r._id] = { ...r, replies: [] }));
       replies.forEach((reply) => {
@@ -40,7 +36,6 @@ const reviewController = {
     }
   },
 
-  // 📌 Thêm đánh giá
   addReview: async (req, res) => {
     try {
       const { itemId, type, userId, rating, comment } = req.body;
@@ -73,7 +68,6 @@ const reviewController = {
     }
   },
 
-  // 📌 Sửa đánh giá
   updateReview: async (req, res) => {
     try {
       const { id } = req.params;
@@ -97,7 +91,6 @@ const reviewController = {
     }
   },
 
-  // 📌 Xóa đánh giá
   deleteReview: async (req, res) => {
     try {
       const { id } = req.params;
@@ -112,7 +105,7 @@ const reviewController = {
       }
 
       await Review.findByIdAndDelete(id);
-      await Reply.deleteMany({ reviewId: id }); // Xóa luôn các phản hồi của review này
+      await Reply.deleteMany({ reviewId: id });
 
       res.status(200).json({ message: "Đã xóa đánh giá và các phản hồi liên quan" });
     } catch (error) {
@@ -120,7 +113,6 @@ const reviewController = {
     }
   },
 
-  // 📌 Thêm phản hồi
   addReply: async (req, res) => {
     try {
       const { reviewId } = req.params;
@@ -140,7 +132,6 @@ const reviewController = {
     }
   },
 
-  // 📌 Sửa phản hồi
   updateReply: async (req, res) => {
     try {
       const { id } = req.params;
@@ -163,7 +154,6 @@ const reviewController = {
     }
   },
 
-  // 📌 Xóa phản hồi
   deleteReply: async (req, res) => {
     try {
       const { id } = req.params;
@@ -172,7 +162,7 @@ const reviewController = {
       const reply = await Reply.findById(id);
       if (!reply) return res.status(404).json({ message: "Phản hồi không tồn tại" });
   
-      console.log("Reply userId:", reply.userId.toString()); // In userId của reply
+      console.log("Reply userId:", reply.userId.toString());
       if (!admin && reply.userId.toString() !== userId) {
         return res.status(403).json({ message: "Không có quyền xóa phản hồi này" });
       }

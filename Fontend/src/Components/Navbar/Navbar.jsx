@@ -6,7 +6,7 @@ import { createAxios } from "../../createInstance";
 import { logoutSuccess } from "../../redux/authSlice";
 import { Link } from "react-router-dom";
 import DarkMode from "./DarkMode";
-import {UserIcon, ShoppingCartIcon, BookOpenIcon, ArrowRightOnRectangleIcon, ArrowLeftOnRectangleIcon, DocumentTextIcon} from "@heroicons/react/24/outline";
+import {UserIcon, ShoppingCartIcon, BookOpenIcon, ArrowRightOnRectangleIcon, ArrowLeftOnRectangleIcon, DocumentTextIcon, ChatBubbleLeftRightIcon} from "@heroicons/react/24/outline";
 
 const Navbar = () => {
   const user = useSelector((state) => state.auth.login.currentUser);
@@ -114,6 +114,17 @@ const Navbar = () => {
                           <UserIcon className="w-5 h-5" />
                           <span>Hồ sơ</span>
                         </NavLink>
+                        <NavLink
+                          to="/chat"
+                          className="flex items-center space-x-2 px-4 py-2 text-sm text-gray-600 dark:text-gray-300 hover:bg-gray-100 dark:hover:bg-zinc-800"
+                          onClick={() => {
+                            setIsDropdownOpen(false);
+                            handleMenuItemClick();
+                          }}
+                        >
+                          <ChatBubbleLeftRightIcon className="w-5 h-5" />
+                          <span>Chat với tư vấn viên</span>
+                        </NavLink>
                         <button
                           onClick={handleLogout}
                           className="w-full flex items-center space-x-2 px-4 py-2 text-sm text-red-600 hover:bg-red-50 dark:hover:bg-red-900/50"
@@ -160,6 +171,7 @@ const Navbar = () => {
                   <MobileNavItem to="/document-list" icon={<DocumentTextIcon className="w-5 h-5" />} text="Tài liệu" onClick={handleMenuItemClick} />
                   <MobileNavItem to="/membership-list" icon={<ShoppingCartIcon className="w-5 h-5" />} text="Gói thành viên" onClick={handleMenuItemClick} />
                   <MobileNavItem to="/profile" icon={<UserIcon className="w-5 h-5" />} text="Hồ sơ" onClick={handleMenuItemClick} />
+                  <MobileNavItem to="/chat" icon={<ChatBubbleLeftRightIcon className="w-5 h-5" />} text="Chat với tư vấn viên" onClick={handleMenuItemClick} />
                   <div className="px-4 py-2 text-sm text-gray-700 dark:text-gray-200 flex items-center justify-center">
                     {user?.avatar ? 
                       <img src={user.avatar} alt="Avatar" className="w-8 h-8 rounded-full object-cover mr-2" /> : 

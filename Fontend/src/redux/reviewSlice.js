@@ -8,7 +8,6 @@ const reviewSlice = createSlice({
     error: null,
   },
   reducers: {
-    // Review
     getReviewsStart: (state) => {
       state.loading = true;
       state.error = null;
@@ -43,7 +42,6 @@ const reviewSlice = createSlice({
       state.reviews = state.reviews.filter(r => r._id !== action.payload);
     },
 
-    // Reply
     addReplySuccess: (state, action) => {
       const { reviewId } = action.payload;
       const review = state.reviews.find(r => r._id === reviewId);

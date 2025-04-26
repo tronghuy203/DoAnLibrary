@@ -171,22 +171,21 @@ export const deleteUser = (userId, accessToken, navigate, axiosJWT) => {
 };
 
 export const updateUserProfile = async (userId, data, accessToken, axiosJWT, dispatch) => {
-    dispatch(updateUserStart()); // Bắt đầu cập nhật (isFetching: true)
+    dispatch(updateUserStart());
     try {
         const res = await axiosJWT.put(`/v1/user/update-profile/${userId}`, data, {
             headers: { token: `Bearer ${accessToken}` },
         });
-        dispatch(updateUserSuccess(res.data)); // Cập nhật Redux với dữ liệu mới
-        dispatch(loginSuccess({ ...res.data, accessToken }));  // Cập nhật Redux cho auth.login.currentUser
+        dispatch(updateUserSuccess(res.data));
+        dispatch(loginSuccess({ ...res.data, accessToken }));  
         alert("Cập nhật thành công!");
     } catch (err) {
-        dispatch(updateUserFailed()); // Cập nhật lỗi trong Redux
+        dispatch(updateUserFailed()); 
         alert("Cập nhật thất bại!");
         console.log(err);
     }
 };
 
-// apiRequest.js
 export const getBorrowHistory = async (userId, accessToken, axiosJWT) => {
     try {
       const res = await axiosJWT.get(`/v1/user/history/${userId}`, {

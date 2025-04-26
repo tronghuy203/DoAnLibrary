@@ -14,7 +14,6 @@ const borrowSlice = createSlice({
     dailyRevenue: [],
   },
   reducers: {
-    // GET ALL BORROW RECORDS
     getBorrowsStart: (state) => {
       state.isFetching = true;
       state.error = false;
@@ -28,7 +27,6 @@ const borrowSlice = createSlice({
       state.error = true;
     },
 
-    // ADD BORROW REQUEST
     addBorrowRequestStart: (state) => {
       state.isFetching = true;
       state.error = false;
@@ -55,7 +53,6 @@ const borrowSlice = createSlice({
       state.error = true;
     },
 
-    // ACTION: Thanh toán phí mượn
     payRentalSuccess: (state, action) => {
       state.message = "Thanh toán phí mượn thành công!";
     },
@@ -63,7 +60,6 @@ const borrowSlice = createSlice({
       state.error = true;
     },
 
-    // ACTION: Xác nhận lấy sách
     confirmPickupSuccess: (state, action) => {
       state.message = "Xác nhận lấy sách thành công!";
     },
@@ -71,7 +67,6 @@ const borrowSlice = createSlice({
       state.error = true;
     },
 
-    // ACTION: Xác nhận trả sách
     confirmReturnSuccess: (state, action) => {
       state.message = "Xác nhận trả sách thành công!";
     },
@@ -79,16 +74,14 @@ const borrowSlice = createSlice({
       state.error = true;
     },
 
-    // ACTION: Thanh toán tiền phạt
     payPenaltySuccess: (state, action) => {
-      state.penalties.push(action.payload); // nếu muốn lưu lại
+      state.penalties.push(action.payload);
       state.message = "Thanh toán tiền phạt thành công!";
     },
     payPenaltyFailed: (state) => {
       state.error = true;
     },
 
-    // GET TOTAL REVENUE
     getTotalRevenueStart: (state) => {
       state.isFetching = true;
       state.error = false;
@@ -102,7 +95,6 @@ const borrowSlice = createSlice({
       state.error = true;
     },
 
-    // GET DAILY REVENUE
     getDailyRevenueStart: (state) => {
       state.isFetching = true;
       state.error = false;

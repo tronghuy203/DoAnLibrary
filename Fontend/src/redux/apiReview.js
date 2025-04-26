@@ -16,7 +16,6 @@ import {
   deleteReplySuccess,
 } from "../redux/reviewSlice";
 
-// 📌 Lấy danh sách đánh giá và phản hồi
 export const getReviews = async (type, itemId, dispatch) => {
   dispatch(getReviewsStart());
   try {
@@ -29,7 +28,6 @@ export const getReviews = async (type, itemId, dispatch) => {
   }
 };
 
-// 📌 Thêm đánh giá mới
 export const addReview = async (reviewData, accessToken, dispatch, axiosJWT) => {
   dispatch(addReviewStart());
   try {
@@ -44,7 +42,6 @@ export const addReview = async (reviewData, accessToken, dispatch, axiosJWT) => 
   }
 };
 
-// 📌 Cập nhật đánh giá
 export const updateReview = async (id, data, accessToken, dispatch, axiosJWT) => {
   try {
     const res = await axiosJWT.put(`http://localhost:8000/v1/reviews/${id}`, data, {
@@ -58,7 +55,6 @@ export const updateReview = async (id, data, accessToken, dispatch, axiosJWT) =>
   }
 };
 
-// 📌 Xóa đánh giá
 export const deleteReview = async (id, data, accessToken, dispatch, axiosJWT) => {
   try {
     await axiosJWT.delete(`http://localhost:8000/v1/reviews/${id}`, {
@@ -72,7 +68,6 @@ export const deleteReview = async (id, data, accessToken, dispatch, axiosJWT) =>
   }
 };
 
-// 📌 Thêm phản hồi
 export const addReply = async (reviewId, replyData, accessToken, dispatch, axiosJWT) => {
   try {
     const res = await axiosJWT.post(
@@ -88,7 +83,6 @@ export const addReply = async (reviewId, replyData, accessToken, dispatch, axios
   }
 };
 
-// 📌 Sửa phản hồi
 export const updateReply = async (replyId, data, accessToken, dispatch, axiosJWT) => {
   try {
     const res = await axiosJWT.put(

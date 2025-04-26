@@ -27,7 +27,6 @@ const testimoniaData = [
 ];
 
 const Testimonial = () => {
-    // slider config
     var settings = {
         dots: true,
         arrows: false,
@@ -70,7 +69,6 @@ const Testimonial = () => {
     return (
         <div className="py-10 bg-white mx-auto flex justify-center items-center dark:bg-zinc-900 dark:text-white duration-200">
             <div className="container">
-                {/* header */}
                 <div data-aos="slide-up" className="text-center mb-24 max-w-[400px] mx-auto">
                     <p className="text-sm bg-clip-text text-transparent bg-gradient-to-r from-sky-600 to-cyan-200">
                         Khách hàng của chúng tôi nói gì?
@@ -82,7 +80,6 @@ const Testimonial = () => {
                         Chúng tôi luôn nỗ lực mang đến trải nghiệm tốt nhất, và sự hài lòng của khách hàng chính là minh chứng rõ ràng nhất.{" "}
                     </p>
                 </div>
-                {/* card section */}
                 <div data-aos="zoom-in" className="">
                     <div className="">
                         <Slider {...settings}>

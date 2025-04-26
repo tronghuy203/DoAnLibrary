@@ -8,7 +8,6 @@ const categorySlice = createSlice({
     error: false,
   },
   reducers: {
-    // GET ALL CATEGORIES
     getCategoryStart: (state) => {
       state.isFetching = true;
     },
@@ -22,7 +21,6 @@ const categorySlice = createSlice({
       state.error = true;
     },
 
-    // CREATE CATEGORY
     createCategoryStart: (state) => {
       state.isFetching = true;
       state.error = false;
@@ -36,7 +34,6 @@ const categorySlice = createSlice({
       state.error = true;
     },
 
-    // UPDATE CATEGORY
     updateCategoryStart: (state) => {
       state.isFetching = true;
       state.error = false;
@@ -52,7 +49,6 @@ const categorySlice = createSlice({
       state.error = true;
     },
 
-    // DELETE CATEGORY
     deleteCategoryStart: (state) => {
       state.isFetching = true;
       state.error = false;

@@ -24,7 +24,6 @@ import {
   incrementViewSuccess
 } from "./documentSlice";
 
-// Lấy tất cả tài liệu (Admin)
 export const getAllDocumentsAdmin = async (accessToken, dispatch, axiosJWT) => {
     dispatch(getDocumentsStart());
     try {
@@ -39,8 +38,7 @@ export const getAllDocumentsAdmin = async (accessToken, dispatch, axiosJWT) => {
       return [];
     }
   };
-  
-  // Lấy danh sách tài liệu có thể tải xuống (User)
+
 export const getAllDocumentsUser = async (accessToken, dispatch, axiosJWT) => {
     dispatch(getDocumentsStart());
     try {
@@ -56,7 +54,6 @@ export const getAllDocumentsUser = async (accessToken, dispatch, axiosJWT) => {
     }
 };
   
-// Lấy danh sách tài liệu chờ duyệt (Admin)
 export const getPendingDocuments = async (accessToken, dispatch, axiosJWT) => {
   dispatch(getPendingDocumentsStart());
   try {
@@ -72,7 +69,6 @@ export const getPendingDocuments = async (accessToken, dispatch, axiosJWT) => {
   }
 };
 
-// Phê duyệt tài liệu (Admin)
 export const approveDocument = async (documentId, accessToken, dispatch, axiosJWT) => {
   dispatch(approveDocumentStart());
   try {
@@ -92,7 +88,6 @@ export const approveDocument = async (documentId, accessToken, dispatch, axiosJW
   }
 };
 
-// Từ chối tài liệu (Admin)
 export const rejectDocument = async (documentId, accessToken, dispatch, axiosJWT) => {
   dispatch(rejectDocumentStart());
   try {
@@ -112,8 +107,6 @@ export const rejectDocument = async (documentId, accessToken, dispatch, axiosJWT
   }
 };
 
-  
-// Lấy chi tiết tài liệu
 export const getDocumentDetail = async (documentId, accessToken, dispatch, axiosJWT) => {
   dispatch(getDocumentDetailStart());
   try {
@@ -141,22 +134,19 @@ export const getUserDocuments = async (userId, accessToken, axiosJWT) => {
   }
 };
 
-// Tăng lượt xem tài liệu
 export const viewDocument = async (documentId, accessToken, dispatch, axiosJWT) => {
   try {
     const res = await axiosJWT.get(`/v1/documents/view/${documentId}`, {
       headers: { token: `Bearer ${accessToken}` },
     });
-    const { _id, views, viewHistory } = res.data; // Lấy viewHistory từ response
+    const { _id, views, viewHistory } = res.data;
     dispatch(incrementViewSuccess({ id: _id, views, viewHistory }));
-    return res.data; // Trả về dữ liệu để component có thể sử dụng nếu cần
+    return res.data;
   } catch (err) {
     throw err;
   }
 };
 
-
-// Tải tài liệu
 export const downloadDocument = async (documentId, accessToken, documentTitle, dispatch, axiosJWT) => {
   try {
     const response = await axiosJWT.get(`/v1/documents/download/${documentId}`, {
@@ -173,7 +163,6 @@ export const downloadDocument = async (documentId, accessToken, documentTitle, d
     window.document.body.removeChild(link);
     window.URL.revokeObjectURL(url);
 
-    // Gọi API để lấy thông tin cập nhật sau khi tải
     const updatedDoc = await axiosJWT.get(`/v1/documents/${documentId}`, {
       headers: { token: `Bearer ${accessToken}` },
     });
@@ -191,7 +180,6 @@ export const downloadDocument = async (documentId, accessToken, documentTitle, d
   }
 };
 
-// Tải lên tài liệu mới
 export const uploadDocument = async (documentData, accessToken, dispatch, axiosJWT) => {
     dispatch(uploadDocumentStart());
     try {
@@ -211,14 +199,13 @@ export const uploadDocument = async (documentData, accessToken, dispatch, axiosJ
   };
   
 
-// Xóa tài liệu
 export const deleteDocument = async (documentId, accessToken, dispatch, axiosJWT) => {
   dispatch(deleteDocumentStart());
   try {
     await axiosJWT.delete(`http://localhost:8000/v1/documents/${documentId}`, {
       headers: { token: `Bearer ${accessToken}` },
     });
-    dispatch(deleteDocumentSuccess(documentId)); // Xóa thành công
+    dispatch(deleteDocumentSuccess(documentId));
   } catch (err) {
     dispatch(deleteDocumentFailed());
     console.error("Lỗi khi xóa tài liệu:", err);

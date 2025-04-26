@@ -98,7 +98,7 @@ export const payRentalFeeAndCreateBorrow = async (
 
     if (method === "vnpay" && res.data.paymentUrl) {
       console.log("Chuyển hướng đến VNPay với paymentUrl:", res.data.paymentUrl);
-      window.location.href = res.data.paymentUrl; // Chuyển hướng đến VNPay
+      window.location.href = res.data.paymentUrl;
     } else if (method === "cash") {
       navigate("/payment-success", {
         state: {
@@ -115,7 +115,6 @@ export const payRentalFeeAndCreateBorrow = async (
   }
 };
 
-// redux/apiBorrow.js
 export const checkPaymentStatus = async (txnRef, accessToken, dispatch, axiosJWT) => {
   try {
     const res = await axiosJWT.get(

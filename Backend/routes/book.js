@@ -8,7 +8,6 @@ router.get("/", bookController.getAllBooks);
 
 router.get("/:id", bookController.getBookById);
 
-
 router.put("/:id", middlewareController.verifyAdmin, upload.single("image"), bookController.updateBook);
 
 router.delete("/:id", middlewareController.verifyAdmin, bookController.deleteBook);

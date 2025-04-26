@@ -6,7 +6,6 @@ import { createAxios } from "../../createInstance";
 import { loginSuccess } from "../../redux/authSlice";
 import { FaCrown, FaCheckCircle } from "react-icons/fa";
 
-// Định nghĩa thứ tự ưu tiên của các gói
 const membershipPriority = {
   Free: 0,
   Basic: 1,
@@ -39,7 +38,6 @@ const MembershipList = () => {
       const currentMembershipName = currentMembership?.membershipId.name;
       const selectedMembershipName = selectedMembership?.name;
 
-      // Kiểm tra nếu người dùng đang sử dụng gói cao hơn
       if (
         currentMembershipName &&
         membershipPriority[currentMembershipName] > membershipPriority[selectedMembershipName]
@@ -48,17 +46,17 @@ const MembershipList = () => {
           `Bạn đang sử dụng gói ${currentMembershipName}, cao hơn gói ${selectedMembershipName}. Việc mua gói thấp hơn sẽ thay thế gói hiện tại. Bạn có chắc chắn muốn tiếp tục?`
         );
         if (!confirmDowngrade) {
-          return; // Hủy thao tác nếu người dùng không đồng ý
+          return;
         }
       }
 
       const method = membershipId === memberships.find((m) => m.name === "Free")?._id ? "free" : "vnpay";
       const response = await purchaseMembership(membershipId, method, user.accessToken, dispatch, axiosJWT);
       if (response.paymentUrl) {
-        window.location.href = response.paymentUrl; // Chuyển hướng đến VNPay
+        window.location.href = response.paymentUrl; 
       } else {
         alert("Đăng ký gói thành công!");
-        getMembershipStatus(user.accessToken, dispatch, axiosJWT); // Cập nhật trạng thái gói
+        getMembershipStatus(user.accessToken, dispatch, axiosJWT);
       }
     } catch (err) {
       alert("Lỗi khi mua gói: " + err.message);
