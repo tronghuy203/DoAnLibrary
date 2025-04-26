@@ -16,10 +16,7 @@ const BorrowBook = () => {
   const user = useSelector((state) => state.auth.login?.currentUser);
   const borrowList = useSelector((state) => state.borrow.borrowRecords);
   const dispatch = useDispatch();
-  const axiosJWT = useMemo(
-    () => createAxios(user, dispatch, loginSuccess),
-    [user, dispatch]
-  );
+  const axiosJWT = useMemo(() => createAxios(user, dispatch, loginSuccess),[user, dispatch]);
 
   // State cho phân trang
   const [currentPage, setCurrentPage] = useState(1);
@@ -35,7 +32,6 @@ const BorrowBook = () => {
   useEffect(() => {
     if (user?.accessToken) {
       getAllBorrowRecords(user.accessToken, dispatch, axiosJWT);
-      console.log("Borrow List from Redux:", borrowList);
     }
   }, [user, dispatch, axiosJWT]);
 

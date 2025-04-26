@@ -228,6 +228,20 @@ const AdminLayout = () => {
                     </li>
                     <li>
                       <Link
+                        to="/admin/documents/approve"
+                        className={`flex items-center gap-3 py-2 px-4 rounded-lg transition duration-200 ${
+                          location.pathname === "/admin/documents/approve"
+                            ? "bg-blue-600 text-white shadow-sm"
+                            : "text-gray-400 hover:bg-gray-700 hover:text-white"
+                        }`}
+                        onClick={handleMenuClick}
+                      >
+                        <ListBulletIcon className="w-5 h-5" />
+                        <span>Duyệt tài liệu</span>
+                      </Link>
+                    </li>
+                    <li>
+                      <Link
                         to="/admin/documents/list"
                         className={`flex items-center gap-3 py-2 px-4 rounded-lg transition duration-200 ${
                           location.pathname === "/admin/documents/list"

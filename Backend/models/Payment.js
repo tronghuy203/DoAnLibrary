@@ -12,7 +12,7 @@ const paymentSchema = new mongoose.Schema({
   },
   paymentType: {
     type: String,
-    enum: ["rental_fee", "penalty", "deposit"],
+    enum: ["rental_fee", "penalty", "deposit","membership"],
     required: true,
   },
   penaltyId: {
@@ -21,6 +21,11 @@ const paymentSchema = new mongoose.Schema({
     default: null,
   },
   borrowRecordId: { type: mongoose.Schema.Types.ObjectId, ref: "BorrowRecord" },
+  membershipId: {
+    type: mongoose.Schema.Types.ObjectId,
+    ref: "Membership",
+    default: null,
+  },
   method: {
     type: String,
     enum: ["momo", "vnpay", "cash", "bank_transfer"],

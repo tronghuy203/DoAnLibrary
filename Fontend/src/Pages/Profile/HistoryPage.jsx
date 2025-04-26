@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { createAxios } from "../../createInstance";
 import { loginSuccess } from "../../redux/authSlice";
-import { getBorrowHistory, deleteUser } from "../../redux/apiRequest"; // Added deleteUser import
+import { getBorrowHistory } from "../../redux/apiRequest";
 import { getPaymentHistory } from "../../redux/apiBorrow";
 import {
   DocumentTextIcon,
@@ -36,7 +36,6 @@ const HistoryPage = () => {
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [error, setError] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const fetchData = useCallback(async () => {
     if (!user?.accessToken || !user?._id || !axiosJWT) {
@@ -48,10 +47,12 @@ const HistoryPage = () => {
       setLoadingHistory(true);
       setError(null);
 
+      // Fetch borrow history
       const history = await getBorrowHistory(user._id, user.accessToken, axiosJWT);
       console.log("Borrow History:", history);
       setBorrowHistory(Array.isArray(history) ? history : []);
 
+      // Fetch payment history
       const paymentHistoryData = await getPaymentHistory(user._id, user.accessToken, axiosJWT);
       console.log("Payment History:", paymentHistoryData);
       setPaymentHistory(Array.isArray(paymentHistoryData) ? paymentHistoryData : []);
@@ -75,24 +76,6 @@ const HistoryPage = () => {
     if (!txnRef) return "N/A";
     if (txnRef.length <= 18) return txnRef;
     return `${txnRef.slice(0, 7)}...${txnRef.slice(-5)}`;
-  };
-
-  const handleDelete = (id) => {
-    if (user && user._id === id && axiosJWT) {
-      setShowDeleteConfirm(true);
-    }
-  };
-
-  const confirmDelete = () => {
-    if (user && axiosJWT) {
-      dispatch(deleteUser(user._id, user.accessToken, navigate, axiosJWT));
-      setShowDeleteConfirm(false);
-      setIsSidebarOpen(false);
-    }
-  };
-
-  const cancelDelete = () => {
-    setShowDeleteConfirm(false);
   };
 
   return (
@@ -120,37 +103,9 @@ const HistoryPage = () => {
           </div>
         )}
 
-        {showDeleteConfirm && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50">
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-lg max-w-sm w-full">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                Xác nhận xóa tài khoản
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">
-                Bạn có chắc chắn muốn xóa tài khoản? Hành động này không thể hoàn tác.
-              </p>
-              <div className="flex justify-end gap-3">
-                <button
-                  onClick={cancelDelete}
-                  className="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-300 dark:hover:bg-gray-500 transition-all duration-300"
-                >
-                  Hủy
-                </button>
-                <button
-                  onClick={confirmDelete}
-                  className="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all duration-300"
-                >
-                  Xác nhận
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
         <div className="flex flex-col lg:flex-row gap-6 min-h-[calc(100vh-14rem)]">
           <Sidebar
             user={user}
-            handleDelete={handleDelete}
             isSidebarOpen={isSidebarOpen}
             setIsSidebarOpen={setIsSidebarOpen}
           />

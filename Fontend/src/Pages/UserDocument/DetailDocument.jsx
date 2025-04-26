@@ -3,11 +3,12 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { createAxios } from "../../createInstance";
 import { loginSuccess } from "../../redux/authSlice";
-import { getDocumentDetail, downloadDocument } from "../../redux/apiDocument";
+import { getDocumentDetail, downloadDocument, viewDocument } from "../../redux/apiDocument";
 import { Worker, Viewer } from "@react-pdf-viewer/core";
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import { pdfjs } from "react-pdf";
 import { FaShareAlt, FaFacebook, FaInstagram, FaComment } from "react-icons/fa";
+import { toast } from "react-toastify";
 import ReviewSection from "../ReviewSection/ReviewSection";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@3.0.279/build/pdf.worker.min.js`;
@@ -27,7 +28,8 @@ const DetailDocument = () => {
   const [reviewCount, setReviewCount] = useState(0);
   const [activeTab, setActiveTab] = useState("Mô tả");
   const [showShareOptions, setShowShareOptions] = useState(false);
-  const shareRef = useRef(null); 
+  const [canViewDocument, setCanViewDocument] = useState(true);
+  const shareRef = useRef(null);
 
   useEffect(() => {
     const fetchDocument = async () => {
@@ -37,7 +39,12 @@ const DetailDocument = () => {
       }
 
       if (!user?.accessToken) {
-        setError("Bạn cần đăng nhập để xem tài liệu này.");
+        const errorMessage = "Bạn cần đăng nhập để xem tài liệu này.";
+        setError(errorMessage);
+        toast.error(errorMessage, {
+          position: "top-center",
+          autoClose: 3000,
+        });
         setIsLoading(false);
         return;
       }
@@ -46,12 +53,21 @@ const DetailDocument = () => {
         const res = await getDocumentDetail(id, user.accessToken, dispatch, axiosJWT);
         if (res) {
           setDocData(res);
+          setError(null);
         } else {
           setError("Không tìm thấy tài liệu.");
         }
       } catch (err) {
-        setError("Lỗi khi lấy thông tin tài liệu. Vui lòng thử lại.");
-        console.error("Lỗi fetch document:", err);
+        console.error("Lỗi fetch document:", err.response?.data || err.message);
+        const errorMessage = err.response?.data?.message || "Lỗi khi lấy thông tin tài liệu. Vui lòng thử lại.";
+        setError(errorMessage);
+        toast.error(errorMessage, {
+          position: "top-center",
+          autoClose: 3000,
+        });
+        if (err.response?.status === 403 || err.response?.status === 500) {
+          setCanViewDocument(false);
+        }
       } finally {
         setIsLoading(false);
       }
@@ -77,13 +93,34 @@ const DetailDocument = () => {
 
   const handleDownload = () => {
     if (!docData) {
-      setError("Không có tài liệu để tải xuống.");
+      const errorMessage = "Không có tài liệu để tải xuống.";
+      setError(errorMessage);
+      toast.error(errorMessage, {
+        position: "top-center",
+        autoClose: 3000,
+      });
       return;
     }
-    downloadDocument(id, user.accessToken, docData.title, dispatch, axiosJWT).catch((err) => {
-      console.error("Lỗi khi tải xuống:", err);
-      setError("Không thể tải tài liệu xuống. Vui lòng thử lại.");
-    });
+    downloadDocument(id, user.accessToken, docData.title, dispatch, axiosJWT)
+      .then(() => {
+        setError(null);
+        toast.success("Tải tài liệu thành công!", {
+          position: "top-center",
+          autoClose: 3000,
+        });
+      })
+      .catch((err) => {
+        console.error("Lỗi khi tải xuống:", err.response?.data || err.message);
+        const errorMessage = err.response?.data?.message || "Không thể tải tài liệu xuống. Vui lòng thử lại.";
+        setError(errorMessage);
+        toast.error(errorMessage, {
+          position: "top-center",
+          autoClose: 3000,
+        });
+        if (err.response?.status === 403 || err.response?.status === 500) {
+          setCanViewDocument(false);
+        }
+      });
   };
 
   const calculateAverageRating = (reviews) => {
@@ -94,7 +131,7 @@ const DetailDocument = () => {
 
   const shareToSocialMedia = (platform) => {
     const url = encodeURIComponent(window.location.href);
-    const title = encodeURIComponent(docData.title);
+    const title = encodeURIComponent(docData?.title || "");
     let shareUrl;
 
     switch (platform) {
@@ -103,7 +140,10 @@ const DetailDocument = () => {
         break;
       case "instagram":
         shareUrl = `https://www.instagram.com/`;
-        alert("Hãy sao chép liên kết và chia sẻ trên Instagram!");
+        toast.info("Hãy sao chép liên kết và chia sẻ trên Instagram!", {
+          position: "top-center",
+          autoClose: 3000,
+        });
         break;
       case "zalo":
         shareUrl = `https://zalo.me/share?url=${url}`;
@@ -142,9 +182,11 @@ const DetailDocument = () => {
             <div className="w-12 h-12 border-4 border-t-blue-600 dark:border-t-blue-400 border-gray-300 dark:border-gray-700 rounded-full animate-spin"></div>
           </div>
         ) : error ? (
-          <p className="text-red-500 dark:text-red-400 text-center text-lg font-medium">{error}</p>
+          <div className="bg-red-100 dark:bg-red-900 border border-red-500 dark:border-red-700 rounded-lg p-4 text-center text-lg font-medium text-red-500 dark:text-red-400 animate-fade-in">
+            {error}
+          </div>
         ) : !docData ? (
-          <p className="text-gray-600 dark:text-gray-400 text-center text-lg font-medium">
+          <p className="text-gray-600 dark:text-gray-400 text-center text-lg font-medium animate-fade-in">
             Không tìm thấy tài liệu.
           </p>
         ) : (
@@ -180,7 +222,12 @@ const DetailDocument = () => {
               <div className="flex flex-col sm:flex-row gap-4 relative">
                 <button
                   onClick={handleDownload}
-                  className="bg-blue-600 text-white px-6 py-2 rounded-lg font-medium hover:bg-blue-700 dark:hover:bg-blue-500 shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200"
+                  className={`px-6 py-2 rounded-lg font-medium shadow-md hover:shadow-lg transform hover:scale-105 transition-all duration-200 ${
+                    canViewDocument
+                      ? "bg-blue-600 text-white hover:bg-blue-700 dark:hover:bg-blue-500"
+                      : "bg-gray-400 text-gray-700 cursor-not-allowed"
+                  }`}
+                  disabled={!canViewDocument}
                 >
                   Tải xuống tài liệu
                 </button>
@@ -275,7 +322,7 @@ const DetailDocument = () => {
               </div>
             </div>
 
-            {docData.fileUrl && (
+            {docData.fileUrl && canViewDocument ? (
               <div className="bg-white dark:bg-gray-800 rounded-xl shadow-md p-6 border border-gray-200 dark:border-gray-700">
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
                   Xem trước tài liệu
@@ -294,13 +341,17 @@ const DetailDocument = () => {
                   </Worker>
                 </div>
               </div>
+            ) : (
+              <div className="bg-red-100 dark:bg-red-900 border border-red-500 dark:border-red-700 rounded-lg p-4 text-center text-lg font-medium text-red-500 dark:text-red-400 animate-fade-in">
+                Không thể xem trước tài liệu do vượt quá giới hạn lượt xem trong ngày.
+              </div>
             )}
 
             {/* Review Section */}
             <div id="review-section">
               <ReviewSection
                 type="document"
-                itemId={docData._id}
+                itemId={docData?._id}
                 user={user}
                 onReviewsUpdate={(reviews) => {
                   setAverageRating(calculateAverageRating(reviews));

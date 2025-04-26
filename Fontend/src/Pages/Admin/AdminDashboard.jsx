@@ -17,6 +17,7 @@ import {
   Tooltip,
   Legend,
 } from "chart.js";
+import { loginSuccess } from "../../redux/authSlice";
 
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
@@ -25,15 +26,13 @@ const AdminDashboard = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const user = useSelector((state) => state.auth.login.currentUser);
-  const { allBooks, isFetching: booksFetching, error: booksError } = useSelector((state) => state.books);
+  const { allBooks, isFetching: booksFetching} = useSelector((state) => state.books);
   const usersState = useSelector((state) => state.users); // Đổi từ state.user thành state.users
-  const { borrowRecords, isFetching: borrowsFetching, error: borrowsError } = useSelector((state) => state.borrow);
+  const { borrowRecords, isFetching: borrowsFetching} = useSelector((state) => state.borrow);
 
   // Kiểm tra và lấy dữ liệu người dùng
   const allUsers = usersState?.users?.allUsers || [];
-  const usersFetching = usersState?.users?.isFetching || false;
-  const usersError = usersState?.users?.error || false;
-  const axiosJWT = useMemo(() => (createAxios(user, dispatch)),[user, dispatch]);
+  const usersFetching = usersState?.users?.isFetching || false;  const axiosJWT = useMemo(() => (createAxios(user, dispatch, loginSuccess)),[user, dispatch]);
   const [mostBorrowedBook, setMostBorrowedBook] = useState(null)
   const [mostActiveUser, setMostActiveUser] = useState(null);
 
@@ -105,17 +104,6 @@ const AdminDashboard = () => {
     return (
       <div className="min-h-screen bg-gray-900 text-gray-100 p-6 lg:p-8">
         <p className="text-xl text-gray-300">Đang tải dữ liệu...</p>
-      </div>
-    );
-  }
-
-  // Xử lý trạng thái lỗi
-  if (booksError || usersError || borrowsError) {
-    return (
-      <div className="min-h-screen bg-gray-900 text-gray-100 p-6 lg:p-8">
-        <p className="text-xl text-red-400">
-          Lỗi khi tải dữ liệu: {booksError || usersError || borrowsError}
-        </p>
       </div>
     );
   }

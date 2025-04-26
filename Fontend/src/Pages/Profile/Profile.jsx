@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { getAllUsers, deleteUser, updateUserProfile } from "../../redux/apiRequest";
+import { getAllUsers, updateUserProfile } from "../../redux/apiRequest";
 import { createAxios } from "../../createInstance";
 import { loginSuccess } from "../../redux/authSlice";
 import {
@@ -44,13 +44,10 @@ const Profile = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
-  const axiosJWT = useMemo(() => {
-    if (!user || !dispatch) {
-      console.warn("User or dispatch is undefined, axiosJWT will not be created.");
-      return null;
-    }
-    return createAxios(user, dispatch, loginSuccess);
-  }, [user, dispatch]);
+  const axiosJWT = useMemo(
+    () => createAxios(user, dispatch, loginSuccess),
+    [user, dispatch]
+  );
 
   const [editMode, setEditMode] = useState({
     profile: false,
@@ -74,7 +71,6 @@ const Profile = () => {
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   useEffect(() => {
     if (!user) {
@@ -88,24 +84,6 @@ const Profile = () => {
       });
     }
   }, [user, navigate, dispatch, axiosJWT]);
-
-  const handleDelete = (id) => {
-    if (user && user._id === id && axiosJWT) {
-      setShowDeleteConfirm(true);
-    }
-  };
-
-  const confirmDelete = () => {
-    if (user && axiosJWT) {
-      dispatch(deleteUser(user._id, user.accessToken, navigate, axiosJWT));
-      setShowDeleteConfirm(false);
-      setIsSidebarOpen(false);
-    }
-  };
-
-  const cancelDelete = () => {
-    setShowDeleteConfirm(false);
-  };
 
   const handleUpdate = async () => {
     if (!axiosJWT) {
@@ -214,37 +192,9 @@ const Profile = () => {
           </div>
         )}
 
-        {showDeleteConfirm && (
-          <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm transition-opacity duration-300">
-            <div className="bg-white dark:bg-gray-800 p-6 rounded-2xl shadow-xl max-w-sm w-full transform scale-95 animate-pop-in">
-              <h3 className="text-lg font-semibold text-gray-900 dark:text-white mb-4">
-                Xác nhận xóa tài khoản
-              </h3>
-              <p className="text-sm text-gray-600 dark:text-gray-300 mb-6">
-                Bạn có chắc chắn muốn xóa tài khoản? Hành động này không thể hoàn tác.
-              </p>
-              <div className="flex justify-end gap-3">
-                <button
-                  onClick={cancelDelete}
-                  className="px-4 py-2 bg-gray-200 dark:bg-gray-600 text-gray-700 dark:text-gray-300 rounded-xl hover:bg-gray-300 dark:hover:bg-gray-500 transition-all duration-300 transform hover:scale-105"
-                >
-                  Hủy
-                </button>
-                <button
-                  onClick={confirmDelete}
-                  className="px-4 py-2 bg-red-600 text-white rounded-xl hover:bg-red-700 transition-all duration-300 transform hover:scale-105"
-                >
-                  Xác nhận
-                </button>
-              </div>
-            </div>
-          </div>
-        )}
-
         <div className="flex flex-col lg:flex-row gap-6 min-h-[calc(100vh-14rem)]">
           <Sidebar
             user={user}
-            handleDelete={handleDelete}
             isSidebarOpen={isSidebarOpen}
             setIsSidebarOpen={setIsSidebarOpen}
           />

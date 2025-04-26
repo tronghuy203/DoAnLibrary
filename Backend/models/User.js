@@ -54,6 +54,10 @@ const userSchema = new mongoose.Schema(
       type: Boolean,
       default: false,
     },
+    membership: {
+      membershipId: { type: mongoose.Schema.Types.ObjectId, ref: "Membership" },
+      userMembershipId: { type: mongoose.Schema.Types.ObjectId, ref: "UserMembership" },
+    },
     
   },
   { timestamps: true }

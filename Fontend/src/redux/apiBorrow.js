@@ -124,7 +124,7 @@ export const checkPaymentStatus = async (txnRef, accessToken, dispatch, axiosJWT
         headers: { token: `Bearer ${accessToken}` },
       }
     );
-    console.log("Phản hồi từ API checkPaymentStatus:", res.data); // Log dữ liệu trả về
+    console.log("Phản hồi từ API checkPaymentStatus:", res.data);
     return res.data;
   } catch (err) {
     console.error("Lỗi từ API checkPaymentStatus:", err.response?.data || err);

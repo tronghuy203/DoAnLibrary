@@ -15,6 +15,11 @@ const documentSchema = new mongoose.Schema(
       type: String, 
     },
     uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // Ai đã upload?
+    status: { 
+      type: String, 
+      enum: ['pending', 'approved', 'rejected'], 
+      default: 'pending' 
+    },
     views: {
       type: Number,
       default: 0,

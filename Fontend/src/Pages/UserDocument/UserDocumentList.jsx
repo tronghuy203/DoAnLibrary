@@ -5,9 +5,13 @@ import { getAllDocumentsUser, viewDocument } from "../../redux/apiDocument";
 import { createAxios } from "../../createInstance";
 import { loginSuccess } from "../../redux/authSlice";
 import { FaFilePdf, FaFileWord, FaFileExcel, FaSearch } from "react-icons/fa";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
+import { ToastContainer } from "react-toastify";
 
 const UserDocumentList = () => {
   const user = useSelector((state) => state.auth.login?.currentUser);
+  const currentMembership = useSelector((state) => state.membership.currentMembership);
   const dispatch = useDispatch();
   const axiosJWT = useMemo(() => createAxios(user, dispatch, loginSuccess), [user, dispatch]);
   const documents = useSelector((state) => state.document.documents);
@@ -28,6 +32,7 @@ const UserDocumentList = () => {
 
   const filteredDocuments = useMemo(() => {
     let result = documents || [];
+    result = result.filter((doc) => doc.status === "approved");
     if (searchQuery) {
       result = result.filter((doc) =>
         doc.title.toLowerCase().includes(searchQuery.toLowerCase())
@@ -43,11 +48,60 @@ const UserDocumentList = () => {
     navigate("/upload-document");
   };
 
-  const handleDetailClick = (id) => {
-    if (user?.accessToken) {
-      viewDocument(id, user?.accessToken, dispatch, axiosJWT);
+  const handleDetailClick = async (id) => {
+    if (!user?.accessToken) {
+      const errorMessage = "Vui lòng đăng nhập để xem tài liệu.";
+      toast.error(errorMessage, {
+        position: "top-right",
+        autoClose: 5000,
+        className: "bg-red-100 dark:bg-red-900 text-red-500 dark:text-red-400 rounded-lg shadow-md",
+        progressClassName: "bg-red-500",
+      });
+      navigate("/login");
+      return;
     }
-    navigate(`/document/${id}`);
+    try {
+      await viewDocument(id, user.accessToken, dispatch, axiosJWT);
+      navigate(`/document/${id}`);
+    } catch (err) {
+      let errorMessage = err.response?.data?.message || "Lỗi khi xem tài liệu. Vui lòng thử lại.";
+      if (err.response?.status === 403) {
+        errorMessage = `Bạn đã vượt quá giới hạn lượt xem hôm nay${
+          currentMembership ? ` với gói ${currentMembership.membershipId.name}` : ""
+        }. Nâng cấp gói để xem thêm!`;
+        toast(
+          <div className="flex items-center gap-2">
+            <span className="text-sm">{errorMessage}</span>
+            <button
+              onClick={() => navigate("/membership-list")}
+              className="px-3 py-1 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-all duration-300 text-sm"
+            >
+              Nâng cấp gói
+            </button>
+          </div>,
+          {
+            position: "top-right",
+            autoClose: 3000,
+            closeOnClick: true,
+            className:
+              "bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 rounded-lg shadow-md max-w-sm",
+            progressClassName: "bg-teal-500",
+          }
+        );
+      } else if (err.response?.status === 500) {
+        errorMessage = "Lỗi server. Vui lòng thử lại sau.";
+        toast.error(errorMessage, {
+          position: "top-right",
+          autoClose: 5000,
+          className: "bg-red-100 dark:bg-red-900 text-red-500 dark:text-red-400 rounded-lg shadow-md",
+          progressClassName: "bg-red-500",
+        });
+      }
+      if (err.response?.status === 403 || err.response?.status === 500) {
+        return;
+      }
+      navigate(`/document/${id}`);
+    }
   };
 
   const handleLoadMore = () => {
@@ -72,7 +126,6 @@ const UserDocumentList = () => {
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 to-blue-100 dark:from-gray-900 dark:to-zinc-800 flex justify-center items-start py-32 transition-colors duration-500">
       <div className="container mx-auto px-6">
-
         <div className="flex flex-col sm:flex-row justify-between items-center mb-16 gap-6">
           <h2
             data-aos="slide-up"
@@ -101,7 +154,7 @@ const UserDocumentList = () => {
               className="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 dark:text-white"
             />
           </div>
-          <select 
+          <select
             value={filterType}
             onChange={(e) => setFilterType(e.target.value)}
             className="px-6 py-3 bg-white dark:bg-gray-800 border border-gray-200 dark:border-gray-700 rounded-lg shadow-sm focus:outline-none focus:ring-2 focus:ring-indigo-500 text-gray-900 dark:text-white appearance-none bg-[url('data:image/svg+xml,%3Csvg%20xmlns%3D%22http%3A%2F%2Fwww.w3.org%2F2000%2Fsvg%22%20width%3D%2212%22%20height%3D%2212%22%20fill%3D%22gray%22%20viewBox%3D%220%200%2016%2016%22%3E%3Cpath%20d%3D%22M8%2012L2%206h12z%22%2F%3E%3C%2Fsvg%3E')] bg-no-repeat bg-[right_1rem_center] pr-10"
@@ -134,16 +187,6 @@ const UserDocumentList = () => {
                         {doc.title}
                       </h3>
                     </div>
-                    {/* {doc.coverUrl && (
-                      <div className="mb-4">
-                        <img
-                          src={doc.coverUrl}
-                          alt={`Cover of ${doc.title}`}
-                          className="w-full h-48 object-cover rounded-lg"
-                        />
-                      </div>
-                    )} */}
-
                     <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-2 text-sm">
                       {doc.description}
                     </p>
@@ -175,6 +218,15 @@ const UserDocumentList = () => {
           </>
         )}
       </div>
+      <ToastContainer
+        position="top-right" 
+        autoClose={3000} 
+        hideProgressBar={false}
+        closeOnClick={true} 
+        pauseOnHover={true}
+        draggable={true} 
+        theme="light"
+      />
     </div>
   );
 };
