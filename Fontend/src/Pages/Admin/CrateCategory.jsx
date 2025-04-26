@@ -20,7 +20,7 @@ const CreateCategory = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    setMessage(""); // Reset message trước khi thực hiện
+    setMessage("");
     try {
       if (!accessToken) {
         setMessage("Bạn cần đăng nhập để tạo danh mục.");
@@ -89,7 +89,6 @@ const CreateCategory = () => {
   );
 };
 
-// Thêm keyframes cho animation nếu cần dùng Tailwind
 const styles = `
   @keyframes fadeIn {
     from { opacity: 0; transform: translateY(10px); }

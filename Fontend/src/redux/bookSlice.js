@@ -10,7 +10,6 @@ const bookSlice = createSlice({
     createBookStatus: "",
   },
   reducers: {
-    // GET ALL BOOKS
     getBooksStart: (state) => {
       state.isFetching = true;
     },
@@ -24,7 +23,6 @@ const bookSlice = createSlice({
       state.error = true;
     },
 
-    // DETAIL BOOK
     getBookDetailStart: (state) => {
       state.isFetching = true;
     },
@@ -38,7 +36,6 @@ const bookSlice = createSlice({
       state.error = true;
     },
 
-    // CREATE BOOK
     createBookStart: (state) => {
       state.isFetching = true;
       state.error = false;
@@ -55,7 +52,6 @@ const bookSlice = createSlice({
       state.createBookStatus = "failed";
     },
 
-    // UPDATE BOOK
     updateBookStart: (state) => {
       state.isFetching = true;
       state.error = false;
@@ -71,7 +67,6 @@ const bookSlice = createSlice({
       state.error = true;
     },
 
-    // DELETE BOOK
     deleteBookStart: (state) => {
       state.isFetching = true;
       state.error = false;

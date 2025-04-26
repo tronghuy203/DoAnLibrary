@@ -12,7 +12,7 @@ const paymentSchema = new mongoose.Schema({
   },
   paymentType: {
     type: String,
-    enum: ["rental_fee", "penalty", "deposit","membership"],
+    enum: ["rental_fee", "penalty","membership"],
     required: true,
   },
   penaltyId: {
@@ -28,7 +28,7 @@ const paymentSchema = new mongoose.Schema({
   },
   method: {
     type: String,
-    enum: ["momo", "vnpay", "cash", "bank_transfer"],
+    enum: ["vnpay", "cash"],
     required: true,
   },
   status: {

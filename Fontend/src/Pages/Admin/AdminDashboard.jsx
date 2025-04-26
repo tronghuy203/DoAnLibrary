@@ -27,10 +27,9 @@ const AdminDashboard = () => {
   const navigate = useNavigate();
   const user = useSelector((state) => state.auth.login.currentUser);
   const { allBooks, isFetching: booksFetching} = useSelector((state) => state.books);
-  const usersState = useSelector((state) => state.users); // Đổi từ state.user thành state.users
+  const usersState = useSelector((state) => state.users);
   const { borrowRecords, isFetching: borrowsFetching} = useSelector((state) => state.borrow);
 
-  // Kiểm tra và lấy dữ liệu người dùng
   const allUsers = usersState?.users?.allUsers || [];
   const usersFetching = usersState?.users?.isFetching || false;  const axiosJWT = useMemo(() => (createAxios(user, dispatch, loginSuccess)),[user, dispatch]);
   const [mostBorrowedBook, setMostBorrowedBook] = useState(null)
@@ -61,7 +60,6 @@ const AdminDashboard = () => {
   useEffect(() => {
     if (borrowRecords && allBooks) {
       const borrowCounts = borrowRecords.reduce((acc, borrow) => {
-        // Lấy _id từ bookId (xử lý trường hợp bookId là object)
         const bookId = borrow.bookId?._id || borrow.bookId;
         acc[bookId] = (acc[bookId] || 0) + 1;
         return acc;

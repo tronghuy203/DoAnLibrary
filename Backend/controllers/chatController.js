@@ -29,14 +29,12 @@ const messageController = {
   createOrGetChat: async (req, res) => {
     try {
       const { userId } = req.body;
-      const requesterId = req.user.id; // Lấy id từ token JWT
+      const requesterId = req.user.id;
 
-      // Kiểm tra userId hợp lệ
       if (!userId) {
         return res.status(400).json({ message: "userId is required" });
       }
 
-      // Kiểm tra requester và target user
       const requester = await User.findById(requesterId);
       const targetUser = await User.findById(userId);
       if (!requester) {
@@ -46,17 +44,14 @@ const messageController = {
         return res.status(404).json({ message: "Target user not found" });
       }
 
-      // Logic xác định admin và user
       let adminId, normalUserId;
       if (requester.admin) {
-        // Nếu requester là admin, userId là user thông thường
         if (targetUser.admin) {
           return res.status(403).json({ message: "Admin cannot chat with another admin" });
         }
         adminId = requesterId;
         normalUserId = userId;
       } else {
-        // Nếu requester là user, userId phải là admin
         if (!targetUser.admin) {
           return res.status(403).json({ message: "Users can only chat with admins" });
         }
@@ -64,7 +59,6 @@ const messageController = {
         normalUserId = requesterId;
       }
 
-      // Tìm hoặc tạo chat
       let chat = await Chat.findOne({
         participants: { $all: [adminId, normalUserId] },
       });

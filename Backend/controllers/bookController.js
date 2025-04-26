@@ -5,17 +5,16 @@ const path = require("path");
 // Cấu hình lưu ảnh
 const storage = multer.diskStorage({
   destination: (req, file, cb) => {
-    cb(null, "uploads/"); // Lưu ảnh vào thư mục uploads/
+    cb(null, "uploads/");
   },
   filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname)); // Đổi tên file
+    cb(null, Date.now() + path.extname(file.originalname));
   },
 });
 
 const upload = multer({ storage });
 
 const bookController = {
-  // Tạo sách mới
   createBook: async (req, res) => {
     try {
       const { title, author, description, price, category, quantity, publishedYear} = req.body;
@@ -30,7 +29,6 @@ const bookController = {
     }
   },
 
-  // Lấy tất cả sách
   getAllBooks: async (req, res) => {
     try {
       const books = await Book.find();
@@ -40,7 +38,6 @@ const bookController = {
     }
   },
 
-  // Lấy sách theo ID
   getBookById: async (req, res) => {
     try {
       const book = await Book.findById(req.params.id);
@@ -53,7 +50,6 @@ const bookController = {
     }
   },
 
-  // Cập nhật sách
   updateBook: async (req, res) => {
     try {
       const { title, author, description, price, category, quantity, publishedYear } = req.body;
@@ -71,7 +67,6 @@ const bookController = {
     }
   },
 
-  // Xóa sách
   deleteBook: async (req, res) => {
     try {
       await Book.findByIdAndDelete(req.params.id);

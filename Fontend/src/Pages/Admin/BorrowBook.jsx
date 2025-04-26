@@ -18,11 +18,9 @@ const BorrowBook = () => {
   const dispatch = useDispatch();
   const axiosJWT = useMemo(() => createAxios(user, dispatch, loginSuccess),[user, dispatch]);
 
-  // State cho phân trang
   const [currentPage, setCurrentPage] = useState(1);
   const recordsPerPage = 7;
 
-  // Tính toán dữ liệu hiển thị
   const totalRecords = borrowList?.length || 0;
   const totalPages = Math.ceil(totalRecords / recordsPerPage);
   const indexOfLastRecord = currentPage * recordsPerPage;
@@ -40,7 +38,7 @@ const BorrowBook = () => {
       await confirmPickup(id, user.accessToken, dispatch, axiosJWT);
       await getAllBorrowRecords(user.accessToken, dispatch, axiosJWT);
     } catch (err) {
-      console.error("❌ Xác nhận lấy sách thất bại", err);
+      console.error("Xác nhận lấy sách thất bại", err);
     }
   };
 
@@ -49,11 +47,10 @@ const BorrowBook = () => {
       await confirmReturn(id, user.accessToken, dispatch, axiosJWT);
       await getAllBorrowRecords(user.accessToken, dispatch, axiosJWT);
     } catch (err) {
-      console.error("❌ Xác nhận trả sách thất bại", err);
+      console.error("Xác nhận trả sách thất bại", err);
     }
   };
 
-  // Hàm chuyển trang
   const goToPage = (page) => {
     if (page >= 1 && page <= totalPages) {
       setCurrentPage(page);
@@ -76,7 +73,6 @@ const BorrowBook = () => {
         {borrowList?.length > 0 ? (
           <>
             <div className="w-full bg-gray-800 rounded-xl shadow-md border border-gray-700/50 overflow-hidden">
-              {/* Tiêu đề bảng */}
               <div className="hidden sm:grid sm:grid-cols-[1fr_2fr_2fr_1fr_1fr_1fr_1.5fr] bg-gray-700 text-gray-200 font-semibold p-4">
                 <div className="text-base">ID</div>
                 <div className="text-base">Người Mượn</div>
@@ -87,7 +83,6 @@ const BorrowBook = () => {
                 <div className="text-base">Hành động</div>
               </div>
 
-              {/* Nội dung bảng */}
               <div className="divide-y divide-gray-700">
                 {currentRecords.map((borrow) => (
                   <div
@@ -155,7 +150,6 @@ const BorrowBook = () => {
               </div>
             </div>
 
-            {/* Phân trang */}
             {totalPages > 1 && (
               <div className="mt-6 flex justify-center items-center gap-2 sm:gap-4">
                 <button

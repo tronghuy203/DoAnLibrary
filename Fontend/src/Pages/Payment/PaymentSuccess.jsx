@@ -61,8 +61,8 @@ const PaymentSuccess = () => {
   ]);
   const shortenTxnRef = (txnRef) => {
     if (!txnRef) return "N/A";
-    if (txnRef.length <= 18) return txnRef; // Nếu chuỗi ngắn, trả về nguyên bản
-    return `${txnRef.slice(0, 10)}...${txnRef.slice(-8)}`; // Lấy 10 ký tự đầu + ... + 8 ký tự cuối
+    if (txnRef.length <= 18) return txnRef;
+    return `${txnRef.slice(0, 10)}...${txnRef.slice(-8)}`; 
   };
 
 
@@ -81,7 +81,6 @@ const PaymentSuccess = () => {
   return (
     <div className="min-h-screen bg-gradient-to-b from-blue-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 flex items-center justify-center py-12 px-4 sm:px-6 lg:px-8 transition-colors duration-500">
       <div className="relative bg-white dark:bg-gray-800 p-6 sm:p-8 rounded-3xl shadow-2xl max-w-md w-full animate-slide-up transition-all duration-700">
-        {/* Decorative top border */}
         <div className="absolute top-0 left-0 w-full h-2 bg-gradient-to-r from-blue-400 to-green-400 dark:from-blue-500 dark:to-green-500 rounded-t-3xl"></div>
 
         <div className="flex items-center justify-center mb-8">

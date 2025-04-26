@@ -1,77 +1,69 @@
-import React, { useState, useEffect, useMemo } from "react";
+import React, { useState, useEffect, useMemo, useRef } from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { createAxios } from "../../createInstance";
 import socket from "../socket";
 import { loginSuccess } from "../../redux/authSlice";
-import {
-  PaperAirplaneIcon,
-  ExclamationCircleIcon,
-} from "@heroicons/react/24/outline";
+import { getAdmin, createChat, getChatHistory } from "../../redux/apiChat";
+import { PaperAirplaneIcon, ExclamationCircleIcon, CheckCircleIcon } from "@heroicons/react/24/outline";
+import { getHistorySuccess } from "../../redux/chatSlice";
 
 const UserChat = () => {
   const [chatId, setChatId] = useState(null);
-  const [messages, setMessages] = useState([]);
   const [message, setMessage] = useState("");
-  const [loading, setLoading] = useState(true);
-  const [error, setError] = useState(null);
-
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const chatContainerRef = useRef(null);
   const user = useSelector((state) => state.auth.login?.currentUser);
+  const { history, isFetching, error } = useSelector((state) => state.chat);
   const axiosJWT = useMemo(() => createAxios(user, dispatch, loginSuccess), [user, dispatch]);
 
-  // Redirect to login if user is not authenticated
   useEffect(() => {
     if (!user) {
       navigate("/login");
     }
   }, [user, navigate]);
 
-  // Fetch chat data
   useEffect(() => {
     const fetchChat = async () => {
       if (!user || !user.accessToken) {
-        setError("Vui lòng đăng nhập để sử dụng trò chuyện.");
-        setLoading(false);
         return;
       }
 
       try {
-        setLoading(true);
-
-        // Lấy ID của admin
-        const adminResponse = await axiosJWT.get("/v1/user/admin");
-        if (!adminResponse.data._id) {
+        const admin = await getAdmin(user.accessToken, dispatch, axiosJWT);
+        if (!admin._id) {
           throw new Error("Không tìm thấy admin");
         }
-        const adminId = adminResponse.data._id;
+        const adminId = admin._id;
 
-        // Tạo hoặc lấy chat
-        const res = await axiosJWT.post("/v1/chat/create", { userId: adminId });
-        setChatId(res.data._id);
+        const chat = await createChat(adminId, user.accessToken, dispatch, axiosJWT);
+        setChatId(chat._id);
 
-        // Lấy lịch sử trò chuyện
-        const history = await axiosJWT.get(`/v1/chat/history/${res.data._id}`);
-        setMessages(history.data);
+        await getChatHistory(chat._id, user.accessToken, dispatch, axiosJWT);
 
-        // Tham gia phòng chat
-        socket.emit("joinChat", { chatId: res.data._id, userId: user._id });
+        socket.emit("joinChat", { chatId: chat._id, userId: user._id });
       } catch (err) {
-        console.error("Lỗi khi tải chat:", err.response?.data || err);
-        setError(err.response?.data?.message || "Không thể tải cuộc trò chuyện.");
-      } finally {
-        setLoading(false);
+        console.error("Lỗi khi tải chat:", err);
       }
     };
 
     fetchChat();
-  }, [axiosJWT, user]);
+  }, [axiosJWT, user, dispatch]);
 
-  // Lắng nghe tin nhắn mới
   useEffect(() => {
     socket.on("newMessage", (newMessage) => {
-      setMessages((prev) => [...prev, newMessage]);
+      if (newMessage.chatId === chatId) {
+        dispatch(
+          getHistorySuccess({
+            chatId,
+            messages: [...(history[chatId] || []), newMessage],
+          })
+        );
+        if (newMessage.sender._id !== user._id) {
+          socket.emit("markAsRead", { chatId, messageId: newMessage._id });
+        }
+      }
     });
 
     socket.on("error", (err) => {
@@ -82,9 +74,14 @@ const UserChat = () => {
       socket.off("newMessage");
       socket.off("error");
     };
-  }, []);
+  }, [history, dispatch, chatId, user]);
 
-  // Xử lý gửi tin nhắn
+  useEffect(() => {
+    if (chatContainerRef.current) {
+      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+    }
+  }, [history, chatId]);
+
   const handleSendMessage = () => {
     if (message.trim() && chatId && user?._id) {
       socket.emit("sendMessage", {
@@ -96,6 +93,13 @@ const UserChat = () => {
     }
   };
 
+  const formatTime = (timestamp) => {
+    return new Date(timestamp).toLocaleTimeString("vi-VN", {
+      hour: "2-digit",
+      minute: "2-digit",
+    });
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-800 via-gray-900 to-black flex items-center justify-center py-12 px-4 sm:px-8 lg:px-12">
       <div className="w-full max-w-xl bg-gradient-to-b from-gray-900 to-gray-850 p-8 rounded-2xl shadow-2xl border border-gray-700/50 animate-fade-in">
@@ -103,7 +107,7 @@ const UserChat = () => {
           Chat với Admin
         </h2>
 
-        {loading ? (
+        {isFetching ? (
           <div className="text-white text-center py-10">Đang tải...</div>
         ) : error ? (
           <div className="flex items-center gap-3 bg-red-600/90 text-white px-6 py-4 rounded-lg shadow-lg mb-6 animate-fade-in-fast">
@@ -112,11 +116,41 @@ const UserChat = () => {
           </div>
         ) : (
           <>
-            <div className="h-80 overflow-y-scroll bg-gray-800/80 p-4 rounded-lg border border-gray-700 mb-6">
-              {messages.map((msg) => (
-                <div key={msg._id} className="mb-2">
-                  <span className="font-semibold text-cyan-400">{msg.sender.username}:</span>{" "}
-                  <span className="text-gray-100">{msg.content}</span>
+            <div
+              ref={chatContainerRef}
+              className="h-80 overflow-y-scroll bg-gray-800/80 p-4 rounded-lg border border-gray-700 mb-6 scrollbar-thin scrollbar-thumb-gray-600 scrollbar-track-gray-800"
+            >
+              {(history[chatId] || []).map((msg) => (
+                <div
+                  key={msg._id}
+                  className={`flex mb-4 ${
+                    msg.sender._id === user._id ? "justify-end" : "justify-start"
+                  }`}
+                >
+                  <div
+                    className={`flex items-end gap-2 max-w-[70%] ${
+                      msg.sender._id === user._id ? "flex-row-reverse" : ""
+                    }`}
+                  >
+                    <img
+                      src={msg.sender.avatar || "https://cellphones.com.vn/sforum/wp-content/uploads/2023/10/avatar-trang-4.jpg"}
+                      alt="avatar"
+                      className="w-10 h-10 rounded-full object-cover"
+                    />
+                    <div
+                      className={`p-3 rounded-lg ${
+                        msg.sender._id === user._id
+                          ? "bg-gradient-to-r from-cyan-500 to-blue-600 text-white"
+                          : "bg-gray-700 text-gray-100"
+                      }`}
+                    >
+                      <p>{msg.content}</p>
+                      <div className="flex items-center gap-1 mt-1 text-xs text-gray-400">
+                        <span>{formatTime(msg.createdAt)}</span>
+                        {msg.sender._id === user._id}
+                      </div>
+                    </div>
+                  </div>
                 </div>
               ))}
             </div>

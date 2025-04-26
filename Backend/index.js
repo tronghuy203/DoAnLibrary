@@ -16,15 +16,15 @@ const Chat = require("./models/Chat");
 const Message = require("./models/Message");
 const User = require("./models/User");
 const path = require("path");
-const http = require("http"); // Thêm http
+const http = require("http");
 const { Server } = require("socket.io");
 
 dotenv.config();
 const app = express();
-const server = http.createServer(app); // Tạo server HTTP
+const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000", // URL frontend ReactJS
+    origin: "http://localhost:3000",
     methods: ["GET", "POST"],
     credentials: true,
   },
@@ -34,7 +34,7 @@ connectDB();
 
 app.use(cors(
     {
-        origin: "http://localhost:3000", // Frontend URL
+        origin: "http://localhost:3000",
   credentials: true,
     }
 ));
@@ -56,11 +56,9 @@ app.use("/v1/chat", chatRoute);
 io.on("connection", (socket) => {
     console.log("A user connected:", socket.id);
 
-    // Tham gia phòng chat
     socket.on("joinChat", async ({ chatId, userId }) => {
       socket.join(chatId);
 
-      // Kiểm tra xem user có quyền tham gia chat
       const chat = await Chat.findById(chatId);
       if (!chat.participants.includes(userId)) {
         socket.emit("error", { message: "Unauthorized access to chat" });
@@ -70,7 +68,6 @@ io.on("connection", (socket) => {
       console.log(`User ${userId} joined chat ${chatId}`);
     });
 
-    // Gửi tin nhắn
     socket.on("sendMessage", async ({ chatId, userId, content }) => {
       try {
         const chat = await Chat.findById(chatId);
@@ -90,7 +87,6 @@ io.on("connection", (socket) => {
           "username avatar"
         );
 
-        // Gửi tin nhắn đến tất cả client trong phòng chat
         io.to(chatId).emit("newMessage", populatedMessage);
       } catch (error) {
         socket.emit("error", { message: "Failed to send message" });

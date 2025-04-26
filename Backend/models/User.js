@@ -15,7 +15,7 @@ const userSchema = new mongoose.Schema(
     },
     gender: {
       type: String,
-      enum: ["male", "female", "other"], // chỉ chấp nhận 3 giá trị này
+      enum: ["male", "female", "other"],
       required: false,
     },
     phone: { 

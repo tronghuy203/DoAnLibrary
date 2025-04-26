@@ -1,4 +1,4 @@
-import { Link } from "react-router-dom"; // Import Link để tạo nút "Xem chi tiết"
+import { Link } from "react-router-dom";
 import { useEffect, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
@@ -8,9 +8,7 @@ import { getAllUsers } from "../../redux/apiRequest";
 import { getAllBooks } from "../../redux/apiBooks";
 
 const RecentlyAddedBooks = () => {
-  // Lấy thông tin người dùng từ redux
   const user = useSelector((state) => state.auth.login?.currentUser);
-  // Lấy danh sách sách từ redux (đã tạo ở bookSlice)
   const books = useSelector((state) => state.books.allBooks);
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -37,12 +35,10 @@ const RecentlyAddedBooks = () => {
 
   return (
     <div className="p-4 lg:p-6">
-      {/* Tiêu đề */}
       <h4 className="text-3xl sm:text-4xl font-bold text-yellow-100 mb-8 animate-fade-in">
         Recently Added Books
       </h4>
 
-      {/* Danh sách sách */}
       {books && books.length > 0 ? (
         <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6">
           {books.map((book) => (

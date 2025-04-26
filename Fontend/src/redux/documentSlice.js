@@ -10,7 +10,6 @@ const documentSlice = createSlice({
     error: false,
   },
   reducers: {
-    // Lấy danh sách tài liệu
     getDocumentsStart: (state) => {
       state.isFetching = true;
       state.error = false;
@@ -24,7 +23,6 @@ const documentSlice = createSlice({
       state.error = true;
     },
 
-    // Lấy danh sách tài liệu chờ duyệt
     getPendingDocumentsStart: (state) => {
       state.isFetching = true;
       state.error = false;
@@ -38,18 +36,15 @@ const documentSlice = createSlice({
       state.error = true;
     },
 
-    // Phê duyệt tài liệu
     approveDocumentStart: (state) => {
       state.isFetching = true;
       state.error = false;
     },
     approveDocumentSuccess: (state, action) => {
       state.isFetching = false;
-      // Cập nhật trạng thái tài liệu trong pendingDocuments
       state.pendingDocuments = state.pendingDocuments.filter(
         (doc) => doc._id !== action.payload._id
       );
-      // Thêm tài liệu vào documents nếu cần
       state.documents.push(action.payload);
     },
     approveDocumentFailed: (state) => {
@@ -57,14 +52,12 @@ const documentSlice = createSlice({
       state.error = true;
     },
 
-    // Từ chối tài liệu
     rejectDocumentStart: (state) => {
       state.isFetching = true;
       state.error = false;
     },
     rejectDocumentSuccess: (state, action) => {
       state.isFetching = false;
-      // Xóa tài liệu khỏi pendingDocuments
       state.pendingDocuments = state.pendingDocuments.filter(
         (doc) => doc._id !== action.payload._id
       );
@@ -74,7 +67,6 @@ const documentSlice = createSlice({
       state.error = true;
     },
 
-    // Lấy chi tiết tài liệu
     getDocumentDetailStart: (state) => {
       state.isFetching = true;
       state.error = false;
@@ -101,7 +93,6 @@ const documentSlice = createSlice({
           }
         },
 
-    // Upload tài liệu mới
     uploadDocumentStart: (state) => {
       state.isFetching = true;
       state.error = false;
@@ -110,13 +101,13 @@ const documentSlice = createSlice({
         state.isFetching = false;
         
         if (!Array.isArray(state.documents)) {
-            state.documents = [];  // Initialize it as an empty array if not
+            state.documents = [];
           }
         
         if (action.payload && Array.isArray(state.documents)) {
           state.documents.push(action.payload);
         } else {
-          state.error = true; // Optional: Set an error flag if payload is invalid
+          state.error = true;
           console.error("Invalid payload in uploadDocumentSuccess:", action.payload);
         }
       },
@@ -126,7 +117,6 @@ const documentSlice = createSlice({
       state.error = true;
     },
 
-    // Xóa tài liệu
     deleteDocumentStart: (state) => {
       state.isFetching = true;
       state.error = false;

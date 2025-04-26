@@ -5,7 +5,7 @@ import {
   updateUserProfile,
   getBorrowHistory,
 } from "../../redux/apiRequest";
-import { getUserDocuments } from "../../redux/apiDocument"; // Import API mới
+import { getUserDocuments } from "../../redux/apiDocument";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { createAxios } from "../../createInstance";
@@ -50,7 +50,7 @@ const Profile = () => {
   const [success, setSuccess] = useState(null);
   const [borrowHistory, setBorrowHistory] = useState([]);
   const [paymentHistory, setPaymentHistory] = useState([]);
-  const [userDocuments, setUserDocuments] = useState([]); // State mới cho tài liệu
+  const [userDocuments, setUserDocuments] = useState([]);
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [hasFetched, setHasFetched] = useState(false);
 
@@ -75,7 +75,6 @@ const Profile = () => {
         axiosJWT
       );
       setPaymentHistory(paymentHistoryData || []);
-      // Lấy tài liệu của người dùng
       const documents = await getUserDocuments(
         user._id,
         user.accessToken,
@@ -193,7 +192,6 @@ const Profile = () => {
     }
   };
 
-  // Hàm chuyển trạng thái tài liệu thành tiếng Việt
   const getDocumentStatus = (status) => {
     switch (status) {
       case "pending":
@@ -224,7 +222,6 @@ const Profile = () => {
           </div>
         )}
         <div className="flex flex-col lg:flex-row gap-4 sm:gap-6 md:gap-8">
-          {/* Sidebar */}
           <div className="w-full lg:w-1/4 bg-gray-50 dark:bg-gray-700 p-4 sm:p-6 rounded-lg shadow-md">
             <ul className="space-y-3 sm:space-y-4 text-sm sm:text-base md:text-lg">
               <li>
@@ -262,14 +259,12 @@ const Profile = () => {
             </ul>
           </div>
 
-          {/* Main Content */}
           <div className="w-full lg:w-3/4">
             <div id="profile">
               <h2 className="text-lg sm:text-xl md:text-2xl font-semibold mb-3 sm:mb-4 md:mb-6 text-gray-900 dark:text-white">
                 Hồ sơ của tôi
               </h2>
 
-              {/* Profile Section */}
               <div className="bg-gray-50 dark:bg-gray-700 p-4 sm:p-6 rounded-lg shadow-md mb-4 sm:mb-6 md:mb-8 transform transition-all hover:scale-[1.01] duration-300">
                 <div className="flex flex-col sm:flex-row items-center justify-between gap-4">
                   <div className="flex items-center gap-3 sm:gap-4 md:gap-6">
@@ -362,7 +357,6 @@ const Profile = () => {
                 </div>
               </div>
 
-              {/* Personal Information */}
               <div className="bg-gray-50 dark:bg-gray-700 p-4 sm:p-6 rounded-lg shadow-md mb-4 sm:mb-6 md:mb-8 transform transition-all hover:scale-[1.01] duration-300">
                 <div className="flex justify-between items-center">
                   <h3 className="text-base sm:text-lg md:text-xl font-semibold text-gray-900 dark:text-white">
@@ -521,7 +515,6 @@ const Profile = () => {
                 </div>
               </div>
 
-              {/* Address */}
               <div className="bg-gray-50 dark:bg-gray-700 p-4 sm:p-6 rounded-lg shadow-md mb-4 sm:mb-6 md:mb-8 transform transition-all hover:scale-[1.01] duration-300">
                 <div className="flex justify-between items-center">
                   <h3 className="text-base sm:text-lg md:text-xl font-semibold text-gray-900 dark:text-white">
@@ -608,7 +601,6 @@ const Profile = () => {
                 </div>
               </div>
 
-              {/* Document History */}
               <div
                 id="document-history"
                 className="bg-gray-50 dark:bg-gray-700 p-4 sm:p-6 rounded-lg shadow-md transform transition-all hover:scale-[1.01] duration-300 mt-6"
@@ -673,7 +665,6 @@ const Profile = () => {
                 )}
               </div>
 
-              {/* Borrow History */}
               <div
                 id="borrow-history"
                 className="bg-gray-50 dark:bg-gray-700 p-4 sm:p-6 rounded-lg shadow-md transform transition-all hover:scale-[1.01] duration-300 mt-6"
@@ -782,7 +773,6 @@ const Profile = () => {
                 )}
               </div>
 
-              {/* Payment History */}
               <div
                 id="payment-history"
                 className="bg-gray-50 dark:bg-gray-700 p-4 sm:p-6 rounded-lg shadow-md transform transition-all hover:scale-[1.01] duration-300 mt-6"

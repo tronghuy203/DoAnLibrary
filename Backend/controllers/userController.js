@@ -1,5 +1,5 @@
 const User = require("../models/User");
-const BorrowRecord = require("../models/BorrowRecord"); // Sử dụng BorrowRecord thay vì Borrow
+const BorrowRecord = require("../models/BorrowRecord");
 
 const userController = {
   getAllUsers: async (req, res) => {
@@ -38,7 +38,6 @@ const userController = {
         if (!user) {
           return res.status(404).json({ message: "Không tìm thấy người dùng" });
         }
-        // Xóa các bản ghi mượn sách liên quan
         await BorrowRecord.deleteMany({ userId: req.params.id });
         return res.status(200).json({
           message: req.user.id === req.params.id ? "Tài khoản của bạn đã được xóa" : "Người dùng đã được xóa bởi admin",
@@ -85,8 +84,8 @@ const userController = {
         return res.status(403).json({ message: "Bạn chỉ có thể xem lịch sử mượn sách của mình!" });
       }
       const borrowHistory = await BorrowRecord.find({ userId: req.params.userId })
-        .populate("bookId", "title author") // Lấy title và author của sách
-        .sort({ borrowDate: -1 }); // Sắp xếp theo ngày mượn mới nhất
+        .populate("bookId", "title author") 
+        .sort({ borrowDate: -1 });
       res.status(200).json(borrowHistory);
     } catch (err) {
       res.status(500).json({ message: "Lỗi khi lấy lịch sử mượn sách", error: err.message });
