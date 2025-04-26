@@ -256,4 +256,3 @@ export const getDailyRevenue = async (accessToken, dispatch, axiosJWT) => {
     throw err;
   }
 };
-

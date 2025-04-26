@@ -17,6 +17,7 @@
     "axios": "^1.7.9",
     "chart.js": "^4.4.8",
     "cloudinary": "^2.6.0",
+    "emoji-picker-react": "^4.12.2",
     "framer-motion": "^12.6.3",
     "jwt-decode": "^4.0.0",
     "library-website": "file:",

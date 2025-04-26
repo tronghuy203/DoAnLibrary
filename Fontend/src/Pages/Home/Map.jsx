@@ -20,7 +20,7 @@ const Map = () => {
                 <div className="flex justify-center">
                     <div className="w-full border overflow-hidden shadow-lg">
                         <iframe className="w-full"
-                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d8477.926636260856!2d107.0782162209404!3d10.361933580407836!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x31756fc6d7ef5fb9%3A0x70385f60d7935b27!2zMyBOZ3V54buFbiBUaMOhaSBI4buNYywgUGjGsOG7nW5nIDcsIFbFqW5nIFTDoHUsIELDoCBS4buLYSAtIFbFqW5nIFTDoHUsIFZp4buHdCBOYW0!5e0!3m2!1svi!2s!4v1741344447082!5m2!1svi!2s"
+                            src="https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d3910.8918309353044!2d108.22062651584508!3d16.03128840516969!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x314218389cf02c2b%3A0xbdc63233587e2d88!2zVHLGsOG7nW5nIMSQ4bqhaSBo4buNYyDEkMO0bmcgw4E!5e1!3m2!1svi!2sus!4v1744616343978!5m2!1svi!2sus"
                             width="100%" height="350" allowFullScreen="" loading="lazy"
                             referrerPolicy="no-referrer-when-downgrade">
                         </iframe>

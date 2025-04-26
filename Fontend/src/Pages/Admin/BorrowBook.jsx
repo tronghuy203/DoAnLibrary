@@ -16,7 +16,7 @@ const BorrowBook = () => {
   const user = useSelector((state) => state.auth.login?.currentUser);
   const borrowList = useSelector((state) => state.borrow.borrowRecords);
   const dispatch = useDispatch();
-  const axiosJWT = useMemo(() => createAxios(user, dispatch, loginSuccess),[user, dispatch]);
+  const axiosJWT = useMemo(() => createAxios(user, dispatch, loginSuccess), [user, dispatch]);
 
   const [currentPage, setCurrentPage] = useState(1);
   const recordsPerPage = 7;
@@ -64,16 +64,16 @@ const BorrowBook = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-gray-900 via-gray-800 to-gray-950 text-gray-100 py-12 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-gray-100 dark:bg-gradient-to-br dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 text-gray-900 dark:text-gray-100 py-12 px-4 sm:px-6 lg:px-8 transition-all duration-300 ease-in-out">
       <div className="max-w-5xl mx-auto">
-        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center text-cyan-400 mb-10 tracking-wide drop-shadow-md animate-fade-in-up">
+        <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold text-center text-cyan-500 dark:text-cyan-400 mb-10 tracking-wide drop-shadow-md animate-fade-in-up">
           Quản Lý Mượn Trả Sách
         </h2>
 
         {borrowList?.length > 0 ? (
           <>
-            <div className="w-full bg-gray-800 rounded-xl shadow-md border border-gray-700/50 overflow-hidden">
-              <div className="hidden sm:grid sm:grid-cols-[1fr_2fr_2fr_1fr_1fr_1fr_1.5fr] bg-gray-700 text-gray-200 font-semibold p-4">
+            <div className="w-full bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700/50 overflow-hidden transition-all duration-300 ease-in-out">
+              <div className="hidden sm:grid sm:grid-cols-[1fr_2fr_2fr_1fr_1fr_1fr_1.5fr] bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-200 font-semibold p-4">
                 <div className="text-base">ID</div>
                 <div className="text-base">Người Mượn</div>
                 <div className="text-base">Sách</div>
@@ -83,26 +83,26 @@ const BorrowBook = () => {
                 <div className="text-base">Hành động</div>
               </div>
 
-              <div className="divide-y divide-gray-700">
+              <div className="divide-y divide-gray-200 dark:divide-gray-700">
                 {currentRecords.map((borrow) => (
                   <div
                     key={borrow._id}
-                    className="flex flex-col sm:grid sm:grid-cols-[1fr_2fr_2fr_1fr_1fr_1fr_1.5fr] p-4 hover:bg-gray-750 hover:-translate-y-1 transition-all duration-300 animate-slide-in"
+                    className="flex flex-col sm:grid sm:grid-cols-[1fr_2fr_2fr_1fr_1fr_1fr_1.5fr] p-4 hover:bg-gray-50 dark:hover:bg-gray-750 hover:-translate-y-1 transition-all duration-300 animate-slide-in"
                   >
-                    <div className="py-2 text-gray-200 flex items-center">
-                      <span className="sm:hidden font-semibold text-cyan-400 mr-2">ID:</span>
+                    <div className="py-2 text-gray-900 dark:text-gray-200 flex items-center">
+                      <span className="sm:hidden font-semibold text-cyan-500 dark:text-cyan-400 mr-2">ID:</span>
                       <span className="text-base break-all">{borrow._id.slice(-6)}</span>
                     </div>
-                    <div className="py-2 text-gray-200 flex items-center">
-                      <span className="sm:hidden font-semibold text-cyan-400 mr-2">Người Mượn:</span>
+                    <div className="py-2 text-gray-900 dark:text-gray-200 flex items-center">
+                      <span className="sm:hidden font-semibold text-cyan-500 dark:text-cyan-400 mr-2">Người Mượn:</span>
                       <span className="text-base">{borrow.userId?.username || "Không xác định"}</span>
                     </div>
-                    <div className="py-2 text-gray-200 flex items-center">
-                      <span className="sm:hidden font-semibold text-cyan-400 mr-2">Sách:</span>
+                    <div className="py-2 text-gray-900 dark:text-gray-200 flex items-center">
+                      <span className="sm:hidden font-semibold text-cyan-500 dark:text-cyan-400 mr-2">Sách:</span>
                       <span className="text-base">{borrow.bookId?.title || "Không xác định"}</span>
                     </div>
-                    <div className="py-2 text-gray-200 flex items-center">
-                      <span className="sm:hidden font-semibold text-cyan-400 mr-2">Trạng thái:</span>
+                    <div className="py-2 text-gray-900 dark:text-gray-200 flex items-center">
+                      <span className="sm:hidden font-semibold text-cyan-500 dark:text-cyan-400 mr-2">Trạng thái:</span>
                       <span className="text-base">
                         {borrow.returnDate
                           ? "Đã trả"
@@ -111,14 +111,14 @@ const BorrowBook = () => {
                           : "Chờ lấy"}
                       </span>
                     </div>
-                    <div className="py-2 text-gray-200 flex items-center">
-                      <span className="sm:hidden font-semibold text-cyan-400 mr-2">Ngày Mượn:</span>
+                    <div className="py-2 text-gray-900 dark:text-gray-200 flex items-center">
+                      <span className="sm:hidden font-semibold text-cyan-500 dark:text-cyan-400 mr-2">Ngày Mượn:</span>
                       <span className="text-base">
                         {new Date(borrow.borrowDate).toLocaleDateString("vi-VN")}
                       </span>
                     </div>
-                    <div className="py-2 text-gray-200 flex items-center">
-                      <span className="sm:hidden font-semibold text-cyan-400 mr-2">Ngày Trả:</span>
+                    <div className="py-2 text-gray-900 dark:text-gray-200 flex items-center">
+                      <span className="sm:hidden font-semibold text-cyan-500 dark:text-cyan-400 mr-2">Ngày Trả:</span>
                       <span className="text-base">
                         {borrow.returnDate
                           ? new Date(borrow.returnDate).toLocaleDateString("vi-VN")
@@ -130,7 +130,7 @@ const BorrowBook = () => {
                         (borrow.status === "borrowing" ? (
                           <button
                             onClick={() => handleConfirmReturn(borrow._id)}
-                            className="bg-red-500 hover:bg-red-600 text-white font-semibold py-1 px-3 rounded-md transition-all duration-200 hover:shadow-md flex items-center gap-1 text-sm"
+                            className="bg-red-500 dark:bg-red-400 hover:bg-red-600 dark:hover:bg-red-500 text-white font-semibold py-1 px-3 rounded-md transition-all duration-200 hover:shadow-md flex items-center gap-1 text-sm"
                           >
                             <ArrowUturnUpIcon className="w-4 h-4" />
                             Xác nhận trả
@@ -138,7 +138,7 @@ const BorrowBook = () => {
                         ) : (
                           <button
                             onClick={() => handleConfirmPickup(borrow._id)}
-                            className="bg-amber-500 hover:bg-amber-600 text-white font-semibold py-1 px-3 rounded-md transition-all duration-200 hover:shadow-md flex items-center gap-1 text-sm"
+                            className="bg-amber-500 dark:bg-amber-400 hover:bg-amber-600 dark:hover:bg-amber-500 text-white font-semibold py-1 px-3 rounded-md transition-all duration-200 hover:shadow-md flex items-center gap-1 text-sm"
                           >
                             <ClipboardDocumentCheckIcon className="w-4 h-4" />
                             Xác nhận lấy
@@ -157,8 +157,8 @@ const BorrowBook = () => {
                   disabled={currentPage === 1}
                   className={`px-3 py-1 sm:px-4 sm:py-2 rounded-md text-sm sm:text-base font-semibold transition-all duration-200 ${
                     currentPage === 1
-                      ? "bg-gray-600 text-gray-400 cursor-not-allowed"
-                      : "bg-cyan-500 hover:bg-cyan-600 text-white hover:shadow-md"
+                      ? "bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                      : "bg-cyan-500 dark:bg-cyan-400 hover:bg-cyan-600 dark:hover:bg-cyan-500 text-white hover:shadow-md"
                   }`}
                 >
                   Trang trước
@@ -170,8 +170,8 @@ const BorrowBook = () => {
                       onClick={() => goToPage(number)}
                       className={`px-2 py-1 sm:px-3 sm:py-2 rounded-md text-sm sm:text-base font-semibold transition-all duration-200 ${
                         currentPage === number
-                          ? "bg-cyan-400 text-white"
-                          : "bg-gray-700 hover:bg-gray-600 text-gray-200 hover:text-white"
+                          ? "bg-cyan-500 dark:bg-cyan-400 text-white"
+                          : "bg-gray-200 dark:bg-gray-700 hover:bg-gray-300 dark:hover:bg-gray-600 text-gray-800 dark:text-gray-200 hover:text-white"
                       }`}
                     >
                       {number}
@@ -183,8 +183,8 @@ const BorrowBook = () => {
                   disabled={currentPage === totalPages}
                   className={`px-3 py-1 sm:px-4 sm:py-2 rounded-md text-sm sm:text-base font-semibold transition-all duration-200 ${
                     currentPage === totalPages
-                      ? "bg-gray-600 text-gray-400 cursor-not-allowed"
-                      : "bg-cyan-500 hover:bg-cyan-600 text-white hover:shadow-md"
+                      ? "bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                      : "bg-cyan-500 dark:bg-cyan-400 hover:bg-cyan-600 dark:hover:bg-cyan-500 text-white hover:shadow-md"
                   }`}
                 >
                   Trang sau
@@ -193,7 +193,7 @@ const BorrowBook = () => {
             )}
           </>
         ) : (
-          <p className="text-center text-gray-400 py-10 animate-slide-in text-lg sm:text-xl">
+          <p className="text-center text-gray-500 dark:text-gray-400 py-10 animate-slide-in text-lg sm:text-xl transition-all duration-300 ease-in-out">
             Không có đơn mượn nào
           </p>
         )}

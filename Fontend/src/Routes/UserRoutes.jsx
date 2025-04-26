@@ -5,6 +5,8 @@ import UserLayout from "../Layouts/UserLayout";
 
 const Home = lazy(() => import("../Pages/Home/Home"));
 const Profile = lazy(() => import("../Pages/Profile/Profile"));
+const HistoryPage = lazy(() => import("../Pages/Profile/HistoryPage"));
+const DocumentsPage = lazy(() => import("../Pages/Profile/DocumentsPage"));
 const Login = lazy(() => import("../Pages/Login/Login"));
 const Register = lazy(() => import("../Pages/Register/Register"));
 const ForgotPassword = lazy(() => import("../Pages/ForgotPassword/ForgotPassword"));
@@ -31,6 +33,8 @@ const UserRoutes = () => {
           <Route path="/all-books" element={<AllBooks />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/profile" element={<Profile />} />
+          <Route path="/history" element={<HistoryPage />} />
+          <Route path="/documents" element={<DocumentsPage />} />
           <Route path="/login" element={<Login />} />
           <Route path="/register" element={<Register />} />
           <Route path="/forgot-password" element={<ForgotPassword />} />
