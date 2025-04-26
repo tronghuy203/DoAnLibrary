@@ -60,7 +60,7 @@ const userController = {
         req.user.id,
         {
           $set: {
-            fullName: req.body.fullName,
+            username: req.body.username,
             dob: req.body.dob,
             gender: req.body.gender,
             phone: req.body.phone,
