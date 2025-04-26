@@ -1,39 +1,60 @@
-import React, { useState, useEffect, useMemo, useRef, useCallback } from "react";
+import React, {
+  useState,
+  useEffect,
+  useMemo,
+  useRef,
+  useCallback,
+} from "react";
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { createAxios } from "../../createInstance";
 import socket from "../socket";
 import { loginSuccess } from "../../redux/authSlice";
 import { getAdmin, createChat, getChatHistory } from "../../redux/apiChat";
-import { PaperAirplaneIcon, ExclamationCircleIcon, FaceSmileIcon } from "@heroicons/react/24/outline";
+import {
+  PaperAirplaneIcon,
+  ExclamationCircleIcon,
+  FaceSmileIcon,
+} from "@heroicons/react/24/outline";
 import { getHistorySuccess } from "../../redux/chatSlice";
 import EmojiPicker from "emoji-picker-react";
 
 const UserChat = () => {
   const [chatId, setChatId] = useState(null);
   const [message, setMessage] = useState("");
-  const [page, setPage] = useState(1);
-  const [hasMore, setHasMore] = useState(true);
   const [showEmojiPicker, setShowEmojiPicker] = useState(false);
-  const [visibleMessages, setVisibleMessages] = useState([]);
-  const [isLoadingMore, setIsLoadingMore] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const chatContainerRef = useRef(null);
-  const loaderRef = useRef(null);
+  const textareaRef = useRef(null);
   const emojiPickerRef = useRef(null);
-  const observerRef = useRef(null);
   const user = useSelector((state) => state.auth.login?.currentUser);
   const { history, isFetching, error } = useSelector((state) => state.chat);
-  const axiosJWT = useMemo(() => createAxios(user, dispatch, loginSuccess), [user, dispatch]);
+  const axiosJWT = useMemo(
+    () => createAxios(user, dispatch, loginSuccess),
+    [user, dispatch]
+  );
 
   const messagesPerPage = 10;
   const TIME_GAP_THRESHOLD = 15 * 1000;
 
-  // Hàm cuộn xuống dưới
   const scrollToBottom = useCallback(() => {
     if (chatContainerRef.current) {
-      chatContainerRef.current.scrollTop = chatContainerRef.current.scrollHeight;
+      chatContainerRef.current.scrollTop =
+        chatContainerRef.current.scrollHeight;
+    }
+  }, []);
+
+  useEffect(() => {
+    const textarea = textareaRef.current;
+    if (textarea) {
+      const adjustHeight = () => {
+        textarea.style.height = "auto";
+        textarea.style.height = `${textarea.scrollHeight}px`;
+      };
+      textarea.addEventListener("input", adjustHeight);
+      adjustHeight();
+      return () => textarea.removeEventListener("input", adjustHeight);
     }
   }, []);
 
@@ -52,25 +73,31 @@ const UserChat = () => {
         if (!admin._id) throw new Error("Không tìm thấy admin");
         const adminId = admin._id;
 
-        const chat = await createChat(adminId, user.accessToken, dispatch, axiosJWT);
+        const chat = await createChat(
+          adminId,
+          user.accessToken,
+          dispatch,
+          axiosJWT
+        );
         setChatId(chat._id);
 
-        await getChatHistory(chat._id, user.accessToken, dispatch, axiosJWT, 1, messagesPerPage);
+        await getChatHistory(
+          chat._id,
+          user.accessToken,
+          dispatch,
+          axiosJWT,
+          1,
+          messagesPerPage
+        );
         socket.emit("joinChat", { chatId: chat._id, userId: user._id });
+        scrollToBottom();
       } catch (err) {
         console.error("Lỗi khi tải chat:", err);
       }
     };
 
     fetchChat();
-  }, [axiosJWT, user, dispatch]);
-
-  useEffect(() => {
-    if (history[chatId] && history[chatId].length > 0) {
-      setVisibleMessages(history[chatId].slice(-messagesPerPage));
-      scrollToBottom();
-    }
-  }, [chatId, history, scrollToBottom]);
+  }, [axiosJWT, user, dispatch, scrollToBottom]);
 
   useEffect(() => {
     socket.on("newMessage", (newMessage) => {
@@ -81,10 +108,6 @@ const UserChat = () => {
             messages: [...(history[chatId] || []), newMessage],
           })
         );
-        setVisibleMessages((prev) => {
-          if (prev.some((msg) => msg._id === newMessage._id)) return prev;
-          return [...prev, newMessage];
-        });
         if (newMessage.sender._id !== user._id) {
           socket.emit("markAsRead", { chatId, messageId: newMessage._id });
         }
@@ -101,110 +124,9 @@ const UserChat = () => {
     };
   }, [history, dispatch, chatId, user]);
 
-  // Cuộn xuống dưới chỉ khi ở gần cuối
   useEffect(() => {
-    if (!chatContainerRef.current) return;
-
-    const container = chatContainerRef.current;
-    const isNearBottom =
-      container.scrollHeight - container.scrollTop - container.clientHeight < 100;
-
-    if (isNearBottom) {
-      scrollToBottom();
-    }
-  }, [visibleMessages, scrollToBottom]);
-
-  const loadMoreMessages = useCallback(async () => {
-    if (!hasMore || isLoadingMore || isFetching) {
-      console.log("loadMoreMessages skipped", { hasMore, isLoadingMore, isFetching });
-      return;
-    }
-
-
-    setIsLoadingMore(true);
-    try {
-      const container = chatContainerRef.current;
-      const previousScrollHeight = container.scrollHeight;
-
-      const newMessages = await getChatHistory(
-        chatId,
-        user.accessToken,
-        dispatch,
-        axiosJWT,
-        page + 1,
-        messagesPerPage
-      );
-
-
-      if (!Array.isArray(newMessages) || newMessages.length === 0) {
-        setHasMore(false);
-        setIsLoadingMore(false);
-        return;
-      }
-
-      setVisibleMessages((prev) => {
-        const existingIds = new Set(prev.map((msg) => msg._id));
-        const uniqueNewMessages = newMessages.filter((msg) => !existingIds.has(msg._id));
-        
-        // Nếu không có tin nhắn mới sau khi lọc, dừng tải
-        if (uniqueNewMessages.length === 0) {
-          setHasMore(false);
-          setIsLoadingMore(false);
-          return prev;
-        }
-
-        return [...uniqueNewMessages, ...prev];
-      });
-
-      // Nếu số tin nhắn trả về nhỏ hơn limit, hoặc không có tin nhắn mới, dừng tải
-      if (newMessages.length < messagesPerPage) {
-        setHasMore(false);
-      }
-
-      setPage((prev) => prev + 1);
-
-      setTimeout(() => {
-        if (container) {
-          const newScrollHeight = container.scrollHeight;
-          container.scrollTop = newScrollHeight - previousScrollHeight;
-        }
-      }, 0);
-    } catch (err) {
-      setHasMore(false);
-    } finally {
-      setIsLoadingMore(false);
-    }
-  }, [chatId, user, dispatch, axiosJWT, page, hasMore, isFetching, isLoadingMore]);
-
-  useEffect(() => {
-    if (!loaderRef.current || !hasMore || isLoadingMore || isFetching) return;
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        if (entries[0].isIntersecting && hasMore && !isLoadingMore && !isFetching) {
-          loadMoreMessages();
-        }
-      },
-      { threshold: 0.1 }
-    );
-
-    observerRef.current = observer;
-    observer.observe(loaderRef.current);
-
-    return () => {
-      if (observerRef.current) {
-        observerRef.current.disconnect();
-      }
-    };
-  }, [loadMoreMessages, hasMore, isLoadingMore, isFetching]);
-
-  // Ngắt observer khi hasMore = false
-  useEffect(() => {
-    if (!hasMore && observerRef.current) {
-      observerRef.current.disconnect();
-      console.log("IntersectionObserver disconnected due to hasMore = false");
-    }
-  }, [hasMore]);
+    scrollToBottom();
+  }, [history, chatId, scrollToBottom]);
 
   const handleSendMessage = () => {
     if (message.trim() && chatId && user?._id) {
@@ -239,7 +161,10 @@ const UserChat = () => {
 
   useEffect(() => {
     const handleClickOutside = (event) => {
-      if (emojiPickerRef.current && !emojiPickerRef.current.contains(event.target)) {
+      if (
+        emojiPickerRef.current &&
+        !emojiPickerRef.current.contains(event.target)
+      ) {
         setShowEmojiPicker(false);
       }
     };
@@ -256,7 +181,7 @@ const UserChat = () => {
           </h2>
         </div>
 
-        {isFetching && !visibleMessages.length ? (
+        {isFetching && !history[chatId]?.length ? (
           <div className="flex-1 flex items-center justify-center text-gray-500 dark:text-gray-400 animate-pulse">
             Đang tải...
           </div>
@@ -265,61 +190,63 @@ const UserChat = () => {
             <ExclamationCircleIcon className="w-5 h-5" />
             <p>{error}</p>
           </div>
-        ) : (
+        ) : chatId ? (
           <>
-        <div
-          ref={chatContainerRef}
-          className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 space-y-6 scrollbar scrollbar-w-2 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scrollbar-thumb-blue-500 scrollbar-track-gray-800 [scrollbar-color:#808080_#1f2937] lg:scrollbar-w-3 lg:scrollbar-thumb-blue-600 lg:scrollbar-track-gray-800 lg:scrollbar-thumb-hover:blue-700"
-        >
-          {hasMore && <div ref={loaderRef} className="h-4" />}
-          {visibleMessages.map((msg, index) => {
-            const prevMsg = index > 0 ? visibleMessages[index - 1] : null;
-            const showTimestamp = shouldShowTimestamp(msg, prevMsg);
+            <div
+              ref={chatContainerRef}
+              className="flex-1 overflow-y-auto overflow-x-hidden p-4 sm:p-6 space-y-6 scrollbar scrollbar-w-2 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scrollbar-thumb-blue-500 scrollbar-track-gray-800 [scrollbar-color:#808080_#1f2937] lg:scrollbar-w-3 lg:scrollbar-thumb-blue-600 lg:scrollbar-track-gray-800 lg:scrollbar-thumb-hover:blue-700"
+            >
+              {(history[chatId] || []).map((msg, index) => {
+                const prevMsg =
+                  index > 0 ? (history[chatId] || [])[index - 1] : null;
+                const showTimestamp = shouldShowTimestamp(msg, prevMsg);
 
-            return (
-              <React.Fragment key={msg._id}>
-                {showTimestamp && (
-                  <div className="flex justify-center my-3">
-                    <span className="text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-200 dark:bg-gray-700/50 px-4 py-1.5 rounded-full shadow-sm transition-all duration-200 hover:bg-gray-300 dark:hover:bg-gray-600 hover:text-gray-700 dark:hover:text-gray-200">
-                      {formatTime(msg.createdAt)}
-                    </span>
-                  </div>
-                )}
-                <div
-                  className={`flex ${
-                    msg.sender._id === user._id ? "justify-end" : "justify-start"
-                  } mb-3 animate-in slide-in-from-bottom-10 fade-in duration-300 hover:scale-[1.02] transition-transform`}
-                >
-                  <div
-                    className={`flex items-end gap-3 max-w-[70%] sm:max-w-[60%] ${
-                      msg.sender._id === user._id ? "flex-row-reverse" : ""
-                    }`}
-                  >
-                    <img
-                      src={
-                        msg.sender.avatar ||
-                        "https://cellphones.com.vn/sforum/wp-content/uploads/2023/10/avatar-trang-4.jpg"
-                      }
-                      alt="avatar"
-                      className="w-9 h-9 rounded-full object-cover shadow-md transition-transform duration-200 hover:scale-110"
-                    />
+                return (
+                  <React.Fragment key={msg._id}>
+                    {showTimestamp && (
+                      <div className="flex justify-center my-3">
+                        <span className="text-xs font-medium text-gray-500 dark:text-gray-400 bg-gray-200 dark:bg-gray-700/50 px-4 py-1.5 rounded-full shadow-sm transition-all duration-200 hover:bg-gray-300 dark:hover:bg-gray-600 hover:text-gray-700 dark:hover:text-gray-200">
+                          {formatTime(msg.createdAt)}
+                        </span>
+                      </div>
+                    )}
                     <div
-                      className={`p-2 rounded-3xl shadow-md transition-all duration-200 hover:shadow-lg ${
+                      className={`flex ${
                         msg.sender._id === user._id
-                          ? "bg-blue-500 dark:bg-blue-600 text-white"
-                          : "bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
-                      }`}
+                          ? "justify-end"
+                          : "justify-start"
+                      } mb-3 animate-in slide-in-from-bottom-10 fade-in duration-300 hover:scale-[1.02] transition-transform`}
                     >
-                      <p className="text-sm sm:text-base leading-relaxed break-words whitespace-pre-wrap">
-                        {msg.content}
-                      </p>
+                      <div
+                        className={`flex items-end gap-3 max-w-[70%] sm:max-w-[60%] ${
+                          msg.sender._id === user._id ? "flex-row-reverse" : ""
+                        }`}
+                      >
+                        <img
+                          src={
+                            msg.sender.avatar ||
+                            "https://cellphones.com.vn/sforum/wp-content/uploads/2023/10/avatar-trang-4.jpg"
+                          }
+                          alt="avatar"
+                          className="w-9 h-9 rounded-full object-cover shadow-md transition-transform duration-200 hover:scale-110"
+                        />
+                        <div
+                          className={`p-2 rounded-3xl shadow-md transition-all duration-200 hover:shadow-lg ${
+                            msg.sender._id === user._id
+                              ? "bg-blue-500 dark:bg-blue-600 text-white"
+                              : "bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-gray-100"
+                          }`}
+                        >
+                          <p className="text-sm sm:text-base leading-relaxed break-words whitespace-pre-wrap">
+                            {msg.content}
+                          </p>
+                        </div>
+                      </div>
                     </div>
-                  </div>
-                </div>
-              </React.Fragment>
-            );
-          })}
-        </div>
+                  </React.Fragment>
+                );
+              })}
+            </div>
 
             <div className="p-4 sm:p-6 border-t border-gray-200 dark:border-gray-700 bg-gray-50 dark:bg-gray-800/50">
               <div className="relative flex items-center space-x-2">
@@ -336,19 +263,29 @@ const UserChat = () => {
                   >
                     <EmojiPicker
                       onEmojiClick={handleEmojiClick}
-                      theme={document.documentElement.classList.contains("dark") ? "dark" : "light"}
+                      theme={
+                        document.documentElement.classList.contains("dark")
+                          ? "dark"
+                          : "light"
+                      }
                       height={350}
                       width={300}
                     />
                   </div>
                 )}
-                <input
-                  type="text"
+                <textarea
+                  ref={textareaRef}
                   value={message}
                   onChange={(e) => setMessage(e.target.value)}
-                  onKeyPress={(e) => e.key === "Enter" && handleSendMessage()}
-                  className="flex-1 px-5 py-3 bg-gray-100 dark:bg-gray-700/70 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-full focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 placeholder-gray-500 dark:placeholder-gray-400 text-sm sm:text-base shadow-sm transition-all duration-200 hover:shadow-md"
+                  onKeyDown={(e) => {
+                    if (e.key === "Enter" && !e.shiftKey) {
+                      e.preventDefault();
+                      handleSendMessage();
+                    }
+                  }}
+                  className="flex-1 px-5 py-3 bg-gray-100 dark:bg-gray-700/70 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-3xl focus:outline-none focus:ring-2 focus:ring-blue-500 dark:focus:ring-blue-400 placeholder-gray-500 dark:placeholder-gray-400 text-sm sm:text-base shadow-sm transition-all duration-200 hover:shadow-md resize-none min-h-[44px] scrollbar-none"
                   placeholder="Nhập tin nhắn..."
+                  rows={1}
                 />
                 <button
                   onClick={handleSendMessage}
@@ -359,6 +296,10 @@ const UserChat = () => {
               </div>
             </div>
           </>
+        ) : (
+          <div className="flex-1 flex items-center justify-center text-gray-500 dark:text-gray-400">
+            Đang tải cuộc trò chuyện...
+          </div>
         )}
       </div>
     </div>
