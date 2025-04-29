@@ -6,10 +6,13 @@ import {
   getAllBorrowRecords,
   confirmPickup,
   confirmReturn,
+  getPenaltyByBorrow,
 } from "../../redux/apiBorrow";
 import {
   ClipboardDocumentCheckIcon,
   ArrowUturnUpIcon,
+  ExclamationTriangleIcon,
+  CurrencyDollarIcon,
 } from "@heroicons/react/24/outline";
 
 const BorrowBook = () => {
@@ -19,6 +22,7 @@ const BorrowBook = () => {
   const axiosJWT = useMemo(() => createAxios(user, dispatch, loginSuccess), [user, dispatch]);
 
   const [currentPage, setCurrentPage] = useState(1);
+  const [penalties, setPenalties] = useState({});
   const recordsPerPage = 7;
 
   const totalRecords = borrowList?.length || 0;
@@ -32,6 +36,34 @@ const BorrowBook = () => {
       getAllBorrowRecords(user.accessToken, dispatch, axiosJWT);
     }
   }, [user, dispatch, axiosJWT]);
+
+  // Lấy thông tin tiền phạt cho tất cả bản ghi mượn sách
+  useEffect(() => {
+    const fetchPenalties = async () => {
+      if (!borrowList || !user?.accessToken) return;
+
+      try {
+        const penaltyPromises = borrowList.map(async (record) => {
+          try {
+            const penalty = await getPenaltyByBorrow(record._id, user.accessToken, axiosJWT);
+            return { borrowId: record._id, penalty };
+          } catch (err) {
+            return { borrowId: record._id, penalty: null };
+          }
+        });
+        const penaltyResults = await Promise.all(penaltyPromises);
+        const penaltyMap = penaltyResults.reduce((acc, { borrowId, penalty }) => {
+          acc[borrowId] = penalty;
+          return acc;
+        }, {});
+        setPenalties(penaltyMap);
+      } catch (err) {
+        console.error("Lỗi khi lấy thông tin tiền phạt:", err);
+      }
+    };
+
+    fetchPenalties();
+  }, [borrowList, user?.accessToken, axiosJWT]);
 
   const handleConfirmPickup = async (id) => {
     try {
@@ -63,6 +95,28 @@ const BorrowBook = () => {
     pageNumbers.push(i);
   }
 
+  // Hàm hiển thị trạng thái
+  const getStatusDisplay = (borrow) => {
+    if (borrow.returnDate) return "Đã trả";
+    switch (borrow.status) {
+      case "borrowing":
+        return "Đang mượn";
+      case "overdue":
+        return "Quá hạn";
+      case "waiting_pickup":
+        return "Chờ lấy";
+      default:
+        return borrow.status;
+    }
+  };
+
+  // Hàm hiển thị trạng thái tiền phạt
+  const getPenaltyStatusDisplay = (borrow) => {
+    const penalty = penalties[borrow._id];
+    if (!penalty) return "Không có";
+    return penalty.status === "pending" ? "Chưa trả" : "Đã trả";
+  };
+
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gradient-to-br dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 text-gray-900 dark:text-gray-100 py-12 px-4 sm:px-6 lg:px-8 transition-all duration-300 ease-in-out">
       <div className="max-w-5xl mx-auto">
@@ -73,13 +127,14 @@ const BorrowBook = () => {
         {borrowList?.length > 0 ? (
           <>
             <div className="w-full bg-white dark:bg-gray-800 rounded-xl shadow-md border border-gray-200 dark:border-gray-700/50 overflow-hidden transition-all duration-300 ease-in-out">
-              <div className="hidden sm:grid sm:grid-cols-[1fr_2fr_2fr_1fr_1fr_1fr_1.5fr] bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-200 font-semibold p-4">
+              <div className="hidden sm:grid sm:grid-cols-[1fr_2fr_2fr_1fr_1fr_1fr_1fr_1.5fr] bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-gray-200 font-semibold p-4">
                 <div className="text-base">ID</div>
                 <div className="text-base">Người Mượn</div>
                 <div className="text-base">Sách</div>
                 <div className="text-base">Trạng thái</div>
                 <div className="text-base">Ngày Mượn</div>
                 <div className="text-base">Ngày Trả</div>
+                <div className="text-base">Tiền Phạt</div>
                 <div className="text-base">Hành động</div>
               </div>
 
@@ -87,7 +142,7 @@ const BorrowBook = () => {
                 {currentRecords.map((borrow) => (
                   <div
                     key={borrow._id}
-                    className="flex flex-col sm:grid sm:grid-cols-[1fr_2fr_2fr_1fr_1fr_1fr_1.5fr] p-4 hover:bg-gray-50 dark:hover:bg-gray-750 hover:-translate-y-1 transition-all duration-300 animate-slide-in"
+                    className="flex flex-col sm:grid sm:grid-cols-[1fr_2fr_2fr_1fr_1fr_1fr_1fr_1.5fr] p-4 hover:bg-gray-50 dark:hover:bg-gray-750 hover:-translate-y-1 transition-all duration-300 animate-slide-in"
                   >
                     <div className="py-2 text-gray-900 dark:text-gray-200 flex items-center">
                       <span className="sm:hidden font-semibold text-cyan-500 dark:text-cyan-400 mr-2">ID:</span>
@@ -101,14 +156,23 @@ const BorrowBook = () => {
                       <span className="sm:hidden font-semibold text-cyan-500 dark:text-cyan-400 mr-2">Sách:</span>
                       <span className="text-base">{borrow.bookId?.title || "Không xác định"}</span>
                     </div>
-                    <div className="py-2 text-gray-900 dark:text-gray-200 flex items-center">
+                    <div className="py-2 flex items-center">
                       <span className="sm:hidden font-semibold text-cyan-500 dark:text-cyan-400 mr-2">Trạng thái:</span>
-                      <span className="text-base">
-                        {borrow.returnDate
-                          ? "Đã trả"
-                          : borrow.status === "borrowing"
-                          ? "Đang mượn"
-                          : "Chờ lấy"}
+                      <span
+                        className={`text-base px-2 py-1 rounded-full flex items-center gap-1 ${
+                          borrow.status === "overdue"
+                            ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+                            : borrow.status === "borrowing"
+                            ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+                            : borrow.status === "waiting_pickup"
+                            ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
+                            : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+                        }`}
+                      >
+                        {borrow.status === "overdue" && (
+                          <ExclamationTriangleIcon className="w-4 h-4" />
+                        )}
+                        {getStatusDisplay(borrow)}
                       </span>
                     </div>
                     <div className="py-2 text-gray-900 dark:text-gray-200 flex items-center">
@@ -125,9 +189,24 @@ const BorrowBook = () => {
                           : "Chưa trả"}
                       </span>
                     </div>
+                    <div className="py-2 flex items-center">
+                      <span className="sm:hidden font-semibold text-cyan-500 dark:text-cyan-400 mr-2">Tiền Phạt:</span>
+                      <span
+                        className={`text-base px-2 py-1 rounded-full flex items-center gap-1 ${
+                          penalties[borrow._id]?.status === "pending"
+                            ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+                            : penalties[borrow._id]?.status === "paid"
+                            ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+                            : "bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-300"
+                        }`}
+                      >
+                        <CurrencyDollarIcon className="w-4 h-4" />
+                        {getPenaltyStatusDisplay(borrow)}
+                      </span>
+                    </div>
                     <div className="py-2 flex items-center gap-2">
                       {!borrow.returnDate &&
-                        (borrow.status === "borrowing" ? (
+                        (borrow.status === "borrowing" || borrow.status === "overdue" ? (
                           <button
                             onClick={() => handleConfirmReturn(borrow._id)}
                             className="bg-red-500 dark:bg-red-400 hover:bg-red-600 dark:hover:bg-red-500 text-white font-semibold py-1 px-3 rounded-md transition-all duration-200 hover:shadow-md flex items-center gap-1 text-sm"
@@ -135,7 +214,7 @@ const BorrowBook = () => {
                             <ArrowUturnUpIcon className="w-4 h-4" />
                             Xác nhận trả
                           </button>
-                        ) : (
+                        ) : borrow.status === "waiting_pickup" ? (
                           <button
                             onClick={() => handleConfirmPickup(borrow._id)}
                             className="bg-amber-500 dark:bg-amber-400 hover:bg-amber-600 dark:hover:bg-amber-500 text-white font-semibold py-1 px-3 rounded-md transition-all duration-200 hover:shadow-md flex items-center gap-1 text-sm"
@@ -143,7 +222,7 @@ const BorrowBook = () => {
                             <ClipboardDocumentCheckIcon className="w-4 h-4" />
                             Xác nhận lấy
                           </button>
-                        ))}
+                        ) : null)}
                     </div>
                   </div>
                 ))}

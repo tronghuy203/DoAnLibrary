@@ -1,29 +1,38 @@
 const mongoose = require("mongoose");
 
-const penaltySchema = new mongoose.Schema({
-  borrowRecordId: {
-    type: mongoose.Schema.Types.ObjectId,
-    ref: "BorrowRecord",
-    required: true,
+const penaltySchema = new mongoose.Schema(
+  {
+    userId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "User",
+      required: true,
+    },
+    borrowRecordId: {
+      type: mongoose.Schema.Types.ObjectId,
+      ref: "BorrowRecord",
+      required: true,
+    },
+    amount: {
+      type: Number,
+      required: true,
+    },
+    paidAmount: { type: Number, default: 0 },
+    code: {
+      type: String,
+      required: true,
+      unique: true,
+    },
+    status: {
+      type: String,
+      enum: ["pending", "paid", "expired"],
+      default: "pending",
+    },
+    dueAt: {
+      type: Date,
+      required: true,
+    },
   },
-  amount: {
-    type: Number,
-    required: true,
-  },
-  code: {
-    type: String,
-    required: true,
-    unique: true,
-  },
-  status: {
-    type: String,
-    enum: ["pending", "paid", "expired"],
-    default: "pending",
-  },
-  dueAt: {
-    type: Date,
-    required: true,
-  },
-}, { timestamps: true });
+  { timestamps: true }
+);
 
 module.exports = mongoose.model("Penalty", penaltySchema);

@@ -11,8 +11,6 @@ import {
   confirmPickupFailed,
   confirmReturnSuccess,
   confirmReturnFailed,
-  payPenaltySuccess,
-  payPenaltyFailed,
   getBorrowRequestDetailsStart,
   getBorrowRequestDetailsSuccess,
   getBorrowRequestDetailsFailed,
@@ -176,26 +174,29 @@ export const confirmReturn = async (
   }
 };
 
-export const payPenalty = async (
-  penaltyId,
-  method,
-  accessToken,
-  dispatch,
-  axiosJWT
-) => {
+export const payPenalty = async (penaltyId, method, accessToken, dispatch, axiosJWT) => {
   try {
     const res = await axiosJWT.post(
       `http://localhost:8000/v1/borrow/pay-penalty/${penaltyId}`,
       { method },
       {
-        headers: { token: `Bearer ${accessToken}` },
+        headers: { Authorization: `Bearer ${accessToken}` },
       }
     );
-    dispatch(payPenaltySuccess(res.data));
     return res.data;
   } catch (err) {
-    dispatch(payPenaltyFailed());
-    console.error("Lỗi thanh toán tiền phạt:", err);
+
+    throw err;
+  }
+};
+
+export const getPenaltyByBorrow = async (borrowId, accessToken, axiosJWT) => {
+  try {
+    const res = await axiosJWT.get(`http://localhost:8000/v1/borrow/penalty/${borrowId}`, {
+      headers: { token: `Bearer ${accessToken}` },
+    });
+    return res.data;
+  } catch (err) {
     throw err;
   }
 };

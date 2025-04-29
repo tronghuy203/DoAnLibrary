@@ -18,6 +18,7 @@ const User = require("./models/User");
 const path = require("path");
 const http = require("http");
 const { Server } = require("socket.io");
+require("./services/penaltyJob");
 
 dotenv.config();
 const app = express();

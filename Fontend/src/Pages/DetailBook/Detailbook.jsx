@@ -53,10 +53,16 @@ const DetailBook = () => {
   }, [book, allBooks]);
 
   const handleBorrowRequest = async () => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+
     if (!book._id || !user.accessToken) {
       alert("Thiếu thông tin sách hoặc token. Vui lòng đăng nhập lại!");
       return;
     }
+
     try {
       const borrowData = await requestBorrow(book._id, user.accessToken, dispatch, axiosJWT);
       if (!borrowData._id) {
@@ -65,11 +71,16 @@ const DetailBook = () => {
       navigate(`/payment/${borrowData._id}`);
       setTimeout(() => {
         window.scrollTo({ top: 0, behavior: "smooth" });
-      }, 100); 
+      }, 100);
     } catch (error) {
       const errorMessage = error.response?.data?.message || "Đã xảy ra lỗi khi gửi yêu cầu mượn sách. Vui lòng thử lại!";
+      if (error.response?.status === 403 && errorMessage.includes("khoản phạt chưa thanh toán")) {
+        alert(`${errorMessage} Nhấn OK để xem và thanh toán các khoản phạt.`);
+        navigate("/history");
+      } else {
+        alert(errorMessage);
+      }
       console.error("Lỗi khi mượn sách:", error.response?.data || error.message);
-      alert(errorMessage);
     }
   };
 
@@ -362,7 +373,6 @@ const DetailBook = () => {
           />
         </div>
 
-        {/* Phần Đề xuất hiển thị bên dưới ReviewSection */}
         <div ref={recommendedRef} className="mt-8">
           <h3 className="text-2xl font-semibold mb-4 text-gray-900 dark:text-white tracking-tight animate-fade-in">
             Sách đề xuất (cùng tác giả hoặc thể loại)
@@ -370,7 +380,7 @@ const DetailBook = () => {
           {recommendedBooks.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
               {recommendedBooks.map((recBook) => {
-                  recommendedRatings[recBook._id] ||
+                recommendedRatings[recBook._id] ||
                   calculateAverageRating(recBook.reviews || []);
                 return (
                   <div
