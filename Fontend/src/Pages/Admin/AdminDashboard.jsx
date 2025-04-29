@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { UserGroupIcon, BookOpenIcon, ClockIcon, MoonIcon, SunIcon } from "@heroicons/react/24/outline";
+import { UserGroupIcon, BookOpenIcon, ClockIcon } from "@heroicons/react/24/outline";
 import { getAllBooks } from "../../redux/apiBooks";
 import { getAllUsers } from "../../redux/apiRequest";
 import { getAllBorrowRecords, getTotalRevenue, getDailyRevenue } from "../../redux/apiBorrow";
@@ -33,15 +33,25 @@ const AdminDashboard = () => {
   const axiosJWT = useMemo(() => createAxios(user, dispatch, loginSuccess), [user, dispatch]);
   const [mostBorrowedBook, setMostBorrowedBook] = useState(null);
   const [mostActiveUser, setMostActiveUser] = useState(null);
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const savedMode = localStorage.getItem("darkMode");
+    return savedMode ? JSON.parse(savedMode) : false;
+  });
 
   useEffect(() => {
-    if (isDarkMode) {
-      document.documentElement.classList.add("dark");
-    } else {
-      document.documentElement.classList.remove("dark");
-    }
-  }, [isDarkMode]);
+    const handleDarkModeChange = () => {
+      const savedMode = localStorage.getItem("darkMode");
+      setIsDarkMode(savedMode ? JSON.parse(savedMode) : false);
+    };
+
+    window.addEventListener("darkModeChange", handleDarkModeChange);
+    window.addEventListener("storage", handleDarkModeChange);
+
+    return () => {
+      window.removeEventListener("darkModeChange", handleDarkModeChange);
+      window.removeEventListener("storage", handleDarkModeChange);
+    };
+  }, []);
 
   useEffect(() => {
     if (!user?.accessToken) {
@@ -164,18 +174,12 @@ const AdminDashboard = () => {
       <div className="flex justify-between items-center mb-6">
         <div className="animate-fade-in">
           <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-blue-500 dark:text-blue-300 mb-4 mt-5">
-            Admin Dashboard
+            Bảng điều khiển quản trị viên
           </h1>
           <p className="text-gray-700 dark:text-gray-400 text-lg sm:text-xl">
             Chào mừng bạn đến với trang quản trị.
           </p>
         </div>
-        <button
-          onClick={() => setIsDarkMode(!isDarkMode)}
-          className="p-2 rounded-full bg-gray-200 dark:bg-gray-800 text-gray-800 dark:text-gray-200 hover:bg-gray-300 dark:hover:bg-gray-700 transition-all duration-300 ease-in-out"
-        >
-          {isDarkMode ? <SunIcon className="w-6 h-6" /> : <MoonIcon className="w-6 h-6" />}
-        </button>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
