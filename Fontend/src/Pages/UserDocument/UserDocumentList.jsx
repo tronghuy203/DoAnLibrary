@@ -11,9 +11,14 @@ import { ToastContainer } from "react-toastify";
 
 const UserDocumentList = () => {
   const user = useSelector((state) => state.auth.login?.currentUser);
-  const currentMembership = useSelector((state) => state.membership.currentMembership);
+  const currentMembership = useSelector(
+    (state) => state.membership.currentMembership
+  );
   const dispatch = useDispatch();
-  const axiosJWT = useMemo(() => createAxios(user, dispatch, loginSuccess), [user, dispatch]);
+  const axiosJWT = useMemo(
+    () => createAxios(user, dispatch, loginSuccess),
+    [user, dispatch]
+  );
   const documents = useSelector((state) => state.document.documents);
   const isLoading = useSelector((state) => state.document.isFetching);
   const navigate = useNavigate();
@@ -54,7 +59,8 @@ const UserDocumentList = () => {
       toast.error(errorMessage, {
         position: "top-right",
         autoClose: 5000,
-        className: "bg-red-100 dark:bg-red-900 text-red-500 dark:text-red-400 rounded-lg shadow-md",
+        className:
+          "bg-red-100 dark:bg-red-900 text-red-500 dark:text-red-400 rounded-lg shadow-md",
         progressClassName: "bg-red-500",
       });
       navigate("/login");
@@ -64,10 +70,14 @@ const UserDocumentList = () => {
       await viewDocument(id, user.accessToken, dispatch, axiosJWT);
       navigate(`/document/${id}`);
     } catch (err) {
-      let errorMessage = err.response?.data?.message || "Lỗi khi xem tài liệu. Vui lòng thử lại.";
+      let errorMessage =
+        err.response?.data?.message ||
+        "Lỗi khi xem tài liệu. Vui lòng thử lại.";
       if (err.response?.status === 403) {
         errorMessage = `Bạn đã vượt quá giới hạn lượt xem hôm nay${
-          currentMembership ? ` với gói ${currentMembership.membershipId.name}` : ""
+          currentMembership
+            ? ` với gói ${currentMembership.membershipId.name}`
+            : ""
         }. Nâng cấp gói để xem thêm!`;
         toast(
           <div className="flex items-center gap-2">
@@ -93,7 +103,8 @@ const UserDocumentList = () => {
         toast.error(errorMessage, {
           position: "top-right",
           autoClose: 5000,
-          className: "bg-red-100 dark:bg-red-900 text-red-500 dark:text-red-400 rounded-lg shadow-md",
+          className:
+            "bg-red-100 dark:bg-red-900 text-red-500 dark:text-red-400 rounded-lg shadow-md",
           progressClassName: "bg-red-500",
         });
       }
@@ -181,14 +192,27 @@ const UserDocumentList = () => {
                     style={{ animationDelay: `${index * 0.1}s` }}
                   >
                     <div className="absolute inset-0 bg-gradient-to-br from-gray-100/20 to-blue-200/20 dark:from-gray-700/20 dark:to-indigo-900/20 rounded-2xl -z-10"></div>
-                    <div className="flex items-center gap-4 mb-4">
-                      {getFileIcon(doc.type)}
-                      <h3 className="text-xl font-bold text-gray-900 dark:text-white tracking-wide">
-                        {doc.title}
-                      </h3>
+                    <div className="flex flex-col items-center gap-4 mb-4">
+                      {doc.thumbnailUrl ? (
+                        <img
+                          src={doc.thumbnailUrl}
+                          alt={doc.title}
+                          className="w-72 h-60 object-cover rounded-md"
+                        />
+                      ) : (
+                        <div className="w-72 h-60 flex items-center justify-center">
+                          {getFileIcon(doc.type)}
+                        </div>
+                      )}
                     </div>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white tracking-wide">
+                      {doc.title}
+                    </h3>
                     <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-2 text-sm">
                       {doc.description}
+                    </p>
+                    <p className="text-gray-500 dark:text-gray-400 mb-4 text-sm">
+                      Người đăng: {doc.uploadedBy?.username || "Unknown"}
                     </p>
                     <button
                       onClick={() => handleDetailClick(doc._id)}
@@ -219,12 +243,12 @@ const UserDocumentList = () => {
         )}
       </div>
       <ToastContainer
-        position="top-right" 
-        autoClose={3000} 
+        position="top-right"
+        autoClose={3000}
         hideProgressBar={false}
-        closeOnClick={true} 
+        closeOnClick={true}
         pauseOnHover={true}
-        draggable={true} 
+        draggable={true}
         theme="light"
       />
     </div>

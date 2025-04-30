@@ -12,13 +12,15 @@ const Sidebar = ({ user, handleDelete, isSidebarOpen, setIsSidebarOpen }) => {
   const [showDeleteConfirm, setShowDeleteConfirm] = useState(false);
 
   const confirmDelete = () => {
-    if (user) {
+    if (user && typeof handleDelete === "function") {
       handleDelete(user._id);
       setShowDeleteConfirm(false);
       setIsSidebarOpen(false);
+    } else {
+      console.error("handleDelete is not a function or user is missing");
     }
   };
-
+  
   const cancelDelete = () => {
     setShowDeleteConfirm(false);
   };

@@ -61,7 +61,6 @@ const assignFreeMembership = async (userId) => {
 const authController = {
   registerUser: async (req, res) => {
     try {
-
       const user = await User.findOne({ email: req.body.email });
       if (user) {
         return res.status(400).json("Email đã tồn tại");
@@ -103,15 +102,11 @@ const authController = {
         createdAt: new Date(),
       };
 
-      await TempUser.findOneAndUpdate(
-        { email },
-        tempUserData,
-        {
-          upsert: true,
-          new: true,
-          setDefaultsOnInsert: true,
-        }
-      );
+      await TempUser.findOneAndUpdate({ email }, tempUserData, {
+        upsert: true,
+        new: true,
+        setDefaultsOnInsert: true,
+      });
 
       const mailOptions = {
         from: process.env.EMAIL_USER,
@@ -123,19 +118,15 @@ const authController = {
       transporter.sendMail(mailOptions, (err, info) => {
         if (err) {
           console.error("Lỗi gửi email:", err);
-          return res
-            .status(500)
-            .json({
-              message: "Lỗi server",
-              error: "Không thể gửi email xác thực",
-            });
+          return res.status(500).json({
+            message: "Lỗi server",
+            error: "Không thể gửi email xác thực",
+          });
         }
         console.log("Email gửi thành công:", info.response);
-        return res
-          .status(200)
-          .json({
-            message: "Mã xác thực đã được gửi, vui lòng kiểm tra email.",
-          });
+        return res.status(200).json({
+          message: "Mã xác thực đã được gửi, vui lòng kiểm tra email.",
+        });
       });
     } catch (err) {
       console.error("Lỗi server:", err);
@@ -171,10 +162,14 @@ const authController = {
 
       await TempUser.deleteOne({ email });
 
-      return res.status(200).json("Xác thực thành công! Tài khoản đã được tạo.");
+      return res
+        .status(200)
+        .json("Xác thực thành công! Tài khoản đã được tạo.");
     } catch (err) {
       console.error("Lỗi chi tiết trong verifyEmail:", err);
-      return res.status(500).json({ message: "Lỗi server", error: err.message });
+      return res
+        .status(500)
+        .json({ message: "Lỗi server", error: err.message });
     }
   },
 
@@ -188,7 +183,9 @@ const authController = {
         return res.status(404).json("Không tìm thấy thông tin đăng ký");
       }
 
-      const verificationCode = Math.floor(100000 + Math.random() * 900000).toString();
+      const verificationCode = Math.floor(
+        100000 + Math.random() * 900000
+      ).toString();
       tempUser.verificationCode = verificationCode;
       await tempUser.save();
 
@@ -202,14 +199,23 @@ const authController = {
       transporter.sendMail(mailOptions, (err, info) => {
         if (err) {
           console.error("Lỗi gửi email:", err);
-          return res.status(500).json({ message: "Lỗi server", error: "Không thể gửi email xác thực" });
+          return res
+            .status(500)
+            .json({
+              message: "Lỗi server",
+              error: "Không thể gửi email xác thực",
+            });
         }
         console.log("Email gửi lại thành công:", info.response);
-        return res.status(200).json({ message: "Mã xác thực đã được gửi lại." });
+        return res
+          .status(200)
+          .json({ message: "Mã xác thực đã được gửi lại." });
       });
     } catch (err) {
       console.error("Lỗi server:", err);
-      return res.status(500).json({ message: "Lỗi server", error: err.message });
+      return res
+        .status(500)
+        .json({ message: "Lỗi server", error: err.message });
     }
   },
 
@@ -256,15 +262,74 @@ const authController = {
     }
   },
 
+  resendResetCode: async (req, res) => {
+    try {
+      const { email } = req.body;
+
+      const user = await User.findOne({ email });
+      if (!user) {
+        return res.status(404).json("Email không tồn tại.");
+      }
+
+      const resetCode = await ResetCode.findOne({ email });
+      if (!resetCode) {
+        return res.status(404).json("Không tìm thấy yêu cầu đặt lại mật khẩu.");
+      }
+
+      const newResetCode = Math.floor(
+        100000 + Math.random() * 900000
+      ).toString();
+
+      resetCode.code = newResetCode;
+      resetCode.createdAt = new Date();
+      await resetCode.save();
+
+      const mailOptions = {
+        from: process.env.EMAIL_USER,
+        to: email,
+        subject: "Mã xác thực đặt lại mật khẩu (Gửi lại)",
+        text: `Mã xác thực mới của bạn là: ${newResetCode}`,
+      };
+
+      transporter.sendMail(mailOptions, (err, info) => {
+        if (err) {
+          console.error("Lỗi gửi email:", err);
+          return res
+            .status(500)
+            .json({
+              message: "Lỗi server",
+              error: "Không thể gửi email xác thực",
+            });
+        }
+        console.log("Email gửi lại thành công:", info.response);
+        return res
+          .status(200)
+          .json({ message: "Mã xác thực đã được gửi lại." });
+      });
+    } catch (err) {
+      console.error("Lỗi server:", err);
+      return res
+        .status(500)
+        .json({ message: "Lỗi server", error: err.message });
+    }
+  },
+
   // Xác thực OTP quên mật khẩu
   verifyResetCode: async (req, res) => {
     try {
       const { email, code } = req.body;
       const resetCode = await ResetCode.findOne({ email });
       if (!resetCode || resetCode.code !== code) {
-        return res.status(400).json({ success: false, message: "Mã xác thực không đúng." });
+        return res
+          .status(400)
+          .json({ success: false, message: "Mã xác thực không đúng." });
       }
-      res.status(200).json({ success: true, message: "Xác thực thành công. Nhập mật khẩu mới." });
+      res
+        .status(200)
+        .json({
+          success: true,
+          message: "Xác thực thành công. Nhập mật khẩu mới.",
+        });
     } catch (err) {
       console.error("Lỗi server:", err);
       res.status(500).json({ success: false, message: "Lỗi server." });
@@ -276,19 +341,20 @@ const authController = {
     try {
       const { email, newPassword, confirmNewPassword } = req.body;
       const resetCode = await ResetCode.findOne({ email });
-      if (!resetCode) return res.status(400).json("Email không hợp lệ hoặc mã đã hết hạn.");
-  
+      if (!resetCode)
+        return res.status(400).json("Email không hợp lệ hoặc mã đã hết hạn.");
+
       if (newPassword !== confirmNewPassword) {
         return res.status(400).json("Mật khẩu xác nhận không khớp.");
       }
-  
+
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(newPassword, salt);
-  
+
       await User.findOneAndUpdate({ email }, { password: hashedPassword });
-  
+
       await ResetCode.deleteOne({ email });
-  
+
       res.status(200).json("Mật khẩu đã được cập nhật.");
     } catch (err) {
       console.error("Lỗi server:", err);

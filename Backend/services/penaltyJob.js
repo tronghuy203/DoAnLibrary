@@ -3,7 +3,6 @@ const cron = require('node-cron');
 const BorrowRecord = require('../models/BorrowRecord');
 const Penalty = require('../models/Penalty');
 const User = require('../models/User');
-const { v4: uuidv4 } = require('uuid');
 const nodemailer = require('nodemailer');
 
 const transporter = nodemailer.createTransport({
@@ -47,7 +46,6 @@ cron.schedule('0 0 * * *', async () => {
           borrowRecordId: record._id,
           amount: penaltyAmount,
           paidAmount: 0,
-          code: uuidv4(),
           dueAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
           status: 'pending',
         });

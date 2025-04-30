@@ -16,10 +16,11 @@ const UploadDocument = () => {
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [file, setFile] = useState(null);
+  const [thumbnail, setThumbnail] = useState(null);
   const [message, setMessage] = useState("");
 
   const allowedFileTypes = ["application/pdf", "application/msword", "application/vnd.openxmlformats-officedocument.wordprocessingml.document", "application/vnd.ms-excel", "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"];
-
+  const allowedImageTypes = ["image/jpeg", "image/png", "image/gif"];
   const handleUpload = useCallback(
     async (e) => {
       e.preventDefault();
@@ -33,24 +34,30 @@ const UploadDocument = () => {
         return;
       }
 
+      if (thumbnail && !allowedImageTypes.includes(thumbnail.type)) {
+        setMessage("Ảnh bìa chỉ hỗ trợ định dạng: JPEG, PNG, GIF.");
+        return;
+      }
+
       const formData = new FormData();
       formData.append("title", title);
       formData.append("description", description);
       formData.append("file", file);
-
+      if (thumbnail) formData.append("thumbnail", thumbnail);
       try {
         await uploadDocument(formData, user.accessToken, dispatch, axiosJWT);
         setMessage("Tài liệu đã được tải lên và đang chờ admin phê duyệt!");
         setTitle("");
         setDescription("");
         setFile(null);
+        setThumbnail(null);
       } catch (error) {
         console.error("Upload failed:", error);
         const errorMessage = error.response?.data?.message || "Đã xảy ra lỗi khi tải lên tài liệu!";
         setMessage(errorMessage);
       }
     },
-    [title, description, file, user?.accessToken, dispatch, axiosJWT]
+    [title, description, file, thumbnail, user?.accessToken, dispatch, axiosJWT]
   );
 
   const handleBackClick = () => {
@@ -59,6 +66,9 @@ const UploadDocument = () => {
 
   const handleClearFile = () => {
     setFile(null);
+  };
+  const handleClearThumbnail = () => {
+    setThumbnail(null);
   };
 
   useEffect(() => {
@@ -128,6 +138,23 @@ const UploadDocument = () => {
               <button
                 type="button"
                 onClick={handleClearFile}
+                className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-red-500"
+              >
+                <FaTimes />
+              </button>
+            )}
+          </div>
+          <div className="relative">
+            <input
+              type="file"
+              onChange={(e) => setThumbnail(e.target.files[0])}
+              accept="image/jpeg,image/png,image/gif"
+              className="w-full p-4 rounded-xl bg-gray-100/50 dark:bg-zinc-700/50 text-gray-800 dark:text-white border border-gray-300/50 dark:border-zinc-600/50 file:mr-4 file:py-2 file:px-4 file:rounded-xl file:border-0 file:bg-indigo-500 file:text-white hover:file:bg-indigo-600 transition-all duration-300"
+            />
+            {thumbnail && (
+              <button
+                type="button"
+                onClick={handleClearThumbnail}
                 className="absolute right-2 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-red-500"
               >
                 <FaTimes />

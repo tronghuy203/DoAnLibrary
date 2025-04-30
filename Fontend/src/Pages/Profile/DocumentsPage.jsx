@@ -4,6 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { createAxios } from "../../createInstance";
 import { loginSuccess } from "../../redux/authSlice";
 import { getUserDocuments } from "../../redux/apiDocument";
+import { deleteUser } from "../../redux/apiRequest";
 import {
   DocumentTextIcon,
   ClockIcon,
@@ -42,7 +43,6 @@ const DocumentsPage = () => {
       setLoadingDocuments(true);
       setError(null);
 
-      // Fetch user documents
       const documents = await getUserDocuments(user._id, user.accessToken, axiosJWT);
       console.log("User Documents:", documents);
       setUserDocuments(Array.isArray(documents) ? documents : []);
@@ -53,6 +53,23 @@ const DocumentsPage = () => {
       setLoadingDocuments(false);
     }
   }, [user?.accessToken, user?._id, axiosJWT]);
+
+  const handleDelete = (id) => {
+    if (!user || !axiosJWT) {
+      setError("Không thể xóa tài khoản. Vui lòng đăng nhập lại.");
+      return;
+    }
+    try {
+      dispatch(deleteUser(id, user.accessToken, navigate, axiosJWT)).then((result) => {
+        if (result?.error) {
+          throw result.error;
+        }
+      });
+    } catch (err) {
+      setError(err.message || "Xóa tài khoản thất bại. Vui lòng thử lại.");
+      setTimeout(() => setError(null), 3000);
+    }
+  };
 
   useEffect(() => {
     if (!user) {
@@ -103,6 +120,7 @@ const DocumentsPage = () => {
         <div className="flex flex-col lg:flex-row gap-6 min-h-[calc(100vh-14rem)]">
           <Sidebar
             user={user}
+            handleDelete={handleDelete}
             isSidebarOpen={isSidebarOpen}
             setIsSidebarOpen={setIsSidebarOpen}
           />
