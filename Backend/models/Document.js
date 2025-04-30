@@ -11,8 +11,9 @@ const documentSchema = new mongoose.Schema(
       type: String,
       required: true,
     },
-    coverUrl: {
-      type: String, 
+    thumbnailUrl: {
+      type: String,
+      default: "",
     },
     uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     status: { 

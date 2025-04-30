@@ -132,17 +132,28 @@ const AdminDocumentApproval = () => {
                   style={{ animationDelay: `${index * 0.1}s` }}
                 >
                   <div className="absolute inset-0 bg-gradient-to-br from-gray-100/20 dark:from-gray-700/20 to-blue-200/20 dark:to-cyan-900/20 rounded-2xl -z-10"></div>
-                  <div className="flex items-center gap-4 mb-4">
-                    {getFileIcon(doc.type)}
-                    <h3 className="text-xl font-bold text-gray-900 dark:text-gray-100 tracking-wide">
-                      {doc.title}
-                    </h3>
-                  </div>
+                  <div className="flex flex-col items-center gap-4 mb-4">
+                      {doc.thumbnailUrl ? (
+                        <img
+                          src={doc.thumbnailUrl}
+                          alt={doc.title}
+                          className="w-72 h-60 object-cover rounded-md"
+                        />
+                      ) : (
+                        <div className="w-72 h-60 flex items-center justify-center">
+                          {getFileIcon(doc.type)}
+                        </div>
+                      )}
+                      
+                    </div>
+                    <h3 className="text-xl font-bold text-gray-900 dark:text-white tracking-wide">
+                        {doc.title}
+                      </h3>
                   <p className="text-gray-600 dark:text-gray-300 mb-4 line-clamp-2 text-sm">
                     {doc.description}
                   </p>
                   <p className="text-gray-500 dark:text-gray-400 mb-4 text-sm">
-                    Uploaded by: {doc.uploadedBy?.username || "Unknown"}
+                    Người đăng: {doc.uploadedBy?.username || "Unknown"}
                   </p>
                   <div className="flex gap-4">
                     <button
