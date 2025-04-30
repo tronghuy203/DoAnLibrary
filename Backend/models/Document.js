@@ -14,7 +14,7 @@ const documentSchema = new mongoose.Schema(
     coverUrl: {
       type: String, 
     },
-    uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" }, // Ai đã upload?
+    uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
     status: { 
       type: String, 
       enum: ['pending', 'approved', 'rejected'], 

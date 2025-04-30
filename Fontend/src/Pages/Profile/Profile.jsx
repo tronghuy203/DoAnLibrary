@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { getAllUsers, updateUserProfile } from "../../redux/apiRequest";
+import { deleteUser, getAllUsers, updateUserProfile } from "../../redux/apiRequest";
 import { createAxios } from "../../createInstance";
 import { loginSuccess } from "../../redux/authSlice";
 import {
@@ -85,6 +85,25 @@ const Profile = () => {
       });
     }
   }, [user, navigate, dispatch, axiosJWT]);
+
+  const handleDelete = (id) => {
+    if (!user || !axiosJWT) {
+      setError("Không thể xóa tài khoản. Vui lòng đăng nhập lại.");
+      return;
+    }
+    try {
+      dispatch(deleteUser(id, user.accessToken, navigate, axiosJWT)).then((result) => {
+        if (result?.error) {
+          throw result.error;
+        }
+        setSuccess("Tài khoản đã được xóa thành công!");
+        setTimeout(() => setSuccess(null), 3000);
+      });
+    } catch (err) {
+      setError(err.message || "Xóa tài khoản thất bại. Vui lòng thử lại.");
+      setTimeout(() => setError(null), 3000);
+    }
+  };
 
   const handleUpdate = async () => {
     if (!axiosJWT) {
@@ -196,6 +215,7 @@ const Profile = () => {
         <div className="flex flex-col lg:flex-row gap-6 min-h-[calc(100vh-14rem)]">
           <Sidebar
             user={user}
+            handleDelete={handleDelete}
             isSidebarOpen={isSidebarOpen}
             setIsSidebarOpen={setIsSidebarOpen}
           />

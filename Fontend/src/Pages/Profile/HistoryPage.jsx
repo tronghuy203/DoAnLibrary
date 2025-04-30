@@ -3,7 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { createAxios } from "../../createInstance";
 import { loginSuccess } from "../../redux/authSlice";
-import { getBorrowHistory } from "../../redux/apiRequest";
+import { getBorrowHistory, deleteUser } from "../../redux/apiRequest"; // Thêm deleteUser
 import { getPaymentHistory, getPenaltyByBorrow, payPenalty } from "../../redux/apiBorrow";
 import {
   DocumentTextIcon,
@@ -63,8 +63,8 @@ const HistoryPage = () => {
       const penaltyResults = await Promise.all(penaltyPromises);
       const penaltyMap = penaltyResults.reduce((acc, { penaltyId, penalty, borrowId }) => {
         if (penalty && penaltyId) {
-          acc[penaltyId] = penalty; 
-          acc[borrowId] = penalty; 
+          acc[penaltyId] = penalty;
+          acc[borrowId] = penalty;
         }
         return acc;
       }, {});
@@ -79,6 +79,23 @@ const HistoryPage = () => {
       setLoadingHistory(false);
     }
   }, [user?.accessToken, user?._id, axiosJWT]);
+
+  const handleDelete = (id) => {
+    if (!user || !axiosJWT) {
+      setError("Không thể xóa tài khoản. Vui lòng đăng nhập lại.");
+      return;
+    }
+    try {
+      dispatch(deleteUser(id, user.accessToken, navigate, axiosJWT)).then((result) => {
+        if (result?.error) {
+          throw result.error;
+        }
+      });
+    } catch (err) {
+      setError(err.message || "Xóa tài khoản thất bại. Vui lòng thử lại.");
+      setTimeout(() => setError(null), 3000);
+    }
+  };
 
   useEffect(() => {
     if (!user) {
@@ -171,6 +188,7 @@ const HistoryPage = () => {
         <div className="flex flex-col lg:flex-row gap-6 min-h-[calc(100vh-14rem)]">
           <Sidebar
             user={user}
+            handleDelete={handleDelete} // Thêm handleDelete
             isSidebarOpen={isSidebarOpen}
             setIsSidebarOpen={setIsSidebarOpen}
           />
