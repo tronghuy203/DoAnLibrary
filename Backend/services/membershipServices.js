@@ -10,7 +10,7 @@ const createMemberships = async () => {
           viewLimit: 5,
           downloadLimit: 2,
           price: 0,
-          duration: 30,
+          duration: 36500,
         },
         {
           name: "Basic",

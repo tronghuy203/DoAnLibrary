@@ -1,12 +1,13 @@
 import React, { useState, useRef } from "react";
-import { useDispatch } from "react-redux";
+import { useDispatch, useSelector } from "react-redux";
 import { useLocation, useNavigate } from "react-router-dom";
-import { verifyResetCode } from "../../redux/apiRequest";
+import { verifyResetCode, resendResetCode } from "../../redux/apiRequest";
 import { motion, AnimatePresence } from "framer-motion";
 
 const VerifyOTP = () => {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [error, setError] = useState("");
+  const [resendMessage, setResendMessage] = useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -46,6 +47,7 @@ const VerifyOTP = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setResendMessage("");
     const otpCode = otp.join("");
 
     const response = await verifyResetCode(email, otpCode, dispatch);
@@ -57,6 +59,17 @@ const VerifyOTP = () => {
     }
   };
 
+  const handleResendOTP = async () => {
+    setError("");
+    setResendMessage("");
+    try {
+      const response = await resendResetCode(email, dispatch);
+      setResendMessage(response.message || "Mã OTP đã được gửi lại.");
+    } catch (err) {
+      setError(err.message || "Không thể gửi lại mã OTP. Vui lòng thử lại.");
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-br from-gray-50 via-gray-100 to-gray-200 dark:from-zinc-900 dark:via-zinc-800 dark:to-zinc-700 flex items-center justify-center py-6 px-4 sm:px-6 lg:px-8">
       <motion.div
@@ -65,7 +78,7 @@ const VerifyOTP = () => {
         transition={{ duration: 0.6, ease: "easeOut" }}
         className="relative bg-white dark:bg-zinc-900 p-6 sm:p-8 rounded-3xl shadow-lg w-full max-w-sm sm:max-w-md md:max-w-lg"
       >
-        <div classWave="absolute inset-0 rounded-3xl bg-gradient-to-r from-blue-400/30 to-cyan-500/30 blur-xl opacity-50 dark:from-blue-600/20 dark:to-cyan-600/20 -z-10"></div>
+        <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-blue-400/30 to-cyan-500/30 blur-xl opacity-50 dark:from-blue-600/20 dark:to-cyan-600/20 -z-10"></div>
 
         <div className="relative z-10">
           <motion.h2
@@ -95,6 +108,16 @@ const VerifyOTP = () => {
                 className="mb-4 sm:mb-6 p-3 bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-300 text-xs sm:text-sm rounded-lg text-center"
               >
                 {error}
+              </motion.div>
+            )}
+            {resendMessage && (
+              <motion.div
+                initial={{ opacity: 0, y: -10 }}
+                animate={{ opacity: 1, y: 0 }}
+                exit={{ opacity: 0, y: -10 }}
+                className="mb-4 sm:mb-6 p-3 bg-green-100 dark:bg-green-900/40 text-green-600 dark:text-green-300 text-xs sm:text-sm rounded-lg text-center"
+              >
+                {resendMessage}
               </motion.div>
             )}
           </AnimatePresence>
@@ -143,13 +166,13 @@ const VerifyOTP = () => {
             className="text-center text-gray-500 dark:text-gray-400 text-sm mt-4 sm:mt-6"
           >
             Không nhận được mã?{" "}
-            <a
-              href="#"
+            <button
+              onClick={handleResendOTP}
               className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-all duration-200 relative group"
             >
               Gửi lại OTP
               <span className="absolute left-0 bottom-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 group-hover:w-full transition-all duration-300"></span>
-            </a>
+            </button>
           </motion.p>
         </div>
       </motion.div>

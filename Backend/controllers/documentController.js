@@ -14,7 +14,10 @@ const storage = multer.diskStorage({
   },
 });
 
-const upload = multer({ storage });
+const upload = multer({ storage }).fields([
+  { name: "file", maxCount: 1 },
+  { name: "thumbnail", maxCount: 1 },
+]);
 
 const assignFreeMembership = async (userId) => {
   const freeMembership = await Membership.findOne({ name: "Free" });
@@ -98,12 +101,18 @@ const documentController = {
   uploadDocument: async (req, res) => {
     try {
       const { title, description } = req.body;
-      const fileUrl = req.file ? `/uploads/${req.file.filename}` : "";
+      const fileUrl = req.files?.file ? `/uploads/${req.files.file[0].filename}` : "";
+      const thumbnailUrl = req.files?.thumbnail ? `/uploads/${req.files.thumbnail[0].filename}` : "";
+
+      if (!fileUrl) {
+        return res.status(400).json({ message: "Vui lòng tải lên file tài liệu" });
+      }
 
       const newDocument = new Document({
         title,
         description,
         fileUrl,
+        thumbnailUrl,
         uploadedBy: req.user.id,
         status: 'pending',
       });

@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { getAllUsers, updateUserProfile } from "../../redux/apiRequest";
+import { deleteUser, getAllUsers, updateUserProfile } from "../../redux/apiRequest";
 import { createAxios } from "../../createInstance";
 import { loginSuccess } from "../../redux/authSlice";
 import {
@@ -86,6 +86,25 @@ const Profile = () => {
     }
   }, [user, navigate, dispatch, axiosJWT]);
 
+  const handleDelete = (id) => {
+    if (!user || !axiosJWT) {
+      setError("Không thể xóa tài khoản. Vui lòng đăng nhập lại.");
+      return;
+    }
+    try {
+      dispatch(deleteUser(id, user.accessToken, navigate, axiosJWT)).then((result) => {
+        if (result?.error) {
+          throw result.error;
+        }
+        setSuccess("Tài khoản đã được xóa thành công!");
+        setTimeout(() => setSuccess(null), 3000);
+      });
+    } catch (err) {
+      setError(err.message || "Xóa tài khoản thất bại. Vui lòng thử lại.");
+      setTimeout(() => setError(null), 3000);
+    }
+  };
+
   const handleUpdate = async () => {
     if (!axiosJWT) {
       setError("Không thể kết nối đến server.");
@@ -164,7 +183,7 @@ const Profile = () => {
 
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 px-4 py-6 sm:px-6 lg:px-8 transition-colors duration-500">
-      <div className="max-w-7xl mx-auto mt-16 sm:mt-20">
+      <div className="max-w-[1600px] mx-auto mt-16 sm:mt-20">
         <header className="mb-6 flex items-center justify-between group">
           <div className="flex items-center gap-3 transform group-hover:translate-x-1 transition-transform duration-300">
             <CogIcon className="h-6 w-6 sm:h-8 sm:w-8 text-gray-900 dark:text-white group-hover:scale-110 transition-transform duration-300" />
@@ -196,6 +215,7 @@ const Profile = () => {
         <div className="flex flex-col lg:flex-row gap-6 min-h-[calc(100vh-14rem)]">
           <Sidebar
             user={user}
+            handleDelete={handleDelete}
             isSidebarOpen={isSidebarOpen}
             setIsSidebarOpen={setIsSidebarOpen}
           />

@@ -52,6 +52,7 @@ const AllBooks = () => {
   }, [user, dispatch, axiosJWT, navigate]);
 
   useEffect(() => {
+
     if (books.length > 0) {
       fetchReviewStats();
     }
@@ -87,8 +88,8 @@ const AllBooks = () => {
         (selectedPriceRange === "high" && book.price > 500000)) &&
       (selectedAuthor === "all" || book.author === selectedAuthor) &&
       (selectedRating === "all" ||
-        (selectedRating === "4+" && avgRating >= 4) ||
-        (selectedRating === "3+" && avgRating >= 3))
+        (selectedRating === "4+" && avgRating  >= 4) ||
+        (selectedRating === "3+" && avgRating  >= 3))
     );
   });
 
@@ -100,57 +101,28 @@ const AllBooks = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gradient-to-br from-blue-50 via-gray-100 to-yellow-50 dark:from-gray-900 dark:via-gray-800 dark:to-blue-900 text-gray-900 dark:text-white px-6 sm:px-12 py-16 transition-all duration-500 relative overflow-hidden">
-      <div className="absolute inset-0 opacity-15 pointer-events-none">
-        <svg className="w-full h-full" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1440 960">
-          <defs>
-            <pattern id="hex-pattern" x="0" y="0" width="80" height="80" patternUnits="userSpaceOnUse">
-              <path
-                d="M40 10L70 25 70 55 40 70 10 55 10 25z"
-                fill="none"
-                stroke="currentColor"
-                strokeWidth="1.5"
-              />
-            </pattern>
-          </defs>
-          <rect x="0" y="0" width="100%" height="100%" fill="url(#hex-pattern)" />
-        </svg>
-      </div>
-
-      <h4 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-center mb-16 mt-8 tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-blue-600 to-yellow-600 drop-shadow-xl animate-fade-in">
+    <div className="min-h-screen bg-gradient-to-br from-gray-50 to-gray-200 dark:from-zinc-900 dark:to-zinc-700 text-gray-900 dark:text-white px-6 sm:px-12 py-16 transition-all duration-300">
+      <h4 className="text-4xl sm:text-5xl md:text-6xl font-extrabold text-center mb-16 mt-8 tracking-tight bg-clip-text text-transparent bg-gradient-to-r from-indigo-500 via-purple-500 to-pink-500">
         Thư Viện Sách
       </h4>
 
-      {/* Thanh tìm kiếm */}
-      <div className="max-w-4xl mx-auto mb-12 relative">
-        <div className="relative group">
-          <input
-            type="text"
-            value={searchQuery}
-            onChange={(e) => setSearchQuery(e.target.value)}
-            placeholder="Tìm kiếm sách theo tiêu đề..."
-            className="w-full p-5 pr-14 rounded-xl bg-white dark:bg-gray-800 text-gray-900 dark:text-white shadow-lg focus:ring-4 focus:ring-blue-300 dark:focus:ring-blue-600 focus:outline-none transition-all duration-300 group-hover:shadow-xl"
-          />
-          <svg
-            className="absolute right-5 top-1/2 transform -translate-y-1/2 w-6 h-6 text-gray-400 group-hover:text-blue-500 transition-colors duration-300"
-            xmlns="http://www.w3.org/2000/svg"
-            fill="none"
-            viewBox="0 0 24 24"
-            stroke="currentColor"
-          >
-            <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
-          </svg>
-        </div>
+      <div className="max-w-3xl mx-auto mb-10">
+        <input
+          type="text"
+          value={searchQuery}
+          onChange={(e) => setSearchQuery(e.target.value)}
+          placeholder="Tìm kiếm sách theo tiêu đề..."
+          className="w-full p-4 rounded-lg bg-white dark:bg-zinc-800 text-gray-900 dark:text-white shadow-md focus:ring-2 focus:ring-indigo-500 focus:outline-none"
+        />
       </div>
 
-      {/* Bộ lọc */}
-      <div className="mb-16 max-w-7xl mx-auto bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-xl grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8 transform transition-all duration-500 hover:shadow-2xl">
+      <div className="mb-12 max-w-7xl mx-auto bg-white dark:bg-zinc-800 p-6 rounded-xl shadow-md grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <div>
-          <label className="block text-sm font-semibold mb-3 text-gray-700 dark:text-gray-200">Danh mục</label>
+          <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Danh mục</label>
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
-            className="w-full p-4 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all duration-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+            className="w-full p-3 rounded-lg bg-gray-100 dark:bg-zinc-700 text-gray-900 dark:text-white"
           >
             {categoryOptions.map((catId) => (
               <option key={catId} value={catId}>
@@ -161,11 +133,11 @@ const AllBooks = () => {
         </div>
 
         <div>
-          <label className="block text-sm font-semibold mb-3 text-gray-700 dark:text-gray-200">Giá</label>
+          <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Giá</label>
           <select
             value={selectedPriceRange}
             onChange={(e) => setSelectedPriceRange(e.target.value)}
-            className="w-full p-4 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all duration-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+            className="w-full p-3 rounded-lg bg-gray-100 dark:bg-zinc-700 text-gray-900 dark:text-white"
           >
             <option value="all">Tất cả</option>
             <option value="low">Dưới 100,000 ₫</option>
@@ -175,11 +147,11 @@ const AllBooks = () => {
         </div>
 
         <div>
-          <label className="block text-sm font-semibold mb-3 text-gray-700 dark:text-gray-200">Tác giả</label>
+          <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Tác giả</label>
           <select
             value={selectedAuthor}
             onChange={(e) => setSelectedAuthor(e.target.value)}
-            className="w-full p-4 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all duration-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+            className="w-full p-3 rounded-lg bg-gray-100 dark:bg-zinc-700 text-gray-900 dark:text-white"
           >
             {authors.map((author) => (
               <option key={author} value={author}>
@@ -190,11 +162,11 @@ const AllBooks = () => {
         </div>
 
         <div>
-          <label className="block text-sm font-semibold mb-3 text-gray-700 dark:text-gray-200">Đánh giá</label>
+          <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Đánh giá</label>
           <select
             value={selectedRating}
             onChange={(e) => setSelectedRating(e.target.value)}
-            className="w-full p-4 rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 focus:outline-none transition-all duration-300 hover:bg-gray-200 dark:hover:bg-gray-600"
+            className="w-full p-3 rounded-lg bg-gray-100 dark:bg-zinc-700 text-gray-900 dark:text-white"
           >
             <option value="all">Tất cả</option>
             <option value="4+">4 sao trở lên</option>
@@ -206,38 +178,26 @@ const AllBooks = () => {
       {/* Danh sách sách */}
       {filteredBooks.length > 0 ? (
         <>
-          <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-10 max-w-7xl mx-auto">
+          <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 max-w-7xl mx-auto">
             {filteredBooks.slice(0, visibleBooks).map((book, index) => {
               const ratingInfo = reviewStats[book._id];
               const avg = parseFloat(ratingInfo?.averageRating || 0);
               const count = ratingInfo?.reviewCount || 0;
 
               return (
-                <li
-                  key={book._id}
-                  className="bg-white dark:bg-gray-800 rounded-2xl shadow-lg overflow-hidden transform transition-all duration-500 hover:shadow-2xl hover:-translate-y-2 relative group"
-                >
+                <li key={book._id} className="bg-white dark:bg-zinc-800 rounded-2xl shadow-lg overflow-hidden transform hover:scale-105 transition-all duration-300">
                   <Link to={`/books/${book._id}`}>
-                    <div className="relative">
-                      <img
-                        src={
-                          book.image?.trim()
-                            ? book.image
-                            : "https://png.pngtree.com/png-vector/20220220/ourmid/pngtree-vector-design-with-pattern-element-for-minimalisticluxurious-cover-menu-invitation-card-bannerbook-vector-png-image_34179868.jpg"
-                        }
-                        alt={book.title}
-                        className="w-full h-80 object-cover rounded-t-2xl transition-transform duration-500 group-hover:scale-105"
-                      />
-                      <div className="absolute inset-0 bg-gradient-to-t from-black/40 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300 rounded-t-2xl"></div>
-                    </div>
+                    <img
+                      src={book.image?.trim() ? book.image : "https://png.pngtree.com/png-vector/20220220/ourmid/pngtree-vector-design-with-pattern-element-for-minimalisticluxurious-cover-menu-invitation-card-bannerbook-vector-png-image_34179868.jpg"}
+                      alt={book.title}
+                      className="w-full h-64 object-cover"
+                    />
                   </Link>
                   <div className="p-6">
-                    <h5 className="text-xl font-bold mb-3 truncate text-gray-900 dark:text-white group-hover:text-blue-600 transition-colors duration-300">
-                      {book.title}
-                    </h5>
-                    <p className="text-red-500 font-bold text-2xl mb-2">{book.price.toLocaleString("vi-VN")} ₫</p>
-                    <p className="text-sm text-gray-600 dark:text-gray-300 mb-3">Tác giả: {book.author || "Không rõ"}</p>
-                    <div className="flex items-center text-yellow-400">
+                    <h5 className="text-lg font-semibold mb-2 truncate">{book.title}</h5>
+                    <p className="text-red-600 font-bold text-xl">{book.price.toLocaleString("vi-VN")} ₫</p>
+                    <p className="text-sm mt-1">Tác giả: {book.author || "Không rõ"}</p>
+                    <div className="flex items-center mt-2 text-yellow-400">
                       {[...Array(5)].map((_, i) => (
                         <svg
                           key={i}
@@ -261,10 +221,10 @@ const AllBooks = () => {
           </ul>
 
           {visibleBooks < filteredBooks.length && (
-            <div className="text-center mt-12">
+            <div className="text-center mt-10">
               <button
                 onClick={handleLoadMore}
-                className="px-8 py-4 bg-gradient-to-r from-blue-600 to-yellow-500 hover:from-blue-700 hover:to-yellow-600 text-white rounded-xl font-semibold text-lg shadow-lg hover:shadow-xl transition-all duration-300 transform hover:scale-105"
+                className="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white rounded-full font-medium transition-all duration-300"
               >
                 Xem thêm
               </button>
@@ -272,9 +232,7 @@ const AllBooks = () => {
           )}
         </>
       ) : (
-        <p className="text-center mt-12 text-gray-500 dark:text-gray-400 text-lg font-medium animate-pulse">
-          Không tìm thấy sách nào.
-        </p>
+        <p className="text-center mt-10 text-gray-500">Không tìm thấy sách nào.</p>
       )}
     </div>
   );

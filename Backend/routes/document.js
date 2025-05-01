@@ -2,7 +2,7 @@ const router = require("express").Router();
 const { documentController, upload } = require("../controllers/documentController");
 const middlewareController = require("../controllers/middlewareController");
 
-router.post("/upload", middlewareController.verifyToken, upload.single("file"), documentController.uploadDocument);
+router.post("/upload", middlewareController.verifyToken, upload, documentController.uploadDocument);
 
 router.get("/",middlewareController.verifyToken,documentController.getAllDocuments);
 

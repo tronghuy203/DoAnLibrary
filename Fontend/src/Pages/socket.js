@@ -1,7 +1,18 @@
-import io from "socket.io-client";
+import { io } from "socket.io-client";
 
-const socket = io("http://localhost:8000", {
-  withCredentials: true,
-});
+let socket;
 
-export default socket;
+export const initSocket = () => {
+  if (!socket || !socket.connected) {
+    socket = io("http://localhost:8000", {
+      withCredentials: true,
+      autoConnect: true,
+      reconnection: true,
+      reconnectionAttempts: 5,
+      reconnectionDelay: 1000,
+    });
+  }
+  return socket;
+};
+
+export default initSocket();

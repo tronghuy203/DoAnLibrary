@@ -5,8 +5,6 @@ const Penalty = require("../models/Penalty");
 const Payment = require("../models/Payment");
 const Book = require("../models/Book");
 
-const { v4: uuidv4 } = require("uuid");
-
 function sortObject(obj) {
   let sorted = {};
   let keys = Object.keys(obj).sort();
