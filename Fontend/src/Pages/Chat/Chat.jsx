@@ -8,7 +8,7 @@ import React, {
 import { useSelector, useDispatch } from "react-redux";
 import { useNavigate } from "react-router-dom";
 import { createAxios } from "../../createInstance";
-import socket from "../socket";
+import { initSocket } from "../socket";
 import { loginSuccess } from "../../redux/authSlice";
 import { getAdmin, createChat, getChatHistory } from "../../redux/apiChat";
 import {
@@ -59,16 +59,14 @@ const UserChat = () => {
   }, []);
 
   useEffect(() => {
-    if (!user) {
-      navigate("/login");
-    }
-  }, [user, navigate]);
-
-  useEffect(() => {
     const fetchChat = async () => {
-      if (!user || !user.accessToken) return;
+      if (!user || !user.accessToken) {
+        navigate("/login");
+        return;
+      }
 
       try {
+        const socket = initSocket();
         const admin = await getAdmin(user.accessToken, dispatch, axiosJWT);
         if (!admin._id) throw new Error("Không tìm thấy admin");
         const adminId = admin._id;
@@ -96,10 +94,24 @@ const UserChat = () => {
       }
     };
 
-    fetchChat();
-  }, [axiosJWT, user, dispatch, scrollToBottom]);
+    if (user) {
+      fetchChat();
+    }
+
+    return () => {
+      if (chatId && user?._id) {
+        const socket = initSocket();
+        socket.emit("leaveChat", { chatId, userId: user._id });
+        socket.off("newMessage");
+        socket.off("error");
+      }
+    };
+  }, [axiosJWT, user, dispatch, scrollToBottom, navigate]);
 
   useEffect(() => {
+    if (!chatId || !user) return;
+
+    const socket = initSocket();
     socket.on("newMessage", (newMessage) => {
       if (newMessage.chatId === chatId) {
         dispatch(
@@ -130,6 +142,7 @@ const UserChat = () => {
 
   const handleSendMessage = () => {
     if (message.trim() && chatId && user?._id) {
+      const socket = initSocket();
       socket.emit("sendMessage", {
         chatId,
         userId: user._id,
@@ -171,6 +184,11 @@ const UserChat = () => {
     document.addEventListener("mousedown", handleClickOutside);
     return () => document.removeEventListener("mousedown", handleClickOutside);
   }, []);
+
+  if (!user) {
+    navigate("/login");
+    return null;
+  }
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-900 flex items-center justify-center py-6 px-4 sm:px-6 lg:px-8">

@@ -7,6 +7,7 @@ import { logoutSuccess } from "../../redux/authSlice";
 import { Link } from "react-router-dom";
 import DarkMode from "./DarkMode";
 import {UserIcon, ShoppingCartIcon, BookOpenIcon, ArrowRightOnRectangleIcon, ArrowLeftOnRectangleIcon, DocumentTextIcon, ChatBubbleLeftRightIcon} from "@heroicons/react/24/outline";
+import { initSocket } from "../../Pages/socket";
 
 const Navbar = () => {
   const user = useSelector((state) => state.auth.login.currentUser);
@@ -46,6 +47,13 @@ const Navbar = () => {
   const handleToggleMenu = () => setIsMenuOpen((prev) => !prev);
   const handleToggleDropdown = () => setIsDropdownOpen((prev) => !prev);
   const handleLogout = () => {
+    const socket = initSocket();
+    if (id) {
+      socket.emit("leaveChat", { chatId: null, userId: id });
+    }
+    socket.off("newMessage");
+    socket.off("error");
+    socket.disconnect();
     logOut(dispatch, id, navigate, accessToken, axiosJWT);
     setIsDropdownOpen(false);
   };
