@@ -26,7 +26,11 @@ const AdminLayout = () => {
   const [isReviewMenuOpen, setIsReviewMenuOpen] = useState(false);
   const [isRevenueOpen, setIsRevenueOpen] = useState(false);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-  const [isDarkMode, setIsDarkMode] = useState(false);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const savedMode = localStorage.getItem("darkMode");
+    return savedMode ? JSON.parse(savedMode) : false;
+  });
+
   const location = useLocation();
   const navigate = useNavigate();
   const dispatch = useDispatch();
@@ -35,13 +39,16 @@ const AdminLayout = () => {
   const id = user?._id;
   let axiosJWT = createAxios(user, dispatch, logoutSuccess);
 
-  // Toggle dark mode
   useEffect(() => {
     if (isDarkMode) {
       document.documentElement.classList.add("dark");
     } else {
       document.documentElement.classList.remove("dark");
     }
+    localStorage.setItem("darkMode", JSON.stringify(isDarkMode));
+
+    const event = new Event("darkModeChange");
+    window.dispatchEvent(event);
   }, [isDarkMode]);
 
   const handleLogout = () => {
@@ -112,7 +119,7 @@ const AdminLayout = () => {
                       d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"
                     />
                   </svg>
-                  <span>Dashboard</span>
+                  <span>Bảng điều khiển</span>
                 </Link>
               </li>
 
@@ -310,7 +317,7 @@ const AdminLayout = () => {
                         onClick={handleMenuClick}
                       >
                         <BookOpenIcon className="w-5 h-5" />
-                        <span>Book</span>
+                        <span>Sách</span>
                       </Link>
                     </li>
                     <li>
@@ -324,7 +331,7 @@ const AdminLayout = () => {
                         onClick={handleMenuClick}
                       >
                         <DocumentTextIcon className="w-5 h-5" />
-                        <span>Document</span>
+                        <span>Tài liệu</span>
                       </Link>
                     </li>
                   </ul>

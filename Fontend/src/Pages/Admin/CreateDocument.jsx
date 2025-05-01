@@ -53,118 +53,148 @@ const CreateDocument = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 flex flex-col items-center py-12 px-4 sm:px-8 lg:px-12 transition-colors duration-500">
-      <h2 className="text-4xl sm:text-5xl font-extrabold text-center text-cyan-500 dark:text-cyan-300 mb-12 tracking-tight drop-shadow-lg">
-        Tạo tài liệu mới
-      </h2>
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex flex-col items-center py-12 px-4 sm:px-8 lg:px-12 transition-all duration-500 ease-in-out relative overflow-hidden">
+      <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 bg-gradient-to-br from-cyan-200/40 via-blue-200/30 to-purple-200/40 dark:from-cyan-800/30 dark:via-blue-800/30 dark:to-purple-800/30 animate-gradient-slow"></div>
+        <div className="absolute top-[-15%] left-[-15%] w-80 h-80 bg-cyan-400/20 dark:bg-cyan-600/15 rounded-full blur-3xl animate-float"></div>
+        <div className="absolute bottom-[-20%] right-[-10%] w-96 h-96 bg-blue-400/20 dark:bg-blue-600/15 rounded-full blur-3xl animate-float-slow"></div>
+        <div className="absolute top-[50%] left-[70%] w-64 h-64 bg-purple-400/20 dark:bg-purple-600/15 rounded-full blur-3xl animate-float"></div>
+        <div className="absolute top-[10%] right-[20%] w-56 h-56 bg-cyan-300/20 dark:bg-cyan-500/15 rounded-full blur-3xl animate-float-slow"></div>
+        <div className="absolute inset-0">
+          <div className="absolute w-3 h-3 bg-cyan-500/50 dark:bg-cyan-400/40 rounded-full top-[15%] left-[10%] animate-particle"></div>
+          <div className="absolute w-2 h-2 bg-blue-500/50 dark:bg-blue-400/40 rounded-full top-[45%] left-[75%] animate-particle-slow"></div>
+          <div className="absolute w-3 h-3 bg-purple-500/50 dark:bg-purple-400/40 rounded-full top-[65%] left-[25%] animate-particle"></div>
+          <div className="absolute w-2 h-2 bg-cyan-500/50 dark:bg-cyan-400/40 rounded-full top-[5%] left-[55%] animate-particle-slow"></div>
+          <div className="absolute w-3 h-3 bg-blue-500/50 dark:bg-blue-400/40 rounded-full top-[30%] left-[85%] animate-particle"></div>
+        </div>
+        <svg className="absolute bottom-0 left-0 w-full h-48 text-cyan-300/30 dark:text-cyan-700/30" viewBox="0 0 1440 320" preserveAspectRatio="none">
+          <path fill="currentColor" d="M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,213.3C672,224,768,224,864,213.3C960,203,1056,181,1152,186.7C1248,192,1344,224,1392,240L1440,256L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+        </svg>
+      </div>
 
-      {message && (
-        <div
-          className={`flex items-center gap-2 w-full max-w-2xl text-center text-base mb-8 px-6 py-3 rounded-lg shadow-xl ${
-            message.includes("thành công") ? "bg-teal-500 dark:bg-teal-600 text-white" : "bg-red-500 dark:bg-red-600 text-white"
-          }`}
+      <div className="w-full max-w-2xl relative z-10">
+        <div className="text-center mb-10 animate-slide-up">
+          <DocumentTextIcon className="w-16 h-16 mx-auto text-cyan-600 dark:text-cyan-400 mb-3 animate-pulse" />
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-cyan-600 dark:text-cyan-400 tracking-tight drop-shadow-lg">
+            Tạo Tài Liệu Mới
+          </h2>
+          <p className="mt-2 text-lg sm:text-xl text-gray-600 dark:text-gray-300">
+            Tải lên và quản lý tài liệu của bạn một cách dễ dàng
+          </p>
+        </div>
+
+        {message && (
+          <div
+            className={`flex items-center gap-3 w-full text-center text-base sm:text-lg mb-10 px-6 py-4 rounded-xl shadow-xl transition-all duration-300 animate-pulse ${
+              message.includes("thành công")
+                ? "bg-gradient-to-r from-teal-500 to-teal-600 dark:from-teal-400 dark:to-teal-500 text-white"
+                : "bg-gradient-to-r from-red-500 to-red-600 dark:from-red-400 dark:to-red-500 text-white"
+            }`}
+          >
+            {message.includes("thành công") ? (
+              <CheckCircleIcon className="w-6 h-6 text-white" />
+            ) : (
+              <ExclamationCircleIcon className="w-6 h-6 text-white" />
+            )}
+            <p>{message}</p>
+          </div>
+        )}
+
+        <form
+          onSubmit={handleSubmit}
+          encType="multipart/form-data"
+          className="w-full bg-white/95 dark:bg-gray-800/95 backdrop-blur-md p-6 sm:p-8 rounded-3xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 transform transition-all duration-300 hover:shadow-[0_0_30px_rgba(0,255,255,0.2)]"
         >
-          {message.includes("thành công") ? (
-            <CheckCircleIcon className="w-6 h-6" />
-          ) : (
-            <ExclamationCircleIcon className="w-6 h-6" />
-          )}
-          <p>{message}</p>
-        </div>
-      )}
-
-      <form
-        onSubmit={handleSubmit}
-        encType="multipart/form-data"
-        className="w-full max-w-2xl bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700/50 transform transition-all hover:shadow-[0_0_20px_rgba(0,255,255,0.1)]"
-      >
-        <div className="mb-6">
-          <label className="block text-gray-900 dark:text-gray-100 text-sm font-medium mb-2" htmlFor="title">
-            Tiêu đề
-          </label>
-          <div className="relative">
-            <BookOpenIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-cyan-400 dark:text-cyan-300" />
-            <input
-              type="text"
-              id="title"
-              name="title"
-              value={formData.title}
-              onChange={handleChange}
-              required
-              className="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-750"
-              placeholder="Nhập tiêu đề tài liệu"
-            />
+          <div className="mb-6 animate-slide-up">
+            <label className="block text-gray-900 dark:text-gray-100 text-sm sm:text-base font-semibold mb-2" htmlFor="title">
+              Tiêu đề
+            </label>
+            <div className="relative">
+              <BookOpenIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-6 h-6 text-cyan-600 dark:text-cyan-400" />
+              <input
+                type="text"
+                id="title"
+                name="title"
+                value={formData.title}
+                onChange={handleChange}
+                required
+                className="w-full pl-12 pr-4 py-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300/50 dark:border-gray-600/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200 hover:bg-gradient-to-r hover:from-gray-100/80 hover:to-gray-50/80 dark:hover:from-gray-750/80 dark:hover:to-gray-700/80"
+                placeholder="Nhập tiêu đề tài liệu"
+              />
+            </div>
           </div>
-        </div>
 
-        <div className="mb-6">
-          <label className="block text-gray-900 dark:text-gray-100 text-sm font-medium mb-2" htmlFor="description">
-            Mô tả
-          </label>
-          <div className="relative">
-            <DocumentTextIcon className="absolute left-3 top-4 w-5 h-5 text-cyan-400 dark:text-cyan-300" />
-            <textarea
-              id="description"
-              name="description"
-              value={formData.description}
-              onChange={handleChange}
-              className="w-full pl-10 pr-4 py-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 resize-y placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200 hover:bg-gray-100 dark:hover:bg-gray-750"
-              placeholder="Nhập mô tả tài liệu (không bắt buộc)"
-              rows="4"
-            />
+          <div className="mb-6 animate-slide-up">
+            <label className="block text-gray-900 dark:text-gray-100 text-sm sm:text-base font-semibold mb-2" htmlFor="description">
+              Mô tả
+            </label>
+            <div className="relative">
+              <DocumentTextIcon className="absolute left-3 top-4 w-6 h-6 text-cyan-600 dark:text-cyan-400" />
+              <textarea
+                id="description"
+                name="description"
+                value={formData.description}
+                onChange={handleChange}
+                className="w-full pl-12 pr-4 py-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300/50 dark:border-gray-600/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 resize-y placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200 hover:bg-gradient-to-r hover:from-gray-100/80 hover:to-gray-50/80 dark:hover:from-gray-750/80 dark:hover:to-gray-700/80"
+                placeholder="Nhập mô tả tài liệu (không bắt buộc)"
+                rows="4"
+              />
+            </div>
           </div>
-        </div>
 
-        <div className="mb-8">
-          <label className="block text-gray-900 dark:text-gray-100 text-sm font-medium mb-2">Tài liệu</label>
-          <div className="relative">
-            <label
-              htmlFor="file"
-              className="group flex items-center justify-center w-full h-48 bg-gray-100 dark:bg-gray-800 border-2 border-gray-300 dark:border-gray-700 rounded-xl cursor-pointer hover:bg-gray-200 dark:hover:bg-gray-700 hover:border-cyan-500 dark:hover:border-cyan-500 transition-all duration-300 shadow-md"
-            >
-              {previewFileName ? (
-                <div className="relative w-full h-full flex items-center justify-center">
+          <div className="mb-8 animate-slide-up">
+            <label className="block text-gray-900 dark:text-gray-100 text-sm sm:text-base font-semibold mb-2">Tài liệu</label>
+            <div className="relative">
+              <label
+                htmlFor="file"
+                className="group flex items-center justify-center w-full h-40 sm:h-48 bg-gray-100/80 dark:bg-gray-800/80 border-2 border-gray-300/50 dark:border-gray-600/50 rounded-xl cursor-pointer hover:bg-gradient-to-r hover:from-gray-200/80 hover:to-gray-100/80 dark:hover:from-gray-700/80 dark:hover:to-gray-600/80 hover:border-cyan-500 dark:hover:border-cyan-400 transition-all duration-300 shadow-md"
+              >
+                {previewFileName ? (
+                  <div className="relative w-full h-full flex items-center justify-center">
+                    <div className="text-center">
+                      <PaperClipIcon className="w-8 h-8 sm:w-12 sm:h-12 mx-auto text-cyan-600 dark:text-cyan-400 group-hover:text-cyan-700 dark:group-hover:text-cyan-300 transition-colors duration-200" />
+                      <p className="mt-2 text-base sm:text-lg text-gray-600 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-gray-200 transition-colors duration-200 truncate px-4">
+                        {previewFileName}
+                      </p>
+                    </div>
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <span className="text-cyan-600 dark:text-cyan-400 font-semibold bg-gray-900/70 dark:bg-gray-900/80 px-4 py-2 rounded-full">Thay file</span>
+                    </div>
+                  </div>
+                ) : (
                   <div className="text-center">
-                    <PaperClipIcon className="w-12 h-12 mx-auto text-cyan-400 dark:text-cyan-300 group-hover:text-cyan-300 dark:group-hover:text-cyan-200 transition-colors duration-200" />
-                    <p className="mt-2 text-gray-600 dark:text-gray-300 group-hover:text-gray-900 dark:group-hover:text-gray-200 transition-colors duration-200 truncate px-4">
-                      {previewFileName}
+                    <PaperClipIcon className="w-8 h-8 sm:w-12 sm:h-12 mx-auto text-cyan-600 dark:text-cyan-400 group-hover:text-cyan-700 dark:group-hover:text-cyan-300 transition-colors duration-200" />
+                    <p className="mt-2 text-base sm:text-lg text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors duration-200">
+                      Nhấp để chọn hoặc kéo file vào đây
                     </p>
                   </div>
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <span className="text-cyan-400 dark:text-cyan-300 font-medium bg-gray-900/70 dark:bg-gray-900/80 px-3 py-1 rounded-full">Thay file</span>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center">
-                  <PaperClipIcon className="w-12 h-12 mx-auto text-cyan-400 dark:text-cyan-300 group-hover:text-cyan-300 dark:group-hover:text-cyan-200 transition-colors duration-200" />
-                  <p className="mt-2 text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors duration-200">
-                    Nhấp để chọn hoặc kéo file vào đây
-                  </p>
-                </div>
-              )}
-              <input
-                type="file"
-                id="file"
-                name="file"
-                onChange={handleChange}
-                className="hidden"
-                required
-              />
-            </label>
+                )}
+                <input
+                  type="file"
+                  id="file"
+                  name="file"
+                  onChange={handleChange}
+                  className="hidden"
+                  required
+                />
+              </label>
+            </div>
+            {formData.file && (
+              <p className="mt-2 text-sm sm:text-base text-gray-500 dark:text-gray-400 truncate transition-all duration-300">
+                Đã chọn: {formData.file.name}
+              </p>
+            )}
           </div>
-          {formData.file && (
-            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 truncate">Đã chọn: {formData.file.name}</p>
-          )}
-        </div>
 
-        <button
-          type="submit"
-          className="w-full flex items-center justify-center gap-2 bg-cyan-500 dark:bg-cyan-600 hover:bg-cyan-600 dark:hover:bg-cyan-700 text-white font-semibold py-3 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl"
-        >
-          <PaperClipIcon className="w-5 h-5" />
-          Tạo tài liệu
-        </button>
-      </form>
+          <button
+            type="submit"
+            className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-cyan-600 to-blue-600 dark:from-cyan-500 dark:to-blue-500 hover:from-cyan-700 hover:to-blue-700 dark:hover:from-cyan-600 dark:hover:to-blue-600 text-white font-semibold py-3 sm:py-4 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
+          >
+            <PaperClipIcon className="w-6 h-6 text-white transform hover:scale-110 transition-transform duration-200" />
+            Tạo tài liệu
+          </button>
+        </form>
+      </div>
     </div>
   );
 };

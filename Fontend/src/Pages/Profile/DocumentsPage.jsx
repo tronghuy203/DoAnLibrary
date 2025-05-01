@@ -32,6 +32,8 @@ const DocumentsPage = () => {
   const [loadingDocuments, setLoadingDocuments] = useState(false);
   const [error, setError] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
+  const itemsPerPage = 10;
 
   const fetchDocuments = useCallback(async () => {
     if (!user?.accessToken || !user?._id || !axiosJWT) {
@@ -92,9 +94,22 @@ const DocumentsPage = () => {
     }
   };
 
+  // Pagination logic
+  const totalPages = Math.ceil(userDocuments.length / itemsPerPage);
+  const paginatedDocuments = userDocuments.slice(
+    (currentPage - 1) * itemsPerPage,
+    currentPage * itemsPerPage
+  );
+
+  const handlePageChange = (page) => {
+    if (page >= 1 && page <= totalPages) {
+      setCurrentPage(page);
+    }
+  };
+
   return (
     <div className="min-h-screen bg-gradient-to-b from-gray-50 to-gray-100 dark:from-gray-900 dark:to-gray-800 px-4 py-6 sm:px-6 lg:px-8 transition-colors duration-500">
-      <div className="max-w-7xl mx-auto mt-16 sm:mt-20">
+      <div className="max-w-[1600px] mx-auto mt-16 sm:mt-20">
         <header className="mb-6 flex items-center justify-between">
           <div className="flex items-center gap-3">
             <CogIcon className="h-6 w-6 sm:h-8 sm:w-8 text-gray-900 dark:text-white" />
@@ -135,7 +150,7 @@ const DocumentsPage = () => {
                   <ClockIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                   Đang tải danh sách tài liệu...
                 </p>
-              ) : userDocuments.length === 0 ? (
+              ) : paginatedDocuments.length === 0 ? (
                 <p className="text-gray-500 dark:text-gray-400 flex items-center gap-2 text-sm sm:text-base">
                   <DocumentTextIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                   Bạn chưa tải lên tài liệu nào.
@@ -152,7 +167,7 @@ const DocumentsPage = () => {
                         </tr>
                       </thead>
                       <tbody>
-                        {userDocuments.map((doc, index) => (
+                        {paginatedDocuments.map((doc, index) => (
                           <tr
                             key={doc._id || index}
                             className={`${
@@ -193,7 +208,7 @@ const DocumentsPage = () => {
                     </table>
                   </div>
                   <div className="md:hidden space-y-4">
-                    {userDocuments.map((doc, index) => (
+                    {paginatedDocuments.map((doc, index) => (
                       <div
                         key={doc._id || index}
                         className="bg-gray-50 dark:bg-gray-700 p-4 rounded-xl shadow-sm"
@@ -225,6 +240,37 @@ const DocumentsPage = () => {
                       </div>
                     ))}
                   </div>
+                  {totalPages > 1 && (
+                    <div className="mt-6 flex justify-center gap-2">
+                      <button
+                        onClick={() => handlePageChange(currentPage - 1)}
+                        disabled={currentPage === 1}
+                        className="px-3 py-1 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-50"
+                      >
+                        Trước
+                      </button>
+                      {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                        <button
+                          key={page}
+                          onClick={() => handlePageChange(page)}
+                          className={`px-3 py-1 rounded-md ${
+                            currentPage === page
+                              ? "bg-blue-500 text-white"
+                              : "bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white"
+                          }`}
+                        >
+                          {page}
+                        </button>
+                      ))}
+                      <button
+                        onClick={() => handlePageChange(currentPage + 1)}
+                        disabled={currentPage === totalPages}
+                        className="px-3 py-1 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-50"
+                      >
+                        Sau
+                      </button>
+                    </div>
+                  )}
                 </>
               )}
             </section>

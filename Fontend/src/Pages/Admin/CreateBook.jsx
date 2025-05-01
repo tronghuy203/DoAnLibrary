@@ -7,7 +7,6 @@ import { loginSuccess } from "../../redux/authSlice";
 import {
   BookOpenIcon,
   UserIcon,
-  DocumentTextIcon,
   CurrencyDollarIcon,
   CheckCircleIcon,
   ExclamationCircleIcon,
@@ -22,7 +21,6 @@ const CreateBook = () => {
   const [book, setBook] = useState({
     title: "",
     author: "",
-    description: "",
     publishedYear: 0,
     price: "0",
     quantity: "1",
@@ -132,7 +130,6 @@ const CreateBook = () => {
       setBook({
         title: "",
         author: "",
-        description: "",
         publishedYear: 0,
         price: "0",
         quantity: "1",
@@ -147,257 +144,259 @@ const CreateBook = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gradient-to-br dark:from-gray-950 dark:via-gray-900 dark:to-gray-950 text-gray-900 dark:text-gray-100 flex flex-col items-center py-12 px-4 sm:px-8 lg:px-12 transition-all duration-300 ease-in-out">
-      <h2 className="text-4xl sm:text-5xl font-extrabold text-center text-cyan-500 dark:text-cyan-400 mb-12 tracking-tight drop-shadow-lg animate-fade-in-up">
-        Tạo sách mới
-      </h2>
-
-      {message && (
-        <div
-          className={`flex items-center gap-2 w-full max-w-2xl text-center text-base mb-8 px-6 py-3 rounded-lg shadow-xl transition-all duration-300 ease-in-out ${
-            message.includes("thành công")
-              ? "bg-teal-500 dark:bg-teal-400 text-white"
-              : "bg-red-500 dark:bg-red-400 text-white"
-          }`}
-        >
-          {message.includes("thành công") ? (
-            <CheckCircleIcon className="w-6 h-6" />
-          ) : (
-            <ExclamationCircleIcon className="w-6 h-6" />
-          )}
-          <p>{message}</p>
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex items-center justify-center py-8 px-4 transition-all duration-500 ease-in-out relative overflow-hidden">
+      <div className="absolute inset-0 z-0">
+        <div className="absolute inset-0 bg-gradient-to-br from-cyan-100/30 via-blue-100/20 to-purple-100/30 dark:from-cyan-900/20 dark:via-blue-900/20 dark:to-purple-900/20 animate-gradient-slow"></div>
+        <div className="absolute top-[-10%] left-[-10%] w-64 h-64 bg-cyan-300/20 dark:bg-cyan-600/10 rounded-full blur-3xl animate-float"></div>
+        <div className="absolute bottom-[-15%] right-[-5%] w-96 h-96 bg-blue-300/20 dark:bg-blue-600/10 rounded-full blur-3xl animate-float-slow"></div>
+        <div className="absolute top-[60%] left-[70%] w-48 h-48 bg-purple-300/20 dark:bg-purple-600/10 rounded-full blur-3xl animate-float"></div>
+        <div className="absolute inset-0">
+          <div className="absolute w-2 h-2 bg-cyan-400/50 dark:bg-cyan-500/30 rounded-full top-[20%] left-[15%] animate-particle"></div>
+          <div className="absolute w-2 h-2 bg-blue-400/50 dark:bg-blue-500/30 rounded-full top-[50%] left-[80%] animate-particle-slow"></div>
+          <div className="absolute w-2 h-2 bg-purple-400/50 dark:bg-purple-500/30 rounded-full top-[70%] left-[30%] animate-particle"></div>
+          <div className="absolute w-2 h-2 bg-cyan-400/50 dark:bg-cyan-500/30 rounded-full top-[10%] left-[60%] animate-particle-slow"></div>
         </div>
-      )}
+        <svg className="absolute bottom-0 left-0 w-full h-32 text-cyan-200/20 dark:text-cyan-800/20" viewBox="0 0 1440 320" preserveAspectRatio="none">
+          <path fill="currentColor" d="M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,213.3C672,224,768,224,864,213.3C960,203,1056,181,1152,186.7C1248,192,1344,224,1392,240L1440,256L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+        </svg>
+      </div>
 
-      <div className="w-full max-w-2xl bg-white dark:bg-gray-800 p-8 rounded-2xl shadow-2xl border border-gray-200 dark:border-gray-700/50 transform transition-all duration-300 ease-in-out hover:shadow-[0_0_20px_rgba(0,255,255,0.1)]">
-        <div className="mb-6">
-          <label className="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2" htmlFor="title">
-            Tiêu đề
-          </label>
-          <div className="relative">
-            <BookOpenIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-cyan-500 dark:text-cyan-400" />
-            <input
-              type="text"
-              id="title"
-              name="title"
-              value={book.title}
-              onChange={handleChange}
-              required
-              className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200"
-              placeholder="Nhập tiêu đề sách"
-            />
+      <div className="w-full max-w-2xl bg-white/90 dark:bg-gray-800/90 p-6 sm:p-8 rounded-3xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 transform transition-all duration-300 hover:shadow-[0_0_30px_rgba(0,255,255,0.2)] relative z-10">
+        <h2 className="text-3xl sm:text-4xl font-extrabold text-center text-cyan-600 dark:text-cyan-400 mb-8 sm:mb-12 tracking-tight drop-shadow-lg animate-slide-up">
+          Tạo sách mới
+        </h2>
+
+        {message && (
+          <div
+            className={`flex items-center gap-2 w-full text-center text-sm sm:text-base mb-6 sm:mb-8 px-4 sm:px-6 py-3 rounded-xl shadow-xl transition-all duration-300 ease-in-out animate-fade-in ${
+              message.includes("thành công")
+                ? "bg-teal-500 dark:bg-teal-400 text-white"
+                : "bg-red-500 dark:bg-red-400 text-white"
+            }`}
+          >
+            {message.includes("thành công") ? (
+              <CheckCircleIcon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+            ) : (
+              <ExclamationCircleIcon className="w-5 h-5 sm:w-6 sm:h-6 text-white" />
+            )}
+            <p>{message}</p>
           </div>
-        </div>
+        )}
 
-        <div className="mb-6">
-          <label className="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2" htmlFor="author">
-            Tác giả
-          </label>
-          <div className="relative">
-            <UserIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-cyan-500 dark:text-cyan-400" />
-            <input
-              type="text"
-              id="author"
-              name="author"
-              value={book.author}
-              onChange={handleChange}
-              required
-              className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200"
-              placeholder="Nhập tên tác giả"
-            />
-          </div>
-        </div>
-
-        <div className="mb-6">
-          <label className="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2" htmlFor="description">
-            Mô tả
-          </label>
-          <div className="relative">
-            <DocumentTextIcon className="absolute left-3 top-4 w-5 h-5 text-cyan-500 dark:text-cyan-400" />
-            <textarea
-              id="description"
-              name="description"
-              value={book.description}
-              onChange={handleChange}
-              className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 resize-y placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200"
-              placeholder="Nhập mô tả sách"
-              rows="4"
-            />
-          </div>
-        </div>
-
-        <div className="mb-6">
-          <label className="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2" htmlFor="publishedYear">
-            Năm xuất bản
-          </label>
-          <div className="relative">
-            <UserIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-cyan-500 dark:text-cyan-400" />
-            <input
-              id="publishedYear"
-              name="publishedYear"
-              value={book.publishedYear}
-              onChange={handleChange}
-              required
-              type="number"
-              className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200"
-              placeholder="Nhập năm xuất bản"
-            />
-          </div>
-        </div>
-
-        <div className="mb-6">
-          <label className="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2" htmlFor="quantity">
-            Số lượng
-          </label>
-          <div className="relative flex items-center">
-            <HashtagIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-cyan-500 dark:text-cyan-400" />
-            <input
-              id="quantity"
-              name="quantity"
-              value={book.quantity}
-              onChange={handleChange}
-              min="1"
-              required
-              type="text"
-              className="w-full pl-10 pr-16 py-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200"
-              onKeyPress={(e) => {
-                if (!/[0-9]/.test(e.key)) {
-                  e.preventDefault();
-                }
-              }}
-            />
-            <div className="absolute right-2 flex flex-col">
-              <button
-                type="button"
-                onClick={handleIncreaseQuantity}
-                className="p-0.5 text-cyan-500 dark:text-cyan-400 hover:text-cyan-600 dark:hover:text-cyan-300 transition-colors duration-200"
-              >
-                <ChevronUpIcon className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={handleDecreaseQuantity}
-                className="p-0.5 text-cyan-500 dark:text-cyan-400 hover:text-cyan-600 dark:hover:text-cyan-300 transition-colors duration-200"
-              >
-                <ChevronDownIcon className="w-4 h-4" />
-              </button>
+        <form onSubmit={handleSubmit}>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 animate-slide-up">
+            <div>
+              <label className="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2" htmlFor="title">
+                Tiêu đề
+              </label>
+              <div className="relative">
+                <BookOpenIcon className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-cyan-600 dark:text-cyan-400" />
+                <input
+                  type="text"
+                  id="title"
+                  name="title"
+                  value={book.title}
+                  onChange={handleChange}
+                  required
+                  className="w-full pl-8 sm:pl-12 pr-3 sm:pr-4 py-2 sm:py-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-300 hover:bg-gray-100 dark:hover:bg-gray-600 text-xs sm:text-base"
+                  placeholder="Nhập tiêu đề sách"
+                />
+              </div>
+            </div>
+            <div>
+              <label className="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2" htmlFor="author">
+                Tác giả
+              </label>
+              <div className="relative">
+                <UserIcon className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-cyan-600 dark:text-cyan-400" />
+                <input
+                  type="text"
+                  id="author"
+                  name="author"
+                  value={book.author}
+                  onChange={handleChange}
+                  required
+                  className="w-full pl-8 sm:pl-12 pr-3 sm:pr-4 py-2 sm:py-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-300 hover:bg-gray-100 dark:hover:bg-gray-600 text-xs sm:text-base"
+                  placeholder="Nhập tên tác giả"
+                />
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="mb-6">
-          <label className="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2" htmlFor="price">
-            Giá
-          </label>
-          <div className="relative flex items-center">
-            <CurrencyDollarIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-cyan-500 dark:text-cyan-400" />
-            <input
-              type="text"
-              id="price"
-              name="price"
-              value={book.price}
-              onChange={handleChange}
-              required
-              className="w-full pl-10 pr-16 py-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200"
-              placeholder="Nhập giá sách"
-              onKeyPress={(e) => {
-                if (!/[0-9]/.test(e.key)) {
-                  e.preventDefault();
-                }
-              }}
-            />
-            <div className="absolute right-2 flex flex-col">
-              <button
-                type="button"
-                onClick={handleIncrease}
-                className="p-0.5 text-cyan-500 dark:text-cyan-400 hover:text-cyan-600 dark:hover:text-cyan-300 transition-colors duration-200"
-              >
-                <ChevronUpIcon className="w-4 h-4" />
-              </button>
-              <button
-                type="button"
-                onClick={handleDecrease}
-                className="p-0.5 text-cyan-500 dark:text-cyan-400 hover:text-cyan-600 dark:hover:text-cyan-300 transition-colors duration-200"
-              >
-                <ChevronDownIcon className="w-4 h-4" />
-              </button>
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-6 animate-slide-up">
+            <div>
+              <label className="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2" htmlFor="price">
+                Giá
+              </label>
+              <div className="relative flex items-center">
+                <CurrencyDollarIcon className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-cyan-600 dark:text-cyan-400" />
+                <input
+                  type="text"
+                  id="price"
+                  name="price"
+                  value={book.price}
+                  onChange={handleChange}
+                  required
+                  className="w-full pl-8 sm:pl-12 pr-16 py-2 sm:py-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-300 hover:bg-gray-100 dark:hover:bg-gray-600 text-xs sm:text-base"
+                  placeholder="Nhập giá sách"
+                  onKeyPress={(e) => {
+                    if (!/[0-9]/.test(e.key)) {
+                      e.preventDefault();
+                    }
+                  }}
+                />
+                <div className="absolute right-2 flex flex-col">
+                  <button
+                    type="button"
+                    onClick={handleIncrease}
+                    className="p-0.5 text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 transition-colors duration-200"
+                  >
+                    <ChevronUpIcon className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDecrease}
+                    className="p-0.5 text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 transition-colors duration-200"
+                  >
+                    <ChevronDownIcon className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
+                  </button>
+                </div>
+              </div>
+            </div>
+            <div>
+              <label className="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2" htmlFor="quantity">
+                Số lượng
+              </label>
+              <div className="relative flex items-center">
+                <HashtagIcon className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-cyan-600 dark:text-cyan-400" />
+                <input
+                  id="quantity"
+                  name="quantity"
+                  value={book.quantity}
+                  onChange={handleChange}
+                  min="1"
+                  required
+                  type="text"
+                  className="w-full pl-8 sm:pl-12 pr-16 py-2 sm:py-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-300 hover:bg-gray-100 dark:hover:bg-gray-600 text-xs sm:text-base"
+                  onKeyPress={(e) => {
+                    if (!/[0-9]/.test(e.key)) {
+                      e.preventDefault();
+                    }
+                  }}
+                />
+                <div className="absolute right-2 flex flex-col">
+                  <button
+                    type="button"
+                    onClick={handleIncreaseQuantity}
+                    className="p-0.5 text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 transition-colors duration-200"
+                  >
+                    <ChevronUpIcon className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
+                  </button>
+                  <button
+                    type="button"
+                    onClick={handleDecreaseQuantity}
+                    className="p-0.5 text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 transition-colors duration-200"
+                  >
+                    <ChevronDownIcon className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
+                  </button>
+                </div>
+              </div>
             </div>
           </div>
-        </div>
 
-        <div className="mb-6">
-          <label className="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2" htmlFor="category">
-            Danh mục
-          </label>
-          <div className="relative">
-            <TagIcon className="absolute left-3 top-1/2 transform -translate-y-1/2 w-5 h-5 text-cyan-500 dark:text-cyan-400" />
-            <select
-              id="category"
-              name="category"
-              value={book.category}
-              onChange={handleChange}
-              required
-              className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 appearance-none placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200"
-            >
-              <option value="">Chọn danh mục</option>
-              {categories.map((cat) => (
-                <option key={cat._id} value={cat._id}>
-                  {cat.name}
-                </option>
-              ))}
-            </select>
-          </div>
-        </div>
-
-        <div className="mb-8">
-          <label className="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2">Hình ảnh</label>
-          <div className="relative">
-            <label
-              htmlFor="image"
-              className="group flex items-center justify-center w-full h-48 bg-gray-50 dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-xl cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 hover:border-cyan-500 dark:hover:border-cyan-400 transition-all duration-300 shadow-md"
-            >
-              {previewImage ? (
-                <div className="relative w-full h-full">
-                  <img
-                    src={previewImage}
-                    alt="Preview"
-                    className="w-full h-full object-cover rounded-xl opacity-80 group-hover:opacity-100 transition-opacity duration-300"
-                  />
-                  <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                    <span className="text-cyan-500 dark:text-cyan-400 font-medium bg-gray-900/70 dark:bg-gray-800/70 px-3 py-1 rounded-full">Thay ảnh</span>
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center">
-                  <PhotoIcon className="w-12 h-12 mx-auto text-cyan-500 dark:text-cyan-400 group-hover:text-cyan-600 dark:group-hover:text-cyan-300 transition-colors duration-200" />
-                  <p className="mt-2 text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors duration-200">
-                    Nhấp để chọn hoặc kéo ảnh vào đây
-                  </p>
-                </div>
-              )}
-              <input
-                type="file"
-                id="image"
-                accept="image/*"
-                onChange={handleFileChange}
-                className="hidden"
-              />
+          <div className="mb-6 animate-slide-up">
+            <label className="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2" htmlFor="publishedYear">
+              Năm xuất bản
             </label>
+            <div className="relative">
+              <UserIcon className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-cyan-600 dark:text-cyan-400" />
+              <input
+                id="publishedYear"
+                name="publishedYear"
+                value={book.publishedYear}
+                onChange={handleChange}
+                required
+                type="number"
+                className="w-full pl-8 sm:pl-12 pr-3 sm:pr-4 py-2 sm:py-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-300 hover:bg-gray-100 dark:hover:bg-gray-600 text-xs sm:text-base"
+                placeholder="Nhập năm xuất bản"
+              />
+            </div>
           </div>
-          {book.image && (
-            <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 truncate transition-all duration-300 ease-in-out">
-              Đã chọn: {book.image.name}
-            </p>
-          )}
-        </div>
 
-        <button
-          onClick={handleSubmit}
-          className="w-full flex items-center justify-center gap-2 bg-cyan-500 dark:bg-cyan-400 hover:bg-cyan-600 dark:hover:bg-cyan-500 text-white font-semibold py-3 rounded-lg transition-all duration-300 shadow-lg hover:shadow-xl"
-        >
-          <BookOpenIcon className="w-5 h-5" />
-          Tạo sách
-        </button>
+          <div className="mb-6 animate-slide-up">
+            <label className="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2" htmlFor="category">
+              Danh mục
+            </label>
+            <div className="relative">
+              <TagIcon className="absolute left-2 sm:left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-cyan-600 dark:text-cyan-400" />
+              <select
+                id="category"
+                name="category"
+                value={book.category}
+                onChange={handleChange}
+                required
+                className="w-full pl-8 sm:pl-12 pr-3 sm:pr-4 py-2 sm:py-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 appearance-none placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-300 hover:bg-gray-100 dark:hover:bg-gray-600 text-xs sm:text-base"
+              >
+                <option value="">Chọn danh mục</option>
+                {categories.map((cat) => (
+                  <option key={cat._id} value={cat._id}>
+                    {cat.name}
+                  </option>
+                ))}
+              </select>
+            </div>
+          </div>
+
+          <div className="mb-8 animate-slide-up">
+            <label className="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2">Hình ảnh</label>
+            <div className="relative">
+              <label
+                htmlFor="image"
+                className="group flex items-center justify-center w-full h-48 bg-gray-50 dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-xl cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 hover:border-cyan-500 dark:hover:border-cyan-400 transition-all duration-300 shadow-md"
+              >
+                {previewImage ? (
+                  <div className="relative w-full h-full">
+                    <img
+                      src={previewImage}
+                      alt="Preview"
+                      className="w-full h-full object-cover rounded-xl group-hover:opacity-90 transition-opacity duration-300"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
+                      <span className="text-cyan-600 dark:text-cyan-400 font-medium bg-gray-900/70 dark:bg-gray-800/70 px-3 py-1 rounded-full">Thay ảnh</span>
+                    </div>
+                  </div>
+                ) : (
+                  <div className="text-center">
+                    <PhotoIcon className="w-12 h-12 mx-auto text-cyan-600 dark:text-cyan-400 group-hover:text-cyan-700 dark:group-hover:text-cyan-300 transition-colors duration-200" />
+                    <p className="mt-2 text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-300 transition-colors duration-200">
+                      Nhấp để chọn hoặc kéo ảnh vào đây
+                    </p>
+                  </div>
+                )}
+                <input
+                  type="file"
+                  id="image"
+                  accept="image/*"
+                  onChange={handleFileChange}
+                  className="hidden"
+                />
+              </label>
+            </div>
+            {book.image && (
+              <p className="mt-2 text-sm text-gray-500 dark:text-gray-400 truncate transition-all duration-300 ease-in-out">
+                Đã chọn: {book.image.name}
+              </p>
+            )}
+          </div>
+
+          <button
+            type="submit"
+            className="w-full flex items-center justify-center gap-1.5 sm:gap-2 bg-gradient-to-r from-cyan-500 dark:from-cyan-400 to-blue-600 dark:to-blue-500 hover:from-cyan-600 dark:hover:from-cyan-500 hover:to-blue-700 dark:hover:to-blue-600 text-white font-semibold py-2 sm:py-3 rounded-lg sm:rounded-xl transition-all duration-300 shadow-md sm:shadow-lg hover:shadow-lg sm:hover:shadow-xl transform hover:-translate-y-0.5 sm:hover:-translate-y-1 text-xs sm:text-base"
+          >
+            <BookOpenIcon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
+            Tạo sách
+          </button>
+        </form>
       </div>
     </div>
   );
