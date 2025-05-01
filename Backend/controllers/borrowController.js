@@ -52,6 +52,18 @@ const borrowController = {
       const { bookId } = req.body;
       const userId = req.user.id;
 
+      const pendingPenalties = await Penalty.find({
+        userId,
+        status: 'pending',
+        amount: { $gt: 0 },
+      });
+
+      if (pendingPenalties.length > 0) {
+        return res.status(403).json({
+          message: "Bạn có khoản phạt chưa thanh toán. Vui lòng thanh toán trước khi mượn sách.",
+        });
+      }
+
       const existingRequest = await BorrowRequest.findOne({
         userId,
         bookId,
@@ -64,28 +76,26 @@ const borrowController = {
         });
       }
 
-      // Kiểm tra nếu đang có đơn mượn chưa hoàn tất
       const activeBorrow = await BorrowRecord.findOne({
         userId,
         bookId,
-        status: { $in: ["waiting_pickup", "borrowing"] },
+        status: { $in: ["waiting_pickup", "borrowing", "overdue"] },
       });
 
       if (activeBorrow) {
         return res.status(400).json({
           message:
-            "Bạn đang mượn hoặc đã thanh toán sách này. Không thể gửi yêu cầu mới.",
+            "Bạn đang mượn hoặc có đơn mượn chưa hoàn tất cho sách này. Không thể gửi yêu cầu mới.",
         });
       }
+
       const book = await Book.findById(bookId);
       if (!book) {
         return res.status(404).json({ message: "Không tìm thấy sách." });
       }
 
       if (book.quantity <= 0) {
-        return res
-          .status(400)
-          .json({ message: "Sách đã hết, không thể mượn." });
+        return res.status(400).json({ message: "Sách đã hết, không thể mượn." });
       }
 
       const request = new BorrowRequest({ userId, bookId, status: "pending" });
@@ -93,6 +103,7 @@ const borrowController = {
 
       res.status(201).json(savedRequest);
     } catch (err) {
+      console.error("Lỗi gửi yêu cầu mượn:", err);
       res.status(500).json({
         message: "Lỗi gửi yêu cầu mượn",
         error: err.message,
@@ -226,72 +237,74 @@ const borrowController = {
     try {
       let vnpParams = req.query;
       let secureHash = vnpParams["vnp_SecureHash"];
-
+  
       delete vnpParams["vnp_SecureHash"];
       delete vnpParams["vnp_SecureHashType"];
-
+  
       vnpParams = sortObject(vnpParams);
-
+  
       const querystring = require("qs");
       const crypto = require("crypto");
       let signData = querystring.stringify(vnpParams, { encode: false });
       let hmac = crypto.createHmac("sha512", vnpayConfig.vnp_HashSecret);
       let signed = hmac.update(Buffer.from(signData, "utf-8")).digest("hex");
-
+  
       if (secureHash !== signed) {
         return res.status(400).json({ message: "Chữ ký không hợp lệ" });
       }
-
+  
       const txnRef = vnpParams["vnp_TxnRef"];
       const responseCode = vnpParams["vnp_ResponseCode"];
-
+  
       const payment = await Payment.findOne({ vnpayTxnRef: txnRef });
       if (!payment) {
         return res.status(404).json({ message: "Không tìm thấy giao dịch" });
       }
-
+  
       if (responseCode === "00") {
         payment.status = "success";
-
-        const request = await BorrowRequest.findById(txnRef.split("_")[0]);
-        const book = await Book.findById(request.bookId);
-
-        const borrowRecord = new BorrowRecord({
-          userId: request.userId,
-          bookId: request.bookId,
-          borrowDate: new Date(),
-          dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-          status: "waiting_pickup",
-        });
-        await borrowRecord.save();
-
-        payment.borrowRecordId = borrowRecord._id;
         await payment.save();
-
-        request.status = "paid";
-        await request.save();
-
-        book.quantity -= 1;
-        book.sold = (book.sold || 0) + 1;
-        await book.save();
-
-        // res.status(200).json({
-        //   message: "Thanh toán VNPay thành công",
-        //   borrowRecord,
-        //   payment,
-        // });
-
+  
+        if (payment.paymentType === "penalty") {
+          const penalty = await Penalty.findById(payment.penaltyId);
+          if (penalty) {
+            penalty.paidAmount += payment.amount;
+            penalty.status = penalty.paidAmount >= penalty.amount ? 'paid' : 'pending';
+            await penalty.save();
+          }
+        } else if (payment.paymentType === "rental_fee") {
+          const request = await BorrowRequest.findById(txnRef.split("_")[0]);
+          const book = await Book.findById(request.bookId);
+  
+          const borrowRecord = new BorrowRecord({
+            userId: request.userId,
+            bookId: request.bookId,
+            borrowDate: new Date(),
+            dueDate: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
+            status: "waiting_pickup",
+          });
+          await borrowRecord.save();
+  
+          payment.borrowRecordId = borrowRecord._id;
+          await payment.save();
+  
+          request.status = "paid";
+          await request.save();
+  
+          book.quantity -= 1;
+          book.sold = (book.sold || 0) + 1;
+          await book.save();
+        }
+  
         res.redirect(`http://localhost:3000/payment-redirect?txnRef=${txnRef}`);
       } else {
         payment.status = "failed";
         await payment.save();
-        // res.status(400).json({ message: "Thanh toán thất bại" });
         res.redirect("http://localhost:3000/payment-failed");
       }
     } catch (err) {
-      res
-        .status(500)
-        .json({ message: "Lỗi xử lý callback", error: err.message });
+      console.error("Error in vnpayReturn:", err);
+      res.status(500).json({ message: "Lỗi xử lý callback", error: err.message });
     }
   },
 
@@ -325,58 +338,39 @@ const borrowController = {
     }
   },
 
-  // Trả sách + tính phạt nếu trễ
+  // Trả sách
   confirmReturn: async (req, res) => {
     try {
       const { borrowId } = req.params;
-
+  
       const record = await BorrowRecord.findById(borrowId);
       if (!record) {
         return res.status(404).json({ message: "Không tìm thấy đơn mượn." });
       }
-
-      if (record.status !== "borrowing") {
+  
+      if (record.status !== "borrowing" && record.status !== "overdue") {
         return res
           .status(400)
           .json({ message: "Trạng thái không hợp lệ để xác nhận trả sách." });
       }
-
+  
       const returnDate = new Date();
       record.returnDate = returnDate;
-
+      record.status = "returned";
+  
       const book = await Book.findById(record.bookId);
       if (book) {
         book.quantity += 1;
         await book.save();
       }
-
-      if (returnDate > record.dueDate) {
-        record.status = "overdue";
-
-        const delayDays = Math.ceil(
-          (returnDate - record.dueDate) / (1000 * 60 * 60 * 24)
-        );
-        const penaltyAmount = delayDays * 10000;
-
-        const penalty = new Penalty({
-          borrowRecordId: record._id,
-          amount: penaltyAmount,
-          code: uuidv4(),
-          dueAt: new Date(Date.now() + 7 * 24 * 60 * 60 * 1000),
-          status: "unpaid",
-        });
-
-        await penalty.save();
-      } else {
-        record.status = "returned";
-      }
-
+  
       await record.save();
-
+  
       res
         .status(200)
         .json({ message: "Đã xác nhận trả sách thành công", record });
     } catch (err) {
+      console.error(`Error in confirmReturn for borrowId: ${borrowId}`, err.stack);
       res
         .status(500)
         .json({ message: "Lỗi xác nhận trả sách", error: err.message });
@@ -389,32 +383,65 @@ const borrowController = {
       const { penaltyId } = req.params;
       const { method } = req.body;
       const userId = req.user.id;
-
+      const ipAddr = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+  
       const penalty = await Penalty.findById(penaltyId);
-      if (!penalty)
+      if (!penalty) {
         return res.status(404).json({ message: "Không tìm thấy mã phạt" });
-      if (penalty.status === "paid")
+      }
+      if (penalty.status === "paid") {
         return res.status(400).json({ message: "Đã thanh toán rồi" });
-
+      }
+      if (penalty.userId.toString() !== userId) {
+        return res.status(403).json({ message: "Không có quyền thanh toán khoản phạt này" });
+      }
+  
+      if (method !== "vnpay") {
+        return res.status(400).json({ message: "Chỉ hỗ trợ thanh toán qua VNPay" });
+      }
+  
+      const vnp_TxnRef = `${penaltyId}_${Date.now()}`;
+      const paymentData = {
+        amount: penalty.amount,
+        requestId: penaltyId,
+        vnp_TxnRef: vnp_TxnRef,
+      };
+      const vnpayUrl = createVnpayUrl(paymentData, ipAddr);
+  
       const payment = new Payment({
         userId,
         amount: penalty.amount,
         paymentType: "penalty",
         penaltyId: penalty._id,
         method,
-        status: "success",
+        status: "pending",
+        vnpayTxnRef: vnp_TxnRef,
       });
-
       await payment.save();
-      penalty.status = "paid";
-      await penalty.save();
-
-      res.status(200).json({ message: "Đã thanh toán phạt", payment });
+  
+      return res.status(200).json({
+        message: "Vui lòng hoàn tất thanh toán qua VNPay",
+        paymentUrl: vnpayUrl,
+        payment,
+      });
     } catch (err) {
+      console.error("Error in payPenalty:", err);
       res.status(500).json({ message: "Lỗi thanh toán", error: err.message });
     }
   },
 
+  getPenaltyByBorrow: async (req, res) => {
+    try {
+      const { borrowId } = req.params;
+      const penalty = await Penalty.findOne({ borrowRecordId: borrowId });
+      if (!penalty) {
+        return res.status(404).json({ message: "Không tìm thấy khoản phạt" });
+      }
+      res.status(200).json(penalty);
+    } catch (err) {
+      res.status(500).json({ message: "Lỗi khi lấy khoản phạt", error: err.message });
+    }
+  },
   // Danh sách đơn mượn cho admin
   getAllBorrowRecords: async (req, res) => {
     try {

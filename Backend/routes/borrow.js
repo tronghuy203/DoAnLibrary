@@ -18,6 +18,8 @@ router.put("/confirm-return/:borrowId", middlewareController.verifyToken, borrow
 
 router.post("/pay-penalty/:penaltyId", middlewareController.verifyToken, borrowController.payPenalty);
 
+router.get("/penalty/:borrowId", middlewareController.verifyToken, borrowController.getPenaltyByBorrow);
+
 router.get("/all", middlewareController.verifyAdmin, borrowController.getAllBorrowRecords);
 
 router.get("/check-payment-status", middlewareController.verifyToken, borrowController.checkPaymentStatus);

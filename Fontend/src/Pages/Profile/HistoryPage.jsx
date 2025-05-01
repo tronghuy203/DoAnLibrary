@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { createAxios } from "../../createInstance";
 import { loginSuccess } from "../../redux/authSlice";
 import { getBorrowHistory } from "../../redux/apiRequest";
-import { getPaymentHistory } from "../../redux/apiBorrow";
+import { getPaymentHistory, getPenaltyByBorrow, payPenalty } from "../../redux/apiBorrow";
 import {
   DocumentTextIcon,
   ClockIcon,
@@ -15,6 +15,7 @@ import {
   ExclamationTriangleIcon,
   Bars3Icon,
   CogIcon,
+  CurrencyDollarIcon,
 } from "@heroicons/react/24/outline";
 import Sidebar from "./Sidebar";
 
@@ -33,6 +34,7 @@ const HistoryPage = () => {
 
   const [borrowHistory, setBorrowHistory] = useState([]);
   const [paymentHistory, setPaymentHistory] = useState([]);
+  const [penalties, setPenalties] = useState({});
   const [loadingHistory, setLoadingHistory] = useState(false);
   const [error, setError] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
@@ -47,14 +49,28 @@ const HistoryPage = () => {
       setLoadingHistory(true);
       setError(null);
 
-      // Fetch borrow history
       const history = await getBorrowHistory(user._id, user.accessToken, axiosJWT);
-      console.log("Borrow History:", history);
       setBorrowHistory(Array.isArray(history) ? history : []);
 
-      // Fetch payment history
+      const penaltyPromises = history.map(async (record) => {
+        try {
+          const penalty = await getPenaltyByBorrow(record._id, user.accessToken, axiosJWT);
+          return { penaltyId: penalty._id, penalty, borrowId: record._id };
+        } catch (err) {
+          return { penaltyId: null, penalty: null, borrowId: record._id };
+        }
+      });
+      const penaltyResults = await Promise.all(penaltyPromises);
+      const penaltyMap = penaltyResults.reduce((acc, { penaltyId, penalty, borrowId }) => {
+        if (penalty && penaltyId) {
+          acc[penaltyId] = penalty; 
+          acc[borrowId] = penalty; 
+        }
+        return acc;
+      }, {});
+      setPenalties(penaltyMap);
+
       const paymentHistoryData = await getPaymentHistory(user._id, user.accessToken, axiosJWT);
-      console.log("Payment History:", paymentHistoryData);
       setPaymentHistory(Array.isArray(paymentHistoryData) ? paymentHistoryData : []);
     } catch (err) {
       console.error("API Error:", err);
@@ -72,10 +88,59 @@ const HistoryPage = () => {
     fetchData();
   }, [user, fetchData, navigate]);
 
+  const handlePayPenalty = async (penaltyId, method) => {
+    console.log("handlePayPenalty called with:", { penaltyId, method });
+    if (!penaltyId || !penalties[penaltyId]) {
+      console.error("Penalty not found:", { penaltyId, penalties });
+      setError("Không tìm thấy khoản phạt để thanh toán.");
+      return;
+    }
+    if (method !== "vnpay") {
+      setError("Phương thức thanh toán không được hỗ trợ.");
+      return;
+    }
+    try {
+      const res = await payPenalty(penaltyId, method, user.accessToken, dispatch, axiosJWT);
+      console.log("PayPenalty Response:", res);
+
+      if (res.paymentUrl) {
+        console.log("Redirecting to VNPay:", res.paymentUrl);
+        window.location.href = res.paymentUrl;
+      } else {
+        throw new Error("Không nhận được URL thanh toán từ VNPay.");
+      }
+
+      await fetchData();
+    } catch (err) {
+      const errorMessage = err.response?.data?.message || err.message || "Thanh toán thất bại. Vui lòng thử lại.";
+      console.error("Payment Error:", {
+        penaltyId,
+        method,
+        message: err.message,
+        response: err.response?.data,
+      });
+      setError(errorMessage);
+    }
+  };
+
   const shortenTxnRef = (txnRef) => {
     if (!txnRef) return "N/A";
     if (txnRef.length <= 18) return txnRef;
     return `${txnRef.slice(0, 7)}...${txnRef.slice(-5)}`;
+  };
+
+  const getStatusDisplay = (status, returnDate) => {
+    if (returnDate) return { text: "Đã trả", icon: <CheckCircleIcon className="h-5 w-5" /> };
+    switch (status) {
+      case "borrowing":
+        return { text: "Đang mượn", icon: <BookOpenIcon className="h-5 w-5" /> };
+      case "overdue":
+        return { text: "Quá hạn", icon: <ExclamationTriangleIcon className="h-5 w-5" /> };
+      case "waiting_pickup":
+        return { text: "Chờ nhận", icon: <ClockIcon className="h-5 w-5" /> };
+      default:
+        return { text: status, icon: null };
+    }
   };
 
   return (
@@ -131,155 +196,208 @@ const HistoryPage = () => {
                     <table className="w-full text-left text-gray-900 dark:text-white">
                       <thead className="text-xs text-gray-700 dark:text-gray-300 uppercase bg-gray-100 dark:bg-gray-700">
                         <tr>
-                          <th className="px-4 py-3">Tên sách</th>
+                          <th className="px-6 py-3">Tên sách</th>
                           <th className="px-4 py-3">Ngày mượn</th>
                           <th className="px-4 py-3">Hạn trả</th>
                           <th className="px-4 py-3">Ngày trả</th>
                           <th className="px-4 py-3">Trạng thái</th>
+                          <th className="px-4 py-3">Phạt</th>
+                          <th className="px-4 py-3">Hành động</th>
                           <th className="px-4 py-3">Xác nhận</th>
                         </tr>
                       </thead>
                       <tbody>
-                        {borrowHistory.map((record, index) => (
-                          <tr
-                            key={record._id || index}
-                            className={`${
-                              index % 2 === 0
-                                ? "bg-white dark:bg-gray-800"
-                                : "bg-gray-50 dark:bg-gray-700"
-                            } hover:bg-gray-100 dark:hover:bg-gray-600 transition-all duration-200`}
-                          >
-                            <td className="px-4 py-3">{record.bookId?.title || "N/A"}</td>
-                            <td className="px-4 py-3">
-                              {record.borrowDate
-                                ? new Date(record.borrowDate).toLocaleDateString("vi-VN")
-                                : "N/A"}
-                            </td>
-                            <td className="px-4 py-3">
-                              {record.dueDate
-                                ? new Date(record.dueDate).toLocaleDateString("vi-VN")
-                                : "N/A"}
-                            </td>
-                            <td className="px-4 py-3">
-                              {record.returnDate
-                                ? new Date(record.returnDate).toLocaleDateString("vi-VN")
-                                : "Chưa trả"}
-                            </td>
-                            <td className="px-4 py-3">
-                              <span
-                                className={`px-3 py-1 rounded-full text-xs font-medium flex items-center gap-2 ${
-                                  record.status === "returned"
-                                    ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
-                                    : record.status === "borrowing"
-                                    ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
-                                    : record.status === "waiting_pickup"
-                                    ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
-                                    : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
-                                }`}
-                              >
-                                {record.status === "returned" ? (
-                                  <CheckCircleIcon className="h-5 w-5" />
-                                ) : record.status === "borrowing" ? (
-                                  <BookOpenIcon className="h-5 w-5" />
-                                ) : record.status === "waiting_pickup" ? (
-                                  <ClockIcon className="h-5 w-5" />
+                        {borrowHistory.map((record, index) => {
+                          const statusDisplay = getStatusDisplay(record.status, record.returnDate);
+                          const penalty = penalties[record._id];
+                          return (
+                            <tr
+                              key={record._id || index}
+                              className={`${
+                                index % 2 === 0
+                                  ? "bg-white dark:bg-gray-800"
+                                  : "bg-gray-50 dark:bg-gray-700"
+                              } hover:bg-gray-100 dark:hover:bg-gray-600 transition-all duration-200`}
+                            >
+                              <td className="px-4 py-3">{record.bookId?.title || "N/A"}</td>
+                              <td className="px-4 py-3">
+                                {record.borrowDate
+                                  ? new Date(record.borrowDate).toLocaleDateString("vi-VN")
+                                  : "N/A"}
+                              </td>
+                              <td className="px-4 py-3">
+                                {record.dueDate
+                                  ? new Date(record.dueDate).toLocaleDateString("vi-VN")
+                                  : "N/A"}
+                              </td>
+                              <td className="px-4 py-3">
+                                {record.returnDate
+                                  ? new Date(record.returnDate).toLocaleDateString("vi-VN")
+                                  : "Chưa trả"}
+                              </td>
+                              <td className="px-4 py-3">
+                                <span
+                                  className={`px-3 py-1 rounded-full text-xs font-medium flex items-center gap-2 ${
+                                    record.status === "overdue"
+                                      ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+                                      : record.status === "borrowing"
+                                      ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+                                      : record.status === "waiting_pickup"
+                                      ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
+                                      : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+                                  }`}
+                                >
+                                  {statusDisplay.icon}
+                                  {statusDisplay.text}
+                                </span>
+                              </td>
+                              <td className="px-4 py-3">
+                                {penalty ? (
+                                  <span
+                                    className={`px-3 py-1 rounded-full text-xs font-medium flex items-center gap-2 ${
+                                      penalty.status === "pending"
+                                        ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+                                        : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+                                    }`}
+                                  >
+                                    <CurrencyDollarIcon className="h-5 w-5" />
+                                    {penalty.amount.toLocaleString("vi-VN")} ₫
+                                    <span>({penalty.status === "pending" ? "Chưa trả" : "Đã trả"})</span>
+                                  </span>
                                 ) : (
-                                  <ExclamationTriangleIcon className="h-5 w-5" />
+                                  "Không có"
                                 )}
-                                {record.status === "returned"
-                                  ? "Đã trả"
-                                  : record.status === "borrowing"
-                                  ? "Đang mượn"
-                                  : record.status === "waiting_pickup"
-                                  ? "Chờ nhận"
-                                  : "Quá hạn"}
-                              </span>
-                            </td>
-                            <td className="px-4 py-3">
-                              <span
-                                className={`px-3 py-1 rounded-full text-xs font-medium flex items-center gap-2 ${
-                                  record.adminConfirmed
-                                    ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
-                                    : "bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-300"
-                                }`}
-                              >
-                                {record.adminConfirmed ? (
-                                  <CheckCircleIcon className="h-5 w-5" />
-                                ) : (
-                                  <XCircleIcon className="h-5 w-5" />
+                              </td>
+                              <td className="px-4 py-3">
+                                {penalty && penalty.status === "pending" && (
+                                  <button
+                                    onClick={() => handlePayPenalty(penalty._id, "vnpay")}
+                                    className="bg-blue-500 dark:bg-blue-400 hover:bg-blue-600 dark:hover:bg-blue-500 text-white font-semibold py-1 px-3 rounded-md transition-all duration-200 hover:shadow-md flex items-center gap-1 text-sm"
+                                  >
+                                    <CreditCardIcon className="w-4 h-4" />
+                                    Thanh toán (VNPay)
+                                  </button>
                                 )}
-                                {record.adminConfirmed ? "Đã xác nhận" : "Chưa xác nhận"}
-                              </span>
-                            </td>
-                          </tr>
-                        ))}
+                              </td>
+                              <td className="px-4 py-3">
+                                <span
+                                  className={`px-3 py-1 rounded-full text-xs font-medium flex items-center gap-2 ${
+                                    record.adminConfirmed
+                                      ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+                                      : "bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-300"
+                                  }`}
+                                >
+                                  {record.adminConfirmed ? (
+                                    <CheckCircleIcon className="h-5 w-5" />
+                                  ) : (
+                                    <XCircleIcon className="h-5 w-5" />
+                                  )}
+                                  {record.adminConfirmed ? "Đã xác nhận" : "Chưa xác nhận"}
+                                </span>
+                              </td>
+                            </tr>
+                          );
+                        })}
                       </tbody>
                     </table>
                   </div>
                   <div className="md:hidden space-y-4">
-                    {borrowHistory.map((record, index) => (
-                      <div
-                        key={record._id || index}
-                        className="bg-gray-50 dark:bg-gray-700 p-4 rounded-xl shadow-sm"
-                      >
-                        <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                          <span className="font-medium">Tên sách:</span>{" "}
-                          {record.bookId?.title || "N/A"}
-                        </p>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">
-                          <span className="font-medium">Ngày mượn:</span>{" "}
-                          {record.borrowDate
-                            ? new Date(record.borrowDate).toLocaleDateString("vi-VN")
-                            : "N/A"}
-                        </p>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">
-                          <span className="font-medium">Hạn trả:</span>{" "}
-                          {record.dueDate
-                            ? new Date(record.dueDate).toLocaleDateString("vi-VN")
-                            : "N/A"}
-                        </p>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">
-                          <span className="font-medium">Ngày trả:</span>{" "}
-                          {record.returnDate
-                            ? new Date(record.returnDate).toLocaleDateString("vi-VN")
-                            : "Chưa trả"}
-                        </p>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">
-                          <span className="font-medium">Trạng thái:</span>{" "}
-                          <span
-                            className={`inline-flex items-center gap-2 px-2 py-1 rounded-full text-xs font-medium ${
-                              record.status === "returned"
-                                ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
-                                : record.status === "borrowing"
-                                ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
-                                : record.status === "waiting_pickup"
-                                ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
-                                : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
-                            }`}
-                          >
-                            {record.status === "returned"
-                              ? "Đã trả"
-                              : record.status === "borrowing"
-                              ? "Đang mượn"
-                              : record.status === "waiting_pickup"
-                              ? "Chờ nhận"
-                              : "Quá hạn"}
-                          </span>
-                        </p>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">
-                          <span className="font-medium">Xác nhận:</span>{" "}
-                          <span
-                            className={`inline-flex items-center gap-2 px-2 py-1 rounded-full text-xs font-medium ${
-                              record.adminConfirmed
-                                ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
-                                : "bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-300"
-                            }`}
-                          >
-                            {record.adminConfirmed ? "Đã xác nhận" : "Chưa xác nhận"}
-                          </span>
-                        </p>
-                      </div>
-                    ))}
+                    {borrowHistory.map((record, index) => {
+                      const statusDisplay = getStatusDisplay(record.status, record.returnDate);
+                      const penalty = penalties[record._id];
+                      return (
+                        <div
+                          key={record._id || index}
+                          className="bg-gray-50 dark:bg-gray-700 p-4 rounded-xl shadow-sm"
+                        >
+                          <p className="text-sm font-semibold text-gray-900 dark:text-white">
+                            <span className="font-medium">Tên sách:</span>{" "}
+                            {record.bookId?.title || "N/A"}
+                          </p>
+                          <p className="text-sm text-gray-600 dark:text-gray-300">
+                            <span className="font-medium">Ngày mượn:</span>{" "}
+                            {record.borrowDate
+                              ? new Date(record.borrowDate).toLocaleDateString("vi-VN")
+                              : "N/A"}
+                          </p>
+                          <p className="text-sm text-gray-600 dark:text-gray-300">
+                            <span className="font-medium">Hạn trả:</span>{" "}
+                            {record.dueDate
+                              ? new Date(record.dueDate).toLocaleDateString("vi-VN")
+                              : "N/A"}
+                          </p>
+                          <p className="text-sm text-gray-600 dark:text-gray-300">
+                            <span className="font-medium">Ngày trả:</span>{" "}
+                            {record.returnDate
+                              ? new Date(record.returnDate).toLocaleDateString("vi-VN")
+                              : "Chưa trả"}
+                          </p>
+                          <p className="text-sm text-gray-600 dark:text-gray-300">
+                            <span className="font-medium">Trạng thái:</span>{" "}
+                            <span
+                              className={`inline-flex items-center gap-2 px-2 py-1 rounded-full text-xs font-medium ${
+                                record.status === "overdue"
+                                  ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+                                  : record.status === "borrowing"
+                                  ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+                                  : record.status === "waiting_pickup"
+                                  ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
+                                  : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+                              }`}
+                            >
+                              {statusDisplay.icon}
+                              {statusDisplay.text}
+                            </span>
+                          </p>
+                          <p className="text-sm text-gray-600 dark:text-gray-300">
+                            <span className="font-medium">Phạt:</span>{" "}
+                            {penalty ? (
+                              <span
+                                className={`inline-flex items-center gap-2 px-2 py-1 rounded-full text-xs font-medium ${
+                                  penalty.status === "pending"
+                                    ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+                                    : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+                                }`}
+                              >
+                                <CurrencyDollarIcon className="h-4 w-4" />
+                                {penalty.amount.toLocaleString("vi-VN")} ₫
+                                <span>({penalty.status === "pending" ? "Chưa trả" : "Đã trả"})</span>
+                              </span>
+                            ) : (
+                              "Không có"
+                            )}
+                          </p>
+                          {penalty && penalty.status === "pending" && (
+                            <div className="mt-2">
+                              <button
+                                onClick={() => handlePayPenalty(penalty._id, "vnpay")}
+                                className="bg-blue-500 dark:bg-blue-400 hover:bg-blue-600 dark:hover:bg-blue-500 text-white font-semibold py-1 px-3 rounded-md transition-all duration-200 hover:shadow-md flex items-center gap-1 text-sm"
+                              >
+                                <CreditCardIcon className="w-4 h-4" />
+                                Thanh toán (VNPay)
+                              </button>
+                            </div>
+                          )}
+                          <p className="text-sm text-gray-600 dark:text-gray-300">
+                            <span className="font-medium">Xác nhận:</span>{" "}
+                            <span
+                              className={`inline-flex items-center gap-2 px-2 py-1 rounded-full text-xs font-medium ${
+                                record.adminConfirmed
+                                  ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+                                  : "bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-300"
+                              }`}
+                            >
+                              {record.adminConfirmed ? (
+                                <CheckCircleIcon className="h-5 w-5" />
+                              ) : (
+                                <XCircleIcon className="h-5 w-5" />
+                              )}
+                              {record.adminConfirmed ? "Đã xác nhận" : "Chưa xác nhận"}
+                            </span>
+                          </p>
+                        </div>
+                      );
+                    })}
                   </div>
                 </>
               )}
@@ -331,11 +449,7 @@ const HistoryPage = () => {
                               {payment.amount ? payment.amount.toLocaleString("vi-VN") : "N/A"} ₫
                             </td>
                             <td className="px-4 py-3">
-                              {payment.method === "cash"
-                                ? "Tiền mặt"
-                                : payment.method === "vnpay"
-                                ? "Thẻ ngân hàng"
-                                : "N/A"}
+                              {payment.method === "vnpay" ? "Thẻ ngân hàng" : "N/A"}
                             </td>
                             <td className="px-4 py-3">
                               <span
@@ -382,11 +496,7 @@ const HistoryPage = () => {
                         </p>
                         <p className="text-sm text-gray-600 dark:text-gray-300">
                           <span className="font-medium">Phương thức:</span>{" "}
-                          {payment.method === "cash"
-                            ? "Tiền mặt"
-                            : payment.method === "vnpay"
-                            ? "Thẻ ngân hàng"
-                            : "N/A"}
+                          {payment.method === "vnpay" ? "Thẻ ngân hàng" : "N/A"}
                         </p>
                         <p className="text-sm text-gray-600 dark:text-gray-300">
                           <span className="font-medium">Trạng thái:</span>{" "}

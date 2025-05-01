@@ -317,7 +317,7 @@ const AdminLayout = () => {
                         onClick={handleMenuClick}
                       >
                         <BookOpenIcon className="w-5 h-5" />
-                        <span>Book</span>
+                        <span>Sách</span>
                       </Link>
                     </li>
                     <li>
@@ -331,7 +331,7 @@ const AdminLayout = () => {
                         onClick={handleMenuClick}
                       >
                         <DocumentTextIcon className="w-5 h-5" />
-                        <span>Document</span>
+                        <span>Tài liệu</span>
                       </Link>
                     </li>
                   </ul>
