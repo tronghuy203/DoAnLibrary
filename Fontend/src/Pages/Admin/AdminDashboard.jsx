@@ -5,10 +5,12 @@ import { UserGroupIcon, BookOpenIcon, ClockIcon } from "@heroicons/react/24/outl
 import { getAllBooks } from "../../redux/apiBooks";
 import { getAllUsers } from "../../redux/apiRequest";
 import { getAllBorrowRecords, getTotalRevenue, getDailyRevenue } from "../../redux/apiBorrow";
+import { getRevenueByType } from "../../redux/apiPayment";
 import { createAxios } from "../../createInstance";
-import { Bar } from "react-chartjs-2";
+import { Pie } from "react-chartjs-2";
 import {
   Chart as ChartJS,
+  ArcElement,
   CategoryScale,
   LinearScale,
   BarElement,
@@ -18,7 +20,7 @@ import {
 } from "chart.js";
 import { loginSuccess } from "../../redux/authSlice";
 
-ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
+ChartJS.register(ArcElement, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
 const AdminDashboard = () => {
   const dispatch = useDispatch();
@@ -27,6 +29,7 @@ const AdminDashboard = () => {
   const { allBooks, isFetching: booksFetching } = useSelector((state) => state.books);
   const usersState = useSelector((state) => state.users);
   const { borrowRecords, isFetching: borrowsFetching } = useSelector((state) => state.borrow);
+  const { revenueByType, isFetching: paymentFetching, error: paymentError } = useSelector((state) => state.payment);
 
   const allUsers = usersState?.users?.allUsers || [];
   const usersFetching = usersState?.users?.isFetching || false;
@@ -66,6 +69,8 @@ const AdminDashboard = () => {
       getAllBorrowRecords(user.accessToken, dispatch, axiosJWT);
       getTotalRevenue(user.accessToken, dispatch, axiosJWT);
       getDailyRevenue(user.accessToken, dispatch, axiosJWT);
+      getRevenueByType(user.accessToken, dispatch, axiosJWT)()
+        .catch((err) => console.error("Failed to fetch revenue by type:", err));
     }
   }, [dispatch, user?.accessToken, axiosJWT]);
 
@@ -114,7 +119,7 @@ const AdminDashboard = () => {
     }
   }, [borrowRecords, allUsers]);
 
-  if (booksFetching || usersFetching || borrowsFetching) {
+  if (booksFetching || usersFetching || borrowsFetching || paymentFetching) {
     return (
       <div className="min-h-screen bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 p-6 lg:p-8 animate-pulse transition-all duration-300 ease-in-out">
         <p className="text-xl text-gray-500 dark:text-gray-400">Đang tải dữ liệu...</p>
@@ -122,14 +127,33 @@ const AdminDashboard = () => {
     );
   }
 
+  if (paymentError) {
+    return (
+      <div className="min-h-screen bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 p-6 lg:p-8">
+        <p className="text-xl text-red-500 dark:text-red-400">Lỗi khi tải dữ liệu doanh thu: {paymentError}</p>
+      </div>
+    );
+  }
+
+  const hasRevenueData =
+    revenueByType.rental_fee > 0 || revenueByType.penalty > 0 || revenueByType.membership > 0;
+
   const chartData = {
-    labels: ["Mon", "Tue", "Wed", "Thu", "Fri", "Sat", "Sun"],
+    labels: ["Phí mượn sách", "Phí phạt", "Gói thành viên"],
     datasets: [
       {
-        label: "Người dùng hoạt động",
-        data: [24, 32, 20, 28, 36, 16, 24],
-        backgroundColor: isDarkMode ? "rgba(59, 130, 246, 0.5)" : "rgba(37, 99, 235, 0.5)",
-        borderColor: isDarkMode ? "rgba(59, 130, 246, 1)" : "rgba(37, 99, 235, 1)",
+        label: "Doanh thu (VNĐ)",
+        data: [revenueByType.rental_fee, revenueByType.penalty, revenueByType.membership],
+        backgroundColor: [
+          isDarkMode ? "rgba(59, 130, 246, 0.5)" : "rgba(37, 99, 235, 0.5)",
+          isDarkMode ? "rgba(239, 68, 68, 0.5)" : "rgba(220, 38, 38, 0.5)",
+          isDarkMode ? "rgba(236, 72, 153, 0.5)" : "rgba(219, 39, 119, 0.5)",
+        ],
+        borderColor: [
+          isDarkMode ? "rgba(59, 130, 246, 1)" : "rgba(37, 99, 235, 1)",
+          isDarkMode ? "rgba(239, 68, 68, 1)" : "rgba(220, 38, 38, 1)",
+          isDarkMode ? "rgba(236, 72, 153, 1)" : "rgba(219, 39, 119, 1)",
+        ],
         borderWidth: 1,
       },
     ],
@@ -139,31 +163,26 @@ const AdminDashboard = () => {
     responsive: true,
     plugins: {
       legend: {
+        position: "top",
         labels: {
           color: isDarkMode ? "#e5e7eb" : "#1f2937",
         },
       },
       title: {
         display: true,
-        text: "Người dùng hoạt động (7 ngày qua)",
+        text: "Phân bổ doanh thu",
         color: isDarkMode ? "#e5e7eb" : "#1f2937",
-      },
-    },
-    scales: {
-      x: {
-        ticks: {
-          color: isDarkMode ? "#9ca3af" : "#6b7280",
-        },
-        grid: {
-          color: isDarkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
+        font: {
+          size: 18,
         },
       },
-      y: {
-        ticks: {
-          color: isDarkMode ? "#9ca3af" : "#6b7280",
-        },
-        grid: {
-          color: isDarkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
+      tooltip: {
+        callbacks: {
+          label: (context) => {
+            const label = context.label || "";
+            const value = context.raw || 0;
+            return `${label}: ${value.toLocaleString("vi-VN")} VNĐ`;
+          },
         },
       },
     },
@@ -235,10 +254,16 @@ const AdminDashboard = () => {
         </h3>
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg transition-all duration-300 ease-in-out">
-            <h4 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4">
-              Người dùng hoạt động (7 ngày qua)
+            <h4 className=" text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4">
+              Phân bổ doanh thu
             </h4>
-            <Bar data={chartData} options={chartOptions} />
+            {hasRevenueData ? (
+                <Pie data={chartData} options={chartOptions} />
+            ) : (
+              <p className="text-gray-500 dark:text-gray-400 text-center">
+                Chưa có dữ liệu doanh thu để hiển thị
+              </p>
+            )}
           </div>
 
           <div className="space-y-4">

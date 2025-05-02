@@ -11,10 +11,11 @@ const documentRoute = require("./routes/document");
 const reviewRoute = require("./routes/review");
 const borrowRoute = require("./routes/borrow");
 const membershipRoute = require("./routes/membership");
+const paymentRoute = require("./routes/payment");
 const chatRoute = require("./routes/chat");
+const chatbotRoute = require("./routes/chatbot");
 const Chat = require("./models/Chat");
 const Message = require("./models/Message");
-const User = require("./models/User");
 const path = require("path");
 const http = require("http");
 const { Server } = require("socket.io");
@@ -52,7 +53,9 @@ app.use("/v1/documents", documentRoute);
 app.use("/v1/reviews", reviewRoute);
 app.use("/v1/borrow", borrowRoute);
 app.use("/v1/membership", membershipRoute);
+app.use("/v1/payment", paymentRoute);
 app.use("/v1/chat", chatRoute);
+app.use("/v1/chatbot", chatbotRoute);
 
 io.on("connection", (socket) => {
     console.log("A user connected:", socket.id);

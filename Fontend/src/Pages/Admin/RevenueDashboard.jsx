@@ -33,13 +33,15 @@ const RevenueDashboard = () => {
     }
   }, [user, dispatch, axiosJWT]);
 
+  const recentDailyRevenue = useMemo(() => dailyRevenue?.slice(-7) || [], [dailyRevenue]);
+
   const chartData = useMemo(
     () => ({
-      labels: dailyRevenue?.map((item) => item._id) || [],
+      labels: recentDailyRevenue.map((item) => item._id) || [],
       datasets: [
         {
           label: "Doanh thu theo ngày (VNĐ)",
-          data: dailyRevenue?.map((item) => item.totalRevenue) || [],
+          data: recentDailyRevenue.map((item) => item.totalRevenue) || [],
           backgroundColor: "rgba(34, 197, 94, 0.6)",
           borderColor: "rgba(34, 197, 94, 1)",
           borderWidth: 1,
@@ -47,7 +49,7 @@ const RevenueDashboard = () => {
         },
       ],
     }),
-    [dailyRevenue]
+    [recentDailyRevenue]
   );
 
   const chartOptions = {
@@ -76,10 +78,10 @@ const RevenueDashboard = () => {
       x: {
         ticks: {
           color: (context) => (context.chart.canvas.closest(".dark") ? "#e5e7eb" : "#374151"),
-          maxRotation: window.innerWidth < 640 ? 45 : 0, // Xoay nhãn trên mobile
+          maxRotation: window.innerWidth < 640 ? 45 : 0,
           minRotation: window.innerWidth < 640 ? 45 : 0,
           font: {
-            size: window.innerWidth < 640 ? 10 : 12, // Giảm kích thước chữ trên mobile
+            size: window.innerWidth < 640 ? 10 : 12,
           },
         },
         grid: {
@@ -91,7 +93,7 @@ const RevenueDashboard = () => {
         ticks: {
           color: (context) => (context.chart.canvas.closest(".dark") ? "#e5e7eb" : "#374151"),
           font: {
-            size: window.innerWidth < 640 ? 10 : 12, // Giảm kích thước chữ trên mobile
+            size: window.innerWidth < 640 ? 10 : 12,
           },
         },
         grid: {
@@ -168,7 +170,7 @@ const RevenueDashboard = () => {
               </h3>
             </div>
 
-            {dailyRevenue?.length > 0 ? (
+            {recentDailyRevenue.length > 0 ? (
               <div className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-md rounded-3xl p-4 sm:p-6 shadow-2xl border border-gray-200/50 dark:border-gray-700/50 transform transition-all duration-300 hover:shadow-[0_0_30px_rgba(0,255,255,0.2)] animate-slide-up">
                 <h3 className="text-lg sm:text-xl lg:text-2xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
                   Biểu đồ doanh thu 7 ngày gần đây
