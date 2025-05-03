@@ -1,14 +1,5 @@
 import { sendChatMessageStart, sendChatMessageSuccess, sendChatMessageFailed, fetchChatHistoryStart, fetchChatHistorySuccess, fetchChatHistoryFailed } from "./chatbotSlice";
 
-const deepClone = (obj) => {
-  try {
-    return JSON.parse(JSON.stringify(obj));
-  } catch (err) {
-    console.error("Lỗi khi sao chép sâu:", err);
-    return {};
-  }
-};
-
 export const sendChatMessage = async (message, userId, accessToken, dispatch, axiosJWT) => {
   dispatch(sendChatMessageStart());
   try {
@@ -17,21 +8,21 @@ export const sendChatMessage = async (message, userId, accessToken, dispatch, ax
       { message, userId },
       {
         headers: { token: `Bearer ${accessToken}` },
+        timeout: 15000, 
       }
     );
 
-    const clonedData = deepClone(res.data);
     dispatch(
       sendChatMessageSuccess({
         userId,
         message,
-        reply: clonedData.reply || "Danh sách sách và tài liệu phù hợp đã được tìm thấy.",
-        recommendations: clonedData.recommendations || {},
+        reply: res.data.reply || "Danh sách sách và tài liệu phù hợp đã được tìm thấy.",
+        recommendations: res.data.recommendations || {},
       })
     );
-    return clonedData;
+    return res.data;
   } catch (err) {
-    const errorMessage = err.response?.data?.message || "Lỗi khi gửi tin nhắn";
+    const errorMessage = err.response?.data?.message || err.message || "Lỗi khi gửi tin nhắn";
     dispatch(sendChatMessageFailed(errorMessage));
     console.error("Lỗi khi gửi tin nhắn:", err);
     throw new Error(errorMessage);
@@ -46,14 +37,14 @@ export const fetchChatHistory = async (userId, accessToken, dispatch, axiosJWT) 
       { userId },
       {
         headers: { token: `Bearer ${accessToken}` },
+        timeout: 15000,
       }
     );
 
-    const sanitizedData = deepClone(res.data);
-    dispatch(fetchChatHistorySuccess(sanitizedData));
-    return sanitizedData;
+    dispatch(fetchChatHistorySuccess(res.data));
+    return res.data;
   } catch (err) {
-    const errorMessage = err.response?.data?.message || "Lỗi khi lấy lịch sử trò chuyện";
+    const errorMessage = err.response?.data?.message || err.message || "Lỗi khi lấy lịch sử trò chuyện";
     dispatch(fetchChatHistoryFailed(errorMessage));
     console.error("Lỗi khi lấy lịch sử:", err);
     throw new Error(errorMessage);

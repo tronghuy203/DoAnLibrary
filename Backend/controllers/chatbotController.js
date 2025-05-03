@@ -1,80 +1,129 @@
-const Book = require('../models/Book');
-const Document = require('../models/Document');
-const Review = require('../models/Review');
-const ChatHistory = require('../models/Chatbot');
-const { OpenAI } = require('openai');
+require("dotenv").config();
+const axios = require("axios");
+const ChatHistory = require("../models/Chatbot");
+const Book = require("../models/Book");
+const Document = require("../models/Document");
+const Review = require("../models/Review");
 
-const openai = new OpenAI({ apiKey: process.env.OPENAI_API_KEY });
-
-function escapeRegex(text) {
-  return text.replace(/[-[\]{}()*+?.,\\^$|#\s]/g, '\\$&');
-}
+const CHATBOT_SYSTEM = `
+Bạn là trợ lý ảo thư viện, trả lời các câu hỏi của người dùng về sách và tài liệu.
+Luôn trả lời bằng tiếng Việt, ngắn gọn và rõ ràng.
+`;
 
 const chatbotController = {
   handleChat: async (req, res) => {
+    const startTime = Date.now();
     try {
       const { message, userId } = req.body;
-
-      if (!message || typeof message !== 'string' || message.trim() === '') {
-        return res.status(400).json({ message: 'Vui lòng nhập câu hỏi hoặc yêu cầu hợp lệ' });
+      if (!message || !message.trim()) {
+        return res
+          .status(400)
+          .json({ message: "Vui lòng nhập câu hỏi hợp lệ." });
       }
 
-      const books = await searchBooks(message);
-      const documents = await searchDocuments(message, userId);
-      const recommendations = await getRecommendations(books, documents);
+      const books = await Book.find({}).populate('category').lean().limit(5);
+      const docs = await Document.find({ status: "approved" }).lean().limit(5);
+      const reviews = await Review.find({})
+        .sort({ createdAt: -1 })
+        .limit(5)
+        .populate("userId", "username")
+        .lean();
 
-      let reply = '';
-      if (!recommendations.books.length && !recommendations.documents.length) {
-        reply = 'Không tìm thấy sách hoặc tài liệu phù hợp với yêu cầu của bạn.';
-        await ChatHistory.create({
-          userId,
-          question: message,
-          response: reply,
-          recommendations
-        });
-        return res.status(200).json({ reply, recommendations });
-      }
+      const reviewData = await Promise.all(
+        reviews.map(async (r) => {
+          let itemTitle = "";
+          if (r.type === "book") {
+            const book = await Book.findById(r.itemId).lean();
+            itemTitle = book?.title || "Không rõ";
+          } else if (r.type === "document") {
+            const doc = await Document.findById(r.itemId).lean();
+            itemTitle = doc?.title || "Không rõ";
+          }
+          return {
+            username: r.userId.username,
+            comment: r.comment,
+            rating: r.rating,
+            itemTitle,
+            type: r.type,
+          };
+        })
+      );
 
-      const prompt = createPrompt(message, recommendations);
-      try {
-        console.log('Gọi API OpenAI với prompt:', prompt);
-        const response = await openai.chat.completions.create({
-          model: 'gpt-3.5-turbo',
-          messages: [
-            { role: 'system', content: 'Bạn là một trợ lý thư viện thông minh, giúp người dùng tìm sách và tài liệu. Hãy trả lời bằng tiếng Việt, thân thiện và tự nhiên.' },
-            { role: 'user', content: prompt },
+      const topRated = reviewData.filter((r) => r.rating >= 4);
+
+      const context = [
+       `Danh sách sách:\n${books
+          .map(
+            (b) =>
+              `- Tên: ${b.title}\n  Tác giả: ${b.author}\n  Năm: ${b.publishedYear}\n  Mô tả: ${b.description || "Không có"}\n  Giá: ${b.price || "Không rõ"} VND\n  Còn lại: ${b.quantity - b.sold} cuốn\n  Danh mục: ${b.category?.name || "Không có"}`
+          )
+          .join("\n")}`,
+        `Danh sách tài liệu:\n${docs.map((d) => `-Tên ${d.title} \n Mô tả: ${d.description} || "Không có"`)
+          .join("\n")}`,
+        `Các đánh giá gần đây:\n${reviewData
+          .map(
+            (r) =>
+              `${r.username} đánh giá ${
+                r.type === "book" ? "sách" : "tài liệu"
+              } "${r.itemTitle}" ${r.rating} sao: "${r.comment}"`
+          )
+          .join("\n")}`,
+        topRated.length > 0
+          ? `${topRated
+              .map((r) => `"${r.itemTitle}" (${r.rating} sao)`)
+              .join("\n")}`
+          : "",
+      ].join("\n");
+      
+
+      const geminiRes = await axios.post(
+        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
+        {
+          contents: [
+            {
+              parts: [
+                {
+                  text: CHATBOT_SYSTEM + "\n" + context + "\n" + message,
+                },
+              ],
+            },
           ],
-          max_tokens: 200,
-        });
-
-        reply = response.choices[0].message.content || `Dưới đây là một số sách và tài liệu phù hợp với yêu cầu "${message}":`;
-
-        await ChatHistory.create({
-          userId,
-          question: message,
-          response: reply,
-          recommendations
-        });
-
-        res.status(200).json({ reply, recommendations });
-      } catch (apiErr) {
-        console.error('Lỗi OpenAI:', apiErr.message, apiErr.status);
-        if (apiErr.status === 429) {
-          reply = `Hệ thống OpenAI đang quá tải. Dưới đây là một số sách và tài liệu phù hợp với yêu cầu "${message}":`;
-        } else {
-          reply = `Có lỗi khi xử lý yêu cầu. Dưới đây là một số sách và tài liệu phù hợp với "${message}":`;
+        },
+        {
+          params: { key: process.env.GEMINI_API_KEY },
+          headers: { "Content-Type": "application/json" },
         }
-        await ChatHistory.create({
-          userId,
-          question: message,
-          response: reply,
-          recommendations
-        });
-        return res.status(200).json({ reply, recommendations });
+      );
+
+      let reply = "";
+      if (
+        geminiRes.data &&
+        geminiRes.data.candidates?.[0]?.content?.parts?.[0]?.text
+      ) {
+        reply = geminiRes.data.candidates[0].content.parts[0].text;
+      } else {
+        console.error(
+          "Lỗi: Không tìm thấy câu trả lời trong phản hồi của Gemini:",
+          geminiRes.data
+        );
+        reply = "Có lỗi xảy ra khi nhận câu trả lời.";
       }
+
+      await ChatHistory.create({
+        userId,
+        question: message,
+        response: reply,
+        recommendations: {},
+      });
+
+      console.log(`Xử lý xong trong ${Date.now() - startTime}ms`);
+      return res.status(200).json({ reply });
     } catch (err) {
-      console.error('Lỗi xử lý yêu cầu:', err);
-      res.status(500).json({ message: 'Lỗi khi xử lý yêu cầu', error: err.message });
+      console.error("Lỗi chatbot:", err.response?.data || err.message);
+      return res.status(500).json({
+        message: "Lỗi khi xử lý chatbot",
+        error: err.response?.data || err.message,
+      });
     }
   },
 
@@ -85,105 +134,14 @@ const chatbotController = {
         .sort({ createdAt: -1 })
         .limit(50)
         .lean();
-
-      const sanitizedHistory = history.map(item => ({
-        userId: item.userId.toString(),
-        question: item.question || "",
-        response: item.response || "",
-        recommendations: item.recommendations || {},
-        createdAt: item.createdAt.toISOString()
-      }));
-
-      res.status(200).json(sanitizedHistory);
+      return res.json(history);
     } catch (err) {
-      res.status(500).json({ message: 'Lỗi khi lấy lịch sử trò chuyện', error: err.message });
+      console.error("Lỗi lấy lịch sử:", err);
+      return res
+        .status(500)
+        .json({ message: "Lỗi lấy lịch sử", error: err.message });
     }
   },
 };
-
-async function searchBooks(query) {
-  const keywords = query.toLowerCase().split(' ').filter(k => k);
-  const categories = await require('../models/Category').find({
-    name: { $regex: keywords.join('|'), $options: 'i' },
-  });
-  const categoryIds = categories.map(c => c._id);
-
-  const queryObj = {
-    $or: keywords.map(keyword => ({
-      $or: [
-        { title: { $regex: escapeRegex(keyword), $options: 'i' } },
-        { author: { $regex: escapeRegex(keyword), $options: 'i' } },
-        { description: { $regex: escapeRegex(keyword), $options: 'i' } },
-        { category: { $in: categoryIds } },
-      ],
-    })),
-  };
-
-  return await Book.find(queryObj).limit(5).lean();
-}
-
-async function searchDocuments(query, userId) {
-  const keywords = query.toLowerCase().split(' ').filter(k => k);
-  const queryObj = {
-    $or: keywords.map(keyword => ({
-      $or: [
-        { title: { $regex: escapeRegex(keyword), $options: 'i' } },
-        { description: { $regex: escapeRegex(keyword), $options: 'i' } },
-      ],
-    })),
-  };
-
-  const user = await require('../models/User').findById(userId);
-  if (!user || !user.admin) {
-    queryObj.status = 'approved';
-  }
-
-  return await Document.find(queryObj).limit(5).lean();
-}
-
-async function getRecommendations(books, documents) {
-  const bookIds = books.map((b) => b._id);
-  const documentIds = documents.map((d) => d._id);
-
-  const reviews = await Review.find({
-    $or: [
-      { itemId: { $in: bookIds }, type: 'book' },
-      { itemId: { $in: documentIds }, type: 'document' },
-    ],
-  }).lean();
-
-  const bookRecommendations = books.map((book) => {
-    const bookReviews = reviews.filter((r) => r.itemId.toString() === book._id.toString() && r.type === 'book');
-    const avgRating = bookReviews.length
-      ? bookReviews.reduce((sum, r) => sum + r.rating, 0) / bookReviews.length
-      : 0;
-    return { ...book, avgRating };
-  }).sort((a, b) => b.avgRating - a.avgRating);
-
-  const documentRecommendations = documents.map((doc) => {
-    const docReviews = reviews.filter((r) => r.itemId.toString() === doc._id.toString() && r.type === 'document');
-    const avgRating = docReviews.length
-      ? docReviews.reduce((sum, r) => sum + r.rating, 0) / docReviews.length
-      : 0;
-    return { ...doc, avgRating };
-  }).sort((a, b) => b.avgRating - a.avgRating);
-
-  return {
-    books: bookRecommendations.slice(0, 3),
-    documents: documentRecommendations.slice(0, 3),
-  };
-}
-
-function createPrompt(message, recommendations) {
-  let prompt = `Người dùng hỏi: "${message}"\n\nGợi ý:\n`;
-  if (recommendations.books.length) {
-    prompt += 'Sách:\n' + recommendations.books.map((b, i) => `${i + 1}. ${b.title} (${b.avgRating.toFixed(1)}/5)`).join('\n') + '\n';
-  }
-  if (recommendations.documents.length) {
-    prompt += 'Tài liệu:\n' + recommendations.documents.map((d, i) => `${i + 1}. ${d.title} (${d.avgRating.toFixed(1)}/5)`).join('\n') + '\n';
-  }
-  prompt += 'Trả lời ngắn gọn bằng tiếng Việt, sử dụng gợi ý trên, thân thiện.';
-  return prompt;
-}
 
 module.exports = chatbotController;

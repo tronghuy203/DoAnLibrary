@@ -17,7 +17,18 @@ const Chatbot = () => {
     dispatch,
   ]);
   const [message, setMessage] = useState("");
+  const [isTimeout, setIsTimeout] = useState(false);
   const messagesEndRef = useRef(null);
+  const scrollTimeoutRef = useRef(null);
+
+  const scrollToBottom = () => {
+    if (scrollTimeoutRef.current) {
+      clearTimeout(scrollTimeoutRef.current);
+    }
+    scrollTimeoutRef.current = setTimeout(() => {
+      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+    }, 100);
+  };
 
   useEffect(() => {
     if (!user || !user._id || !user.accessToken) {
@@ -28,21 +39,31 @@ const Chatbot = () => {
     dispatch(clearMessages());
     fetchChatHistory(user._id, user.accessToken, dispatch, axiosJWT)
       .then(() => {
-        messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+        scrollToBottom();
       })
       .catch((err) => console.error("Lỗi khi tải lịch sử:", err));
+
+    return () => {
+      if (scrollTimeoutRef.current) {
+        clearTimeout(scrollTimeoutRef.current);
+      }
+    };
   }, [user, navigate, dispatch, axiosJWT]);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
     if (!message.trim() || !user?._id || !axiosJWT) return;
 
+    setIsTimeout(false);
     try {
       await sendChatMessage(message, user._id, user.accessToken, dispatch, axiosJWT);
       setMessage("");
-      messagesEndRef.current?.scrollIntoView({ behavior: "smooth" });
+      scrollToBottom();
     } catch (err) {
       console.error("Lỗi khi gửi tin nhắn:", err);
+      if (err.message.includes("timeout")) {
+        setIsTimeout(true);
+      }
     }
   };
 
@@ -69,7 +90,7 @@ const Chatbot = () => {
     return [...books, ...documents];
   };
 
-  const allMessages = [
+  const allMessages = useMemo(() => [
     ...chatState.history
       .slice()
       .reverse()
@@ -78,7 +99,7 @@ const Chatbot = () => {
         { content: item.response, sender: "bot", recommendations: item.recommendations, key: `history-bot-${index}`, createdAt: item.createdAt },
       ]),
     ...chatState.messages.map((msg, index) => ({ ...msg, key: `temp-${index}`, createdAt: new Date().toISOString() })),
-  ];
+  ], [chatState.history, chatState.messages]);
 
   if (!user) {
     return null;
@@ -94,6 +115,11 @@ const Chatbot = () => {
 
           {chatState.error && (
             <div className="mb-4 text-red-500 text-center">{chatState.error}</div>
+          )}
+          {isTimeout && (
+            <div className="mb-4 text-yellow-500 text-center">
+              Yêu cầu mất quá lâu. Vui lòng thử lại sau hoặc kiểm tra kết nối.
+            </div>
           )}
 
           <div className="h-96 overflow-y-auto mb-4 p-4 bg-gray-100 dark:bg-gray-700 rounded-lg">
@@ -129,6 +155,7 @@ const Chatbot = () => {
             {chatState.isFetching && (
               <div className="flex justify-center">
                 <FaSpinner className="animate-spin text-teal-500 w-6 h-6" />
+                <span className="ml-2 text-gray-500 dark:text-gray-400">Đang chờ phản hồi từ AI...</span>
               </div>
             )}
             <div ref={messagesEndRef} />
