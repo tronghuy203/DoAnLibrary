@@ -8,6 +8,8 @@ import categoryReducer from "./categorySlice";
 import borrowReducer from "./borrowSlice";
 import membershipReducer from "./membershipSlice";
 import chatReducer from "./chatSlice";
+import paymentReducer from "./paymentSlice";
+import chatbotReducer from "./chatbotSlice";
 
 import {
   persistStore,
@@ -36,6 +38,8 @@ const rootReducer = combineReducers({
   borrow: borrowReducer,
   membership: membershipReducer,
   chat: chatReducer,
+  payment: paymentReducer,
+  chatbot: chatbotReducer
 });
 const persistedReducer = persistReducer(persistConfig, rootReducer);
 

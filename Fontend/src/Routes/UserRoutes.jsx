@@ -24,6 +24,7 @@ const PaymentRedirect = lazy(() => import("../Pages/Payment/PaymentRedirect"));
 const PaymentFailed = lazy(() => import("../Pages/Payment/PaymentFailed"));
 const MembershipList = lazy(() => import("../Pages/Membership/MembershipList"));
 const Chat = lazy(() => import("../Pages/Chat/Chat"));
+const Chatbot = lazy(() => import("../Pages/Chatbot/Chatbot"));
 const UserRoutes = () => {
   return (
     <UserLayout>
@@ -50,6 +51,7 @@ const UserRoutes = () => {
           <Route path="/payment-failed" element={<PaymentFailed />}/>
           <Route path="/membership-list" element={<MembershipList />}/>
           <Route path="/chat" element={<Chat />}/>
+          <Route path="/chatbot" element={<Chatbot />}/>
         </Routes>
       </Suspense>
     </UserLayout>
