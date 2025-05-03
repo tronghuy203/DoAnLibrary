@@ -1,5 +1,6 @@
 import axios from "axios";
 import { jwtDecode } from "jwt-decode";
+import { logoutSuccess } from "./redux/authSlice";
 
 let isRefreshing = false;
 let failedQueue = [];
@@ -25,7 +26,7 @@ const refreshToken = async () => {
   }
 };
 
-export const createAxios = (user, dispatch, stateSuccess) => {
+export const createAxios = (user, dispatch, stateSuccess, navigate) => {
   const newInstance = axios.create();
 
   newInstance.interceptors.request.use(
@@ -68,6 +69,11 @@ export const createAxios = (user, dispatch, stateSuccess) => {
         return config;
       } catch (error) {
         processQueue(error, null);
+        if (error.response?.status === 401 || error.response?.status === 403) {
+          dispatch(logoutSuccess());
+          localStorage.removeItem("accessToken");
+          navigate("/login");
+        }
         throw error;
       } finally {
         isRefreshing = false;
