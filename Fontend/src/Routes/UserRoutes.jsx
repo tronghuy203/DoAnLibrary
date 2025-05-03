@@ -2,6 +2,7 @@
 import { lazy, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 import UserLayout from "../Layouts/UserLayout";
+import PublicRoute from "../Components/UserRoute/UserRoute";
 
 const Home = lazy(() => import("../Pages/Home/Home"));
 const Profile = lazy(() => import("../Pages/Profile/Profile"));
@@ -30,17 +31,19 @@ const UserRoutes = () => {
     <UserLayout>
       <Suspense fallback={<div>Loading...</div>}>
         <Routes>
+          <Route element={<PublicRoute />}>
+            <Route path="/login" element={<Login />} />
+            <Route path="/register" element={<Register />} />
+            <Route path="/forgot-password" element={<ForgotPassword />} />
+            <Route path="/verify-reset-code" element={<VerifyResetCode />} />
+            <Route path="/reset-password" element={<ResetPassword />} />
+          </Route>
           <Route path="/" element={<Home />} />
           <Route path="/all-books" element={<AllBooks />} />
           <Route path="/cart" element={<Cart />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/history" element={<HistoryPage />} />
           <Route path="/documents" element={<DocumentsPage />} />
-          <Route path="/login" element={<Login />} />
-          <Route path="/register" element={<Register />} />
-          <Route path="/forgot-password" element={<ForgotPassword />} />
-          <Route path="/verify-reset-code" element={<VerifyResetCode />} />
-          <Route path="/reset-password" element={<ResetPassword />} />
           <Route path="/books/:id" element={<DetailBook />} />
           <Route path="/document-list" element={<DocumentList />} />
           <Route path="/document/:id" element={<DetailDocument />} />

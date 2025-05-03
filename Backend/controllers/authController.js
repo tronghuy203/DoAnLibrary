@@ -366,7 +366,7 @@ const authController = {
     return jwt.sign(
       { id: user.id, admin: user.admin },
       process.env.JWT_ACCESS_KEY,
-      { expiresIn: "1d" }
+      { expiresIn: "20s" }
     );
   },
 
@@ -523,27 +523,44 @@ const authController = {
 
   requestRefreshToken: async (req, res) => {
     const refreshToken = req.cookies.refreshToken;
-    if (!refreshToken) return res.status(401).json("You're not authenticated");
+    if (!refreshToken) {
+      return res.status(401).json("You're not authenticated");
+    }
     if (!refreshTokens.includes(refreshToken)) {
       return res.status(403).json("Refresh token is not valid");
     }
-    jwt.verify(refreshToken, process.env.JWT_REFRESH_KEY, (err, user) => {
-      if (err) {
-        console.log(err);
-      }
+  
+    try {
+      const user = await new Promise((resolve, reject) => {
+        jwt.verify(refreshToken, process.env.JWT_REFRESH_KEY, (err, user) => {
+          if (err) {
+            return reject(err);
+          }
+          resolve(user);
+        });
+      });
+  
       refreshTokens = refreshTokens.filter((token) => token !== refreshToken);
-
+  
       const newAccessToken = authController.generateAccessToken(user);
       const newRefreshToken = authController.generateRefreshToken(user);
       refreshTokens.push(newRefreshToken);
+  
       res.cookie("refreshToken", newRefreshToken, {
         httpOnly: true,
         secure: false,
         path: "/",
         sameSite: "strict",
       });
-      res.status(200).json({ accessToken: newAccessToken });
-    });
+  
+      return res.status(200).json({ accessToken: newAccessToken });
+    } catch (err) {
+      if (err.name === "TokenExpiredError") {
+        refreshTokens = refreshTokens.filter((token) => token !== refreshToken);
+        return res.status(403).json("Refresh token has expired");
+      }
+      return res.status(403).json("Refresh token is not valid");
+    }
   },
 
   userLogout: async (req, res) => {
