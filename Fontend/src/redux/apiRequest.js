@@ -264,3 +264,16 @@ export const logOut = async (dispatch, id, navigate, accessToken, axiosJWT) => {
     dispatch(logoutFailed());
   }
 };
+export const uploadAvatar = async (formData, accessToken, axiosJWT) => {
+  try {
+    const res = await axiosJWT.post("/v1/user/upload-avatar", formData, {
+      headers: {
+        token: `Bearer ${accessToken}`,
+        "Content-Type": "multipart/form-data",
+      },
+    });
+    return res.data;
+  } catch (err) {
+    throw err;
+  }
+};

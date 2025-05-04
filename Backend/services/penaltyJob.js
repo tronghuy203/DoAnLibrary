@@ -14,7 +14,7 @@ const transporter = nodemailer.createTransport({
 });
 
 // Chạy hàng ngày lúc 00:00
-// */1 * * * *
+// */5 * * * *
 cron.schedule('0 0 * * *', async () => {
   console.log('Running penalty check job...');
   try {

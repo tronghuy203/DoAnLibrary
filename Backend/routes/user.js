@@ -1,5 +1,5 @@
 const middlewareController = require("../controllers/middlewareController");
-const userController = require("../controllers/userController");
+const {userController, upload} = require("../controllers/userController");
 
 const router = require("express").Router();
 
@@ -14,5 +14,7 @@ router.put("/update-profile/:id", middlewareController.verifyToken, userControll
 router.get("/history/:userId", middlewareController.verifyToken, userController.getBorrowHistory);
 
 router.get("/admin", middlewareController.verifyToken, userController.getAdmin);
+
+router.post("/upload-avatar", middlewareController.verifyToken, upload.single("avatar"), userController.uploadAvatar);
 
 module.exports = router;

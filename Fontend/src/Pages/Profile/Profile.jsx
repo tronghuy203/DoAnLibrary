@@ -1,7 +1,7 @@
 import { useEffect, useState, useMemo } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { deleteUser, getAllUsers, updateUserProfile } from "../../redux/apiRequest";
+import { deleteUser, getAllUsers, updateUserProfile, uploadAvatar } from "../../redux/apiRequest";
 import { createAxios } from "../../createInstance";
 import { loginSuccess } from "../../redux/authSlice";
 import {
@@ -36,9 +36,6 @@ const citiesByCountry = {
   JP: ["Tokyo", "Osaka", "Kyoto", "Yokohama", "Nagoya"],
 };
 
-const CLOUDINARY_UPLOAD_PRESET = "profileimage";
-const CLOUDINARY_CLOUD_NAME = "dy889jy4s";
-
 const Profile = () => {
   const user = useSelector((state) => state.auth.login?.currentUser);
   const dispatch = useDispatch();
@@ -64,14 +61,11 @@ const Profile = () => {
       "https://cellphones.com.vn/sforum/wp-content/uploads/2023/10/avatar-trang-4.jpg",
     country: user?.country || "",
     city: user?.city || "",
-    postalCode: user?.postalCode || "",
-    taxId: user?.taxId || "",
   });
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState(null);
   const [success, setSuccess] = useState(null);
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
-
 
   useEffect(() => {
     if (!user) {
@@ -110,8 +104,23 @@ const Profile = () => {
       setError("Không thể kết nối đến server.");
       return;
     }
+
+    if (updatedData.phone && !/^[0-9]{10,11}$/.test(updatedData.phone)) {
+      setError("Số điện thoại phải là số và có độ dài từ 10 đến 11 số");
+      setTimeout(() => setError(null), 3000);
+      return;
+    }
+
     try {
-      const payload = { ...updatedData };
+      const payload = {
+        username: updatedData.username,
+        email: updatedData.email,
+        phone: updatedData.phone || undefined,
+        dob: updatedData.dob || undefined,
+        avatar: updatedData.avatar || undefined,
+        country: updatedData.country || undefined,
+        city: updatedData.city || undefined,
+      };
       await updateUserProfile(user._id, payload, user.accessToken, axiosJWT, dispatch);
       dispatch(loginSuccess({ ...user, ...payload }));
       setEditMode({ profile: false, personalInfo: false, address: false });
@@ -135,8 +144,6 @@ const Profile = () => {
         "https://cellphones.com.vn/sforum/wp-content/uploads/2023/10/avatar-trang-4.jpg",
       country: user?.country || "",
       city: user?.city || "",
-      postalCode: user?.postalCode || "",
-      taxId: user?.taxId || "",
     });
     setEditMode({ profile: false, personalInfo: false, address: false });
     setError(null);
@@ -149,17 +156,12 @@ const Profile = () => {
 
     setUploading(true);
     const formData = new FormData();
-    formData.append("file", file);
-    formData.append("upload_preset", CLOUDINARY_UPLOAD_PRESET);
+    formData.append("avatar", file);
 
     try {
-      const response = await fetch(
-        `https://api.cloudinary.com/v1_1/${CLOUDINARY_CLOUD_NAME}/image/upload`,
-        { method: "POST", body: formData }
-      );
-      const data = await response.json();
-      if (data.secure_url) {
-        setUpdatedData({ ...updatedData, avatar: data.secure_url });
+      const response = await uploadAvatar(formData, user.accessToken, axiosJWT);
+      if (response.avatar) {
+        setUpdatedData({ ...updatedData, avatar: response.avatar });
       } else {
         throw new Error("Upload failed");
       }
@@ -376,7 +378,9 @@ const Profile = () => {
                     <input
                       type="email"
                       value={updatedData.email}
-                      onChange={(e) => setUpdatedData({ ...updatedData, email: e.target.value })}
+                      onChange={(e) =>
+                        setUpdatedData({ ...updatedData, email: e.target.value })
+                      }
                       className="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 text-sm sm:text-base"
                     />
                   ) : (
@@ -394,8 +398,11 @@ const Profile = () => {
                     <input
                       type="tel"
                       value={updatedData.phone}
-                      onChange={(e) => setUpdatedData({ ...updatedData, phone: e.target.value })}
+                      onChange={(e) =>
+                        setUpdatedData({ ...updatedData, phone: e.target.value })
+                      }
                       className="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 text-sm sm:text-base"
+                      placeholder="Nhập số điện thoại (10-11 chữ số)"
                     />
                   ) : (
                     <p className="text-base sm:text-lg font-semibold text-gray-900 dark:text-white group-hover:text-blue-600 dark:group-hover:text-blue-400 transition-colors duration-300">
@@ -412,7 +419,9 @@ const Profile = () => {
                     <input
                       type="date"
                       value={updatedData.dob}
-                      onChange={(e) => setUpdatedData({ ...updatedData, dob: e.target.value })}
+                      onChange={(e) =>
+                        setUpdatedData({ ...updatedData, dob: e.target.value })
+                      }
                       className="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 text-sm sm:text-base"
                     />
                   ) : (
@@ -465,7 +474,6 @@ const Profile = () => {
                     <GlobeAltIcon className="h-4 w-4 sm:h-5 sm:w-5 transform group-hover:scale-110 transition-transform duration-200" />
                     Quốc gia
                   </label>
-
                   {editMode.address ? (
                     <select
                       value={updatedData.country}
@@ -493,7 +501,9 @@ const Profile = () => {
                   {editMode.address ? (
                     <select
                       value={updatedData.city}
-                      onChange={(e) => setUpdatedData({ ...updatedData, city: e.target.value })}
+                      onChange={(e) =>
+                        setUpdatedData({ ...updatedData, city: e.target.value })
+                      }
                       className="w-full px-3 py-2 bg-gray-100 dark:bg-gray-700 rounded-xl text-gray-900 dark:text-white focus:ring-2 focus:ring-blue-500 hover:bg-gray-200 dark:hover:bg-gray-600 transition-all duration-300 text-sm sm:text-base"
                       disabled={!updatedData.country}
                     >
