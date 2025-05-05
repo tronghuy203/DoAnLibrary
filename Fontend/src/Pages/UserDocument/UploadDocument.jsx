@@ -23,10 +23,8 @@ const UploadDocument = () => {
     "application/pdf",
     "application/msword",
     "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
-    "application/vnd.ms-excel",
-    "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
   ];
-  const allowedImageTypes = ["image/jpeg", "image/png", "image/gif"];
+  const allowedImageTypes = ["image/jpeg", "image/png"];
 
   const handleUpload = useCallback(
     async (e) => {
@@ -37,12 +35,12 @@ const UploadDocument = () => {
       }
 
       if (!allowedFileTypes.includes(file.type)) {
-        setMessage("Chỉ hỗ trợ các định dạng: PDF, Word, Excel.");
+        setMessage("Chỉ hỗ trợ các định dạng: PDF, Word.");
         return;
       }
 
       if (thumbnail && !allowedImageTypes.includes(thumbnail.type)) {
-        setMessage("Ảnh bìa chỉ hỗ trợ định dạng: JPEG, PNG, GIF.");
+        setMessage("Ảnh bìa chỉ hỗ trợ định dạng: JPEG, PNG.");
         return;
       }
 
@@ -51,6 +49,7 @@ const UploadDocument = () => {
       formData.append("description", description);
       formData.append("file", file);
       if (thumbnail) formData.append("thumbnail", thumbnail);
+
       try {
         await uploadDocument(formData, user.accessToken, dispatch, axiosJWT);
         setMessage("Tài liệu đã được tải lên và đang chờ admin phê duyệt!");
@@ -101,7 +100,7 @@ const UploadDocument = () => {
     if (droppedFile && allowedFileTypes.includes(droppedFile.type)) {
       setFile(droppedFile);
     } else {
-      setMessage("Vui lòng thả file PDF, Word hoặc Excel hợp lệ.");
+      setMessage("Vui lòng thả file PDF hoặc Word hợp lệ.");
     }
   };
 
@@ -112,7 +111,7 @@ const UploadDocument = () => {
     if (droppedFile && allowedImageTypes.includes(droppedFile.type)) {
       setThumbnail(droppedFile);
     } else {
-      setMessage("Vui lòng thả ảnh JPEG, PNG hoặc GIF hợp lệ.");
+      setMessage("Vui lòng thả ảnh JPEG hoặc PNG hợp lệ.");
     }
   };
 
@@ -133,7 +132,7 @@ const UploadDocument = () => {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className={`mb-6 p-4 rounded-xl text-center text-sm font-medium shadow-sm ${
+            className={`mb-6 p-4 rounded-xl text-center text retrato-sm font-medium shadow-sm ${
               message.includes("thành công") || message.includes("phê duyệt")
                 ? "bg-green-100 text-green-900 dark:bg-green-900/80 dark:text-green-100"
                 : "bg-red-100 text-red-900 dark:bg-red-900/80 dark:text-red-100"
@@ -174,14 +173,14 @@ const UploadDocument = () => {
             <div className="flex items-center justify-center space-x-3">
               <FaFilePdf className="text-indigo-500 text-2xl" />
               <label className="text-gray-700 dark:text-zinc-300 font-medium">
-                {file ? file.name : "Kéo và thả hoặc chọn file PDF, Word, Excel"}
+                {file ? file.name : "Kéo và thả hoặc chọn file PDF, Word"}
               </label>
             </div>
             <input
               type="file"
               onChange={(e) => setFile(e.target.files[0])}
               required
-              accept=".pdf,.doc,.docx,.xls,.xlsx"
+              accept=".pdf,.doc,.docx"
               className="absolute inset-0 opacity-0 cursor-pointer"
             />
             {file && (
@@ -204,13 +203,13 @@ const UploadDocument = () => {
             <div className="flex items-center justify-center space-x-3">
               <FaImage className="text-purple-500 text-2xl" />
               <label className="text-gray-700 dark:text-zinc-300 font-medium">
-                {thumbnail ? thumbnail.name : "Kéo và thả hoặc chọn ảnh JPEG, PNG, GIF"}
+                {thumbnail ? thumbnail.name : "Kéo và thả hoặc chọn ảnh JPEG, PNG"}
               </label>
             </div>
             <input
               type="file"
               onChange={(e) => setThumbnail(e.target.files[0])}
-              accept="image/jpeg,image/png,image/gif"
+              accept="image/jpeg,image/png"
               className="absolute inset-0 opacity-0 cursor-pointer"
             />
             {thumbnail && (

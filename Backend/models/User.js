@@ -6,7 +6,7 @@ const userSchema = new mongoose.Schema(
       type: String,
       required: true,
       minlength: 6,
-      maxlength: 20,
+      maxlength: 70,
       unique: true,
     },
     dob: { 
@@ -23,7 +23,6 @@ const userSchema = new mongoose.Schema(
       required: false, 
       minlength: 10,
       maxlength: 15,
-      
     },
     email: {
       type: String,
@@ -40,7 +39,7 @@ const userSchema = new mongoose.Schema(
     googleId: {
       type: String,
       unique: true,
-      sparse: true, // Cho phép null nhưng vẫn đảm bảo unique nếu có giá trị
+      sparse: true,
     },
     facebookId: { 
       type: String, 
@@ -57,6 +56,14 @@ const userSchema = new mongoose.Schema(
     membership: {
       membershipId: { type: mongoose.Schema.Types.ObjectId, ref: "Membership" },
       userMembershipId: { type: mongoose.Schema.Types.ObjectId, ref: "UserMembership" },
+    },
+    country: {
+      type: String,
+      required: false,
+    },
+    city: {
+      type: String,
+      required: false,
     },
     
   },

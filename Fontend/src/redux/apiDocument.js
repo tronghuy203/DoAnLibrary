@@ -154,13 +154,24 @@ export const downloadDocument = async (documentId, accessToken, documentTitle, d
       responseType: "blob",
     });
 
-    const url = window.URL.createObjectURL(new Blob([response.data]));
-    const link = window.document.createElement("a");
+    const contentType = response.headers["content-type"];
+    if (!contentType || !contentType.includes("application/pdf")) {
+      throw new Error("Phản hồi không phải file PDF hợp lệ");
+    }
+
+    const blob = new Blob([response.data], { type: "application/pdf" });
+    if (blob.size === 0) {
+      throw new Error("File PDF rỗng hoặc không hợp lệ");
+    }
+
+    const url = window.URL.createObjectURL(blob);
+    const link = document.createElement("a");
     link.href = url;
-    link.download = `${documentTitle || "document"}.pdf`;
-    window.document.body.appendChild(link);
+    const safeTitle = (documentTitle || "document").replace(/[^a-zA-Z0-9-_]/g, "_");
+    link.download = `${safeTitle}.pdf`;
+    document.body.appendChild(link);
     link.click();
-    window.document.body.removeChild(link);
+    document.body.removeChild(link);
     window.URL.revokeObjectURL(url);
 
     const updatedDoc = await axiosJWT.get(`/v1/documents/${documentId}`, {
@@ -176,7 +187,19 @@ export const downloadDocument = async (documentId, accessToken, documentTitle, d
     return updatedDoc.data;
   } catch (err) {
     console.error("Lỗi khi tải tài liệu:", err);
-    throw err;
+    let errorMessage = "Không thể tải tài liệu. Vui lòng thử lại.";
+    if (err.response) {
+      if (err.response.status === 403) {
+        errorMessage = "Bạn không có quyền tải tài liệu này.";
+      } else if (err.response.status === 404) {
+        errorMessage = "Tài liệu không tồn tại.";
+      } else if (err.response.status === 500) {
+        errorMessage = "Lỗi server khi tải tài liệu.";
+      }
+    } else if (err.message.includes("PDF")) {
+      errorMessage = err.message;
+    }
+    throw new Error(errorMessage);
   }
 };
 

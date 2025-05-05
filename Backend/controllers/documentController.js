@@ -1,20 +1,35 @@
+require("dotenv").config();
 const Document = require("../models/Document");
 const multer = require("multer");
-const path = require("path");
 const User = require("../models/User");
 const Membership = require("../models/Membership");
 const UserMembership = require("../models/UserMembership");
+const cloudinary = require("../config/cloudinary");
 
-const storage = multer.diskStorage({
-  destination: (req, file, cb) => {
-    cb(null, "uploads/"); 
+const storage = multer.memoryStorage();
+const upload = multer({
+  storage,
+  limits: { fileSize: 10 * 1024 * 1024 }, 
+  fileFilter: (req, file, cb) => {
+    if (file.fieldname === "file") {
+      const allowedMimeTypes = [
+        "application/pdf",
+        "application/msword",
+        "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+      ];
+      if (allowedMimeTypes.includes(file.mimetype)) {
+        return cb(null, true);
+      }
+      return cb(new Error("Chỉ hỗ trợ file PDF, DOC, hoặc DOCX cho tài liệu"));
+    } else if (file.fieldname === "thumbnail") {
+      const allowedMimeTypes = ["image/jpeg", "image/png"];
+      if (allowedMimeTypes.includes(file.mimetype)) {
+        return cb(null, true);
+      }
+      return cb(new Error("Chỉ hỗ trợ file JPEG hoặc PNG cho ảnh bìa"));
+    }
   },
-  filename: (req, file, cb) => {
-    cb(null, Date.now() + path.extname(file.originalname)); 
-  },
-});
-
-const upload = multer({ storage }).fields([
+}).fields([
   { name: "file", maxCount: 1 },
   { name: "thumbnail", maxCount: 1 },
 ]);
@@ -101,29 +116,70 @@ const documentController = {
   uploadDocument: async (req, res) => {
     try {
       const { title, description } = req.body;
-      const fileUrl = req.files?.file ? `/uploads/${req.files.file[0].filename}` : "";
-      const thumbnailUrl = req.files?.thumbnail ? `/uploads/${req.files.thumbnail[0].filename}` : "";
 
-      if (!fileUrl) {
+      if (!req.files || !req.files.file || !req.files.file[0]) {
         return res.status(400).json({ message: "Vui lòng tải lên file tài liệu" });
+      }
+
+      console.log("Uploading document to Cloudinary...");
+      const fileResult = await new Promise((resolve, reject) => {
+        cloudinary.uploader
+          .upload_stream(
+            { folder: "documents", resource_type: "auto" },
+            (error, result) => {
+              if (error) {
+                console.error("Cloudinary document upload error:", error);
+                return reject(new Error(`Lỗi khi tải file tài liệu lên Cloudinary: ${error.message}`));
+              }
+              resolve(result);
+            }
+          )
+          .end(req.files.file[0].buffer);
+      });
+
+      let thumbnailUrl = "";
+      let cloudinaryThumbnailId = null;
+      if (req.files.thumbnail && req.files.thumbnail[0]) {
+        console.log("Uploading thumbnail to Cloudinary...");
+        const thumbnailResult = await new Promise((resolve, reject) => {
+          cloudinary.uploader
+            .upload_stream(
+              { folder: "document_thumbnails", resource_type: "image" },
+              (error, result) => {
+                if (error) {
+                  console.error("Cloudinary thumbnail upload error:", error);
+                  return reject(new Error(`Lỗi khi tải ảnh bìa lên Cloudinary: ${error.message}`));
+                }
+                resolve(result);
+              }
+            )
+            .end(req.files.thumbnail[0].buffer);
+        });
+        thumbnailUrl = thumbnailResult.secure_url;
+        cloudinaryThumbnailId = thumbnailResult.public_id;
       }
 
       const newDocument = new Document({
         title,
         description,
-        fileUrl,
+        fileUrl: fileResult.secure_url,
         thumbnailUrl,
         uploadedBy: req.user.id,
         status: 'pending',
+        cloudinaryFileId: fileResult.public_id,
+        cloudinaryThumbnailId,
       });
 
       const savedDocument = await newDocument.save();
-      res.status(201).json({message: 'Tài liệu đã được tải lên và đang chờ duyệt', document: savedDocument });
+      res.status(201).json({
+        message: 'Tài liệu đã được tải lên và đang chờ duyệt',
+        document: savedDocument,
+      });
     } catch (err) {
+      console.error("Upload document error:", err);
       res.status(500).json({ message: "Lỗi khi tải tài liệu!", error: err.message });
     }
   },
-
 
   getAllDocuments: async (req, res) => {
     try {
@@ -144,13 +200,13 @@ const documentController = {
       if (!document) {
         return res.status(404).json({ message: "Tài liệu không tồn tại" });
       }
-      
+
       document.status = 'approved';
       await document.save();
-      
-      res.status(200).json({ 
+
+      res.status(200).json({
         message: 'Tài liệu đã được duyệt thành công',
-        document 
+        document,
       });
     } catch (err) {
       res.status(500).json({ message: "Lỗi khi duyệt tài liệu", error: err });
@@ -163,13 +219,13 @@ const documentController = {
       if (!document) {
         return res.status(404).json({ message: "Tài liệu không tồn tại" });
       }
-      
+
       document.status = 'rejected';
       await document.save();
-      
-      res.status(200).json({ 
+
+      res.status(200).json({
         message: 'Tài liệu đã bị từ chối',
-        document 
+        document,
       });
     } catch (err) {
       res.status(500).json({ message: "Lỗi khi từ chối tài liệu", error: err });
@@ -187,8 +243,6 @@ const documentController = {
       res.status(500).json(err);
     }
   },
-
-
 
   viewDocument: async (req, res) => {
     try {
@@ -235,16 +289,7 @@ const documentController = {
       document.views += 1;
       await document.save();
 
-      const filePath = path.join(__dirname, "../uploads", path.basename(document.fileUrl));
-      const fs = require("fs");
-      if (!fs.existsSync(filePath)) {
-        return res.status(404).json({ message: "File tài liệu không tồn tại" });
-      }
-      res.sendFile(filePath, (err) => {
-        if (err) {
-          res.status(500).json({ message: "Lỗi khi gửi file", error: err.message });
-        }
-      });
+      res.redirect(document.fileUrl);
     } catch (err) {
       res.status(err.status || 500).json({ message: err.message });
     }
@@ -289,7 +334,7 @@ const documentController = {
       document.downloads += 1;
       await document.save();
 
-      res.download(path.join(__dirname, "../uploads", path.basename(document.fileUrl)));
+      res.redirect(document.fileUrl);
     } catch (err) {
       res.status(err.status || 500).json({ message: err.message });
     }
@@ -307,10 +352,20 @@ const documentController = {
 
   deleteDocument: async (req, res) => {
     try {
+      const document = await Document.findById(req.params.id);
+      if (!document) {
+        return res.status(404).json({ message: "Tài liệu không tồn tại" });
+      }
+      if (document.cloudinaryFileId) {
+        await cloudinary.uploader.destroy(document.cloudinaryFileId, { resource_type: "raw" });
+      }
+      if (document.cloudinaryThumbnailId) {
+        await cloudinary.uploader.destroy(document.cloudinaryThumbnailId, { resource_type: "image" });
+      }
       await Document.findByIdAndDelete(req.params.id);
       res.status(200).json("Tài liệu đã được xóa thành công");
     } catch (err) {
-      res.status(500).json(err);
+      res.status(500).json({ message: "Lỗi khi xóa tài liệu", error: err.message });
     }
   },
 
@@ -339,6 +394,7 @@ const documentController = {
       res.status(500).json({ message: "Lỗi khi lấy thống kê", error: err });
     }
   },
+
   getUserDocuments: async (req, res) => {
     try {
       const userId = req.params.userId;
@@ -350,7 +406,7 @@ const documentController = {
     } catch (err) {
       res.status(500).json({ message: "Lỗi khi lấy tài liệu", error: err.message });
     }
-  },  
+  },
 };
 
 module.exports = { documentController, upload };

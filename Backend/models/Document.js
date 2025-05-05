@@ -39,6 +39,8 @@ const documentSchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+    cloudinaryFileId: String,
+    cloudinaryThumbnailId: String,
   },
   { timestamps: true }
 );

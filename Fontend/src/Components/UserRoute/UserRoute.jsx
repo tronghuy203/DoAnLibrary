@@ -6,7 +6,7 @@ const PublicRoute = () => {
   const user = useSelector((state) => state.auth.login.currentUser);
 
   if (user && user.accessToken) {
-    return <Navigate to="/" replace />;
+    return user.admin ? <Navigate to="/admin" replace /> : <Navigate to="/" replace />;
   }
 
   return <Outlet />;
