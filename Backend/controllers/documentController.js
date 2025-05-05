@@ -9,7 +9,7 @@ const cloudinary = require("../config/cloudinary");
 const storage = multer.memoryStorage();
 const upload = multer({
   storage,
-  limits: { fileSize: 10 * 1024 * 1024 }, // Giới hạn 10MB
+  limits: { fileSize: 10 * 1024 * 1024 }, 
   fileFilter: (req, file, cb) => {
     if (file.fieldname === "file") {
       const allowedMimeTypes = [
@@ -117,12 +117,10 @@ const documentController = {
     try {
       const { title, description } = req.body;
 
-      // Kiểm tra file tài liệu
       if (!req.files || !req.files.file || !req.files.file[0]) {
         return res.status(400).json({ message: "Vui lòng tải lên file tài liệu" });
       }
 
-      // Tải file tài liệu lên Cloudinary
       console.log("Uploading document to Cloudinary...");
       const fileResult = await new Promise((resolve, reject) => {
         cloudinary.uploader
@@ -139,7 +137,6 @@ const documentController = {
           .end(req.files.file[0].buffer);
       });
 
-      // Tải ảnh bìa lên Cloudinary (nếu có)
       let thumbnailUrl = "";
       let cloudinaryThumbnailId = null;
       if (req.files.thumbnail && req.files.thumbnail[0]) {
@@ -162,7 +159,6 @@ const documentController = {
         cloudinaryThumbnailId = thumbnailResult.public_id;
       }
 
-      // Tạo document mới
       const newDocument = new Document({
         title,
         description,
