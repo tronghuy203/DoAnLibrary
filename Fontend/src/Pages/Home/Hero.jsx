@@ -31,7 +31,7 @@ const Hero = () => {
     const navigate = useNavigate(); 
 
     const handleOrderClick = () => {
-        navigate('/cart'); 
+        navigate('/all-books'); 
     };
 
     const [imageId, setImageId] = useState(Book1);

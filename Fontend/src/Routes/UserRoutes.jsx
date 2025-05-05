@@ -14,7 +14,6 @@ const ForgotPassword = lazy(() => import("../Pages/ForgotPassword/ForgotPassword
 const VerifyResetCode = lazy(() => import("../Pages/ForgotPassword/VerifyOTP"));
 const ResetPassword = lazy(() => import("../Pages/ForgotPassword/ResetPassword"));
 const AllBooks = lazy(() => import("../Pages/AllBooks/AllBooks"));
-const Cart = lazy(() => import("../Pages/Cart/Cart"));
 const DetailBook = lazy(() => import("../Pages/DetailBook/Detailbook"));
 const DocumentList = lazy(() => import("../Pages/UserDocument/UserDocumentList"));
 const DetailDocument = lazy(() => import("../Pages/UserDocument/DetailDocument"));
@@ -40,7 +39,6 @@ const UserRoutes = () => {
           </Route>
           <Route path="/" element={<Home />} />
           <Route path="/all-books" element={<AllBooks />} />
-          <Route path="/cart" element={<Cart />} />
           <Route path="/profile" element={<Profile />} />
           <Route path="/history" element={<HistoryPage />} />
           <Route path="/documents" element={<DocumentsPage />} />
@@ -56,6 +54,7 @@ const UserRoutes = () => {
           <Route path="/chat" element={<Chat />}/>
           <Route path="/chatbot" element={<Chatbot />}/>
         </Routes>
+        <Chatbot />
       </Suspense>
     </UserLayout>
   );

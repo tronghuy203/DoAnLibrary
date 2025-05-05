@@ -20,7 +20,7 @@ const UserDocumentList = () => {
 
   const [searchQuery, setSearchQuery] = useState("");
   const [filterType, setFilterType] = useState("all");
-  const [visibleDocs, setVisibleDocs] = useState(6);
+  const [visibleDocs, setVisibleDocs] = useState(8);
 
   useEffect(() => {
     if (!user) {

@@ -15,6 +15,7 @@ import {
   ChevronUpIcon,
   ChevronDownIcon,
   HashtagIcon,
+  DocumentTextIcon
 } from "@heroicons/react/24/outline";
 
 const CreateBook = () => {
@@ -322,6 +323,23 @@ const CreateBook = () => {
               />
             </div>
           </div>
+          <div className="mb-6">
+           <label className="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2" htmlFor="description">
+             Mô tả
+           </label>
+           <div className="relative">
+             <DocumentTextIcon className="absolute left-3 top-4 w-5 h-5 text-cyan-500 dark:text-cyan-400" />
+             <textarea
+               id="description"
+               name="description"
+               value={book.description}
+               onChange={handleChange}
+               className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 resize-y placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200"
+               placeholder="Nhập mô tả sách"
+               rows="4"
+             />
+           </div>
+         </div>
 
           <div className="mb-6 animate-slide-up">
             <label className="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2" htmlFor="category">
