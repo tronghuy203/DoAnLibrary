@@ -121,7 +121,7 @@ const AdminDashboard = () => {
 
   if (booksFetching || usersFetching || borrowsFetching || paymentFetching) {
     return (
-      <div className="min-h-screen bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 p-6 lg:p-8 animate-pulse transition-all duration-300 ease-in-out">
+      <div className="min-h-screen bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 p-4 sm:p-6 lg:p-8 animate-pulse transition-all duration-300 ease-in-out">
         <p className="text-xl text-gray-500 dark:text-gray-400">Đang tải dữ liệu...</p>
       </div>
     );
@@ -129,7 +129,7 @@ const AdminDashboard = () => {
 
   if (paymentError) {
     return (
-      <div className="min-h-screen bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 p-6 lg:p-8">
+      <div className="min-h-screen bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 p-4 sm:p-6 lg:p-8">
         <p className="text-xl text-red-500 dark:text-red-400">Lỗi khi tải dữ liệu doanh thu: {paymentError}</p>
       </div>
     );
@@ -161,11 +161,15 @@ const AdminDashboard = () => {
 
   const chartOptions = {
     responsive: true,
+    maintainAspectRatio: false,
     plugins: {
       legend: {
         position: "top",
         labels: {
           color: isDarkMode ? "#e5e7eb" : "#1f2937",
+          font: {
+            size: 12,
+          },
         },
       },
       title: {
@@ -173,7 +177,10 @@ const AdminDashboard = () => {
         text: "Phân bổ doanh thu",
         color: isDarkMode ? "#e5e7eb" : "#1f2937",
         font: {
-          size: 18,
+          size: 16,
+        },
+        padding: {
+          bottom: 10,
         },
       },
       tooltip: {
@@ -189,58 +196,58 @@ const AdminDashboard = () => {
   };
 
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 p-6 lg:p-8 transition-all duration-300 ease-in-out">
-      <div className="flex justify-between items-center mb-6">
-        <div className="animate-fade-in">
-          <h1 className="text-3xl sm:text-4xl lg:text-5xl font-bold text-blue-500 dark:text-blue-300 mb-4 mt-5">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 p-4 sm:p-6 lg:p-8 transition-all duration-300 ease-in-out">
+      <div className="flex flex-col sm:flex-row justify-between items-start sm:items-center mb-6">
+        <div className="animate exfoliative-in w-full sm:w-auto">
+          <h1 className="text-2xl sm:text-3xl lg:text-4xl font-bold text-blue-500 dark:text-blue-300 mb-2 mt-4 sm:mt-5">
             Bảng điều khiển quản trị viên
           </h1>
-          <p className="text-gray-700 dark:text-gray-400 text-lg sm:text-xl">
+          <p className="text-gray-700 dark:text-gray-400 text-base sm:text-lg">
             Chào mừng bạn đến với trang quản trị.
           </p>
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-8 mb-8">
-        <div className="relative bg-white dark:bg-gradient-to-br dark:from-gray-900 dark:to-gray-800 p-6 rounded-2xl shadow-lg hover:shadow-xl hover:shadow-blue-500/20 transform hover:-translate-y-1 transition-all duration-300 ease-in-out animate-fade-in">
-          <div className="flex items-center gap-4">
-            <UserGroupIcon className="w-10 h-10 text-blue-500 dark:text-blue-300" />
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 mb-6 sm:mb-8">
+        <div className="relative bg-white dark:bg-gradient-to-br dark:from-gray-900 dark:to-gray-800 p-4 sm:p-6 rounded-2xl shadow-lg hover:shadow-xl hover:shadow-blue-500/20 transform hover:-translate-y-1 transition-all duration-300 ease-in-out animate-fade-in">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <UserGroupIcon className="w-8 h-8 sm:w-10 sm:h-10 text-blue-500 dark:text-blue-300" />
             <div>
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-1">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-gray-200 mb-1">
                 Tổng số người dùng
               </h3>
-              <p className="text-3xl font-bold text-blue-500 dark:text-blue-300">{totalUsers}</p>
-              <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">
+              <p className="text-2xl sm:text-3xl font-bold text-blue-500 dark:text-blue-300">{totalUsers}</p>
+              <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm mt-1">
                 Tăng <span className="text-green-500 dark:text-green-300">10%</span> so với tháng trước
               </p>
             </div>
           </div>
         </div>
 
-        <div className="relative bg-white dark:bg-gradient-to-br dark:from-gray-900 dark:to-gray-800 p-6 rounded-2xl shadow-lg hover:shadow-xl hover:shadow-green-500/20 transform hover:-translate-y-1 transition-all duration-300 ease-in-out animate-fade-in">
-          <div className="flex items-center gap-4">
-            <BookOpenIcon className="w-10 h-10 text-green-500 dark:text-green-300" />
+        <div className="relative bg-white dark:bg-gradient-to-br dark:from-gray-900 dark:to-gray-800 p-4 sm:p-6 rounded-2xl shadow-lg hover:shadow-xl hover:shadow-green-500/20 transform hover:-translate-y-1 transition-all duration-300 ease-in-out animate-fade-in">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <BookOpenIcon className="w-8 h-8 sm:w-10 sm:h-10 text-green-500 dark:text-green-300" />
             <div>
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-1">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-gray-200 mb-1">
                 Tổng số sách
               </h3>
-              <p className="text-3xl font-bold text-green-500 dark:text-green-300">{totalBooks}</p>
-              <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">
+              <p className="text-2xl sm:text-3xl font-bold text-green-500 dark:text-green-300">{totalBooks}</p>
+              <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm mt-1">
                 Tăng <span className="text-green-500 dark:text-green-300">5%</span> so với tháng trước
               </p>
             </div>
           </div>
         </div>
 
-        <div className="relative bg-white dark:bg-gradient-to-br dark:from-gray-900 dark:to-gray-800 p-6 rounded-2xl shadow-lg hover:shadow-xl hover:shadow-yellow-500/20 transform hover:-translate-y-1 transition-all duration-300 ease-in-out animate-fade-in">
-          <div className="flex items-center gap-4">
-            <ClockIcon className="w-10 h-10 text-yellow-500 dark:text-yellow-300" />
+        <div className="relative bg-white dark:bg-gradient-to-br dark:from-gray-900 dark:to-gray-800 p-4 sm:p-6 rounded-2xl shadow-lg hover:shadow-xl hover:shadow-yellow-500/20 transform hover:-translate-y-1 transition-all duration-300 ease-in-out animate-fade-in">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <ClockIcon className="w-8 h-8 sm:w-10 sm:h-10 text-yellow-500 dark:text-yellow-300" />
             <div>
-              <h3 className="text-lg font-semibold text-gray-800 dark:text-gray-200 mb-1">
+              <h3 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-gray-200 mb-1">
                 Hoạt động gần đây
               </h3>
-              <p className="text-3xl font-bold text-yellow-500 dark:text-yellow-300">{recentActivities}</p>
-              <p className="text-gray-600 dark:text-gray-400 text-sm mt-1">
+              <p className="text-2xl sm:text-3xl font-bold text-yellow-500 dark:text-yellow-300">{recentActivities}</p>
+              <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm mt-1">
                 Đơn mượn trong 24 giờ qua
               </p>
             </div>
@@ -248,39 +255,41 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      <div className="bg-white dark:bg-gray-900 p-6 rounded-2xl shadow-lg transition-all duration-300 ease-in-out animate-fade-in">
-        <h3 className="text-xl sm:text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-6">
+      <div className="bg-white dark:bg-gray-900 p-4 sm:p-6 rounded-2xl shadow-lg transition-all duration-300 ease-in-out animate-fade-in">
+        <h3 className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-800 dark:text-gray-200 mb-4 sm:mb-6">
           Thống kê chi tiết
         </h3>
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg transition-all duration-300 ease-in-out">
-            <h4 className=" text-lg font-semibold text-gray-700 dark:text-gray-300 mb-4">
+        <div className="grid grid-cols-1 lg:grid-cols-2 gap-4 sm:gap-6 lg:gap-8">
+          <div className="bg-gray-50 dark:bg-gray-800 p-3 sm:p-4 rounded-lg transition-all duration-300 ease-in-out">
+            <h4 className="text-base sm:text-lg font-semibold text-gray-700 dark:text-gray-300 mb-3 sm:mb-4">
               Phân bổ doanh thu
             </h4>
-            {hasRevenueData ? (
+            <div className="w-full max-w-[3800px] sm:max-w-[4400px] lg:max-w-[540px] mx-auto h-[280px] sm:h-[340px] lg:h-[400px]">
+              {hasRevenueData ? (
                 <Pie data={chartData} options={chartOptions} />
-            ) : (
-              <p className="text-gray-500 dark:text-gray-400 text-center">
-                Chưa có dữ liệu doanh thu để hiển thị
-              </p>
-            )}
+              ) : (
+                <p className="text-gray-500 dark:text-gray-400 text-center text-sm sm:text-base">
+                  Chưa có dữ liệu doanh thu để hiển thị
+                </p>
+              )}
+            </div>
           </div>
 
           <div className="space-y-4">
-            <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg transition-all duration-300 ease-in-out">
-              <h4 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
+            <div className="bg-gray-50 dark:bg-gray-800 p-3 sm:p-4 rounded-lg transition-all duration-300 ease-in-out">
+              <h4 className="text-base sm:text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
                 Sách được mượn nhiều nhất
               </h4>
-              <p className="text-gray-800 dark:text-gray-200">
+              <p className="text-gray-800 dark:text-gray-200 text-sm sm:text-base">
                 <span className="font-bold text-green-500 dark:text-green-300">{mostBorrowedBook?.title}</span> -{" "}
                 {mostBorrowedBook?.count} lượt mượn
               </p>
             </div>
-            <div className="bg-gray-50 dark:bg-gray-800 p-4 rounded-lg transition-all duration-300 ease-in-out">
-              <h4 className="text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
+            <div className="bg-gray-50 dark:bg-gray-800 p-3 sm:p-4 rounded-lg transition-all duration-300 ease-in-out">
+              <h4 className="text-base sm:text-lg font-semibold text-gray-700 dark:text-gray-300 mb-2">
                 Người dùng tích cực nhất
               </h4>
-              <p className="text-gray-800 dark:text-gray-200">
+              <p className="text-gray-800 dark:text-gray-200 text-sm sm:text-base">
                 <span className="font-bold text-blue-500 dark:text-blue-300">
                   {mostActiveUser?.name || "Chưa có dữ liệu"}
                 </span>{" "}

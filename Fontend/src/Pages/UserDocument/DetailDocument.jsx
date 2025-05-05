@@ -8,7 +8,7 @@ import { Worker, Viewer } from "@react-pdf-viewer/core";
 import "@react-pdf-viewer/core/lib/styles/index.css";
 import { pdfjs } from "react-pdf";
 import { FaShareAlt, FaFacebook, FaInstagram, FaComment } from "react-icons/fa";
-import { toast } from "react-toastify";
+import { toast, ToastContainer } from "react-toastify";
 import ReviewSection from "../ReviewSection/ReviewSection";
 
 pdfjs.GlobalWorkerOptions.workerSrc = `https://unpkg.com/pdfjs-dist@3.0.279/build/pdf.worker.min.js`;
@@ -40,7 +40,6 @@ const DetailDocument = () => {
 
       if (!user?.accessToken) {
         const errorMessage = "Bạn cần đăng nhập để xem tài liệu này.";
-        setError(errorMessage);
         toast.error(errorMessage, {
           position: "top-center",
           autoClose: 3000,
@@ -60,7 +59,6 @@ const DetailDocument = () => {
       } catch (err) {
         console.error("Lỗi fetch document:", err.response?.data || err.message);
         const errorMessage = err.response?.data?.message || "Lỗi khi lấy thông tin tài liệu. Vui lòng thử lại.";
-        setError(errorMessage);
         toast.error(errorMessage, {
           position: "top-center",
           autoClose: 3000,
@@ -94,7 +92,6 @@ const DetailDocument = () => {
   const handleDownload = () => {
     if (!docData) {
       const errorMessage = "Không có tài liệu để tải xuống.";
-      setError(errorMessage);
       toast.error(errorMessage, {
         position: "top-center",
         autoClose: 3000,
@@ -112,7 +109,6 @@ const DetailDocument = () => {
       .catch((err) => {
         console.error("Lỗi khi tải xuống:", err.response?.data || err.message);
         const errorMessage = err.response?.data?.message || "Không thể tải tài liệu xuống. Vui lòng thử lại.";
-        setError(errorMessage);
         toast.error(errorMessage, {
           position: "top-center",
           autoClose: 3000,
@@ -360,6 +356,16 @@ const DetailDocument = () => {
           </>
         )}
       </div>
+      <ToastContainer
+        position="top-right"
+        autoClose={4000}
+        hideProgressBar={false}
+        closeOnClick={true}
+        pauseOnHover={true}
+        draggable={true}
+        theme="colored"
+        className="z-50"
+      />
     </div>
   );
 };

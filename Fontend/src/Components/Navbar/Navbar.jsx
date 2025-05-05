@@ -247,3 +247,4 @@ const MobileNavItem = ({ to, icon, text, onClick }) => (
 );
 
 export default Navbar;
+

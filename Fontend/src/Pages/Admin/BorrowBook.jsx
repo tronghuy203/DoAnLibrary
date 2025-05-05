@@ -25,7 +25,7 @@ const BorrowBook = () => {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [penalties, setPenalties] = useState({});
-  const recordsPerPage = 7;
+  const recordsPerPage = 4;
 
   const totalRecords = borrowList?.length || 0;
   const totalPages = Math.ceil(totalRecords / recordsPerPage);
@@ -95,7 +95,6 @@ const BorrowBook = () => {
     pageNumbers.push(i);
   }
 
-  // Hàm hiển thị trạng thái
   const getStatusDisplay = (borrow) => {
     if (borrow.returnDate) return "Đã trả";
     switch (borrow.status) {
@@ -136,10 +135,10 @@ const BorrowBook = () => {
         </svg>
       </div>
 
-      <div className="max-w-6xl mx-auto relative z-10">
-        <div className="text-center mb-12 animate-slide-up">
-          <BookOpenIcon className="w-16 h-16 mx-auto text-cyan-600 dark:text-cyan-400 mb-4 animate-pulse" />
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-cyan-600 dark:text-cyan-400 tracking-tight drop-shadow-lg">
+      <div className="max-w-6xl mx-auto relative z-10 ">
+        <div className="text-center mb-4 animate-slide-up">
+          <BookOpenIcon className="w-16 h-16 mx-auto text-cyan-600 dark:text-cyan-400 animate-pulse" />
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-cyan-600 dark:text-cyan-400 tracking-tight drop-shadow-lg ">
             Quản Lý Mượn Trả Sách
           </h2>
           <p className="mt-2 text-lg sm:text-xl text-gray-600 dark:text-gray-300">

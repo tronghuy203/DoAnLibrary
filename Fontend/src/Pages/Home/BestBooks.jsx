@@ -53,7 +53,7 @@ const BestBooks = () => {
   }, [topBooksSorted]);
 
   const handleOrderClick = () => {
-    navigate("/cart");
+    navigate("/all-books");
   };
 
   return (

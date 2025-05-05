@@ -58,7 +58,7 @@ const chatbotController = {
               `- Tên: ${b.title}\n  Tác giả: ${b.author}\n  Năm: ${b.publishedYear}\n  Mô tả: ${b.description || "Không có"}\n  Giá: ${b.price || "Không rõ"} VND\n  Còn lại: ${b.quantity - b.sold} cuốn\n  Danh mục: ${b.category?.name || "Không có"}`
           )
           .join("\n")}`,
-        `Danh sách tài liệu:\n${docs.map((d) => `-Tên ${d.title} \n Mô tả: ${d.description} || "Không có"`)
+        `Danh sách tài liệu:\n${docs.map((d) => `-Tên ${d.title} \n Mô tả: ${d.description} || "Không có" \n Người đăng: ${d.uploadedBy}`)
           .join("\n")}`,
         `Các đánh giá gần đây:\n${reviewData
           .map(
