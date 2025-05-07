@@ -1,4 +1,4 @@
-import { Link, useNavigate } from "react-router-dom";
+import { Link, useNavigate, useLocation } from "react-router-dom"; // Thêm useLocation
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { createAxios } from "../../createInstance";
@@ -14,6 +14,7 @@ const AllBooks = () => {
   const categories = useSelector((state) => state.categories.allCategories);
   const dispatch = useDispatch();
   const navigate = useNavigate();
+  const location = useLocation(); 
   const axiosJWT = useMemo(() => createAxios(user, dispatch, loginSuccess), [user, dispatch]);
 
   const [selectedCategory, setSelectedCategory] = useState("all");
@@ -23,6 +24,11 @@ const AllBooks = () => {
   const [visibleBooks, setVisibleBooks] = useState(8);
   const [searchQuery, setSearchQuery] = useState("");
   const [reviewStats, setReviewStats] = useState({});
+
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [location]);
 
   const categoryMap = useMemo(() => {
     const map = {};
@@ -52,7 +58,6 @@ const AllBooks = () => {
   }, [user, dispatch, axiosJWT, navigate]);
 
   useEffect(() => {
-
     if (books.length > 0) {
       fetchReviewStats();
     }
@@ -88,8 +93,8 @@ const AllBooks = () => {
         (selectedPriceRange === "high" && book.price > 500000)) &&
       (selectedAuthor === "all" || book.author === selectedAuthor) &&
       (selectedRating === "all" ||
-        (selectedRating === "4+" && avgRating  >= 4) ||
-        (selectedRating === "3+" && avgRating  >= 3))
+        (selectedRating === "4+" && avgRating >= 4) ||
+        (selectedRating === "3+" && avgRating >= 3))
     );
   });
 
@@ -175,7 +180,6 @@ const AllBooks = () => {
         </div>
       </div>
 
-      {/* Danh sách sách */}
       {filteredBooks.length > 0 ? (
         <>
           <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 max-w-7xl mx-auto">

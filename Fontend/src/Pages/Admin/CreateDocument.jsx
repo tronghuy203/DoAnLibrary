@@ -4,6 +4,7 @@ import { createAxios } from "../../createInstance";
 import { loginSuccess } from "../../redux/authSlice";
 import { uploadDocument } from "../../redux/apiDocument";
 import { BookOpenIcon, DocumentTextIcon, PaperClipIcon, CheckCircleIcon, ExclamationCircleIcon } from "@heroicons/react/24/outline";
+import LoadingSpinner from "./LoadingSpinner";
 
 const CreateDocument = () => {
   const user = useSelector((state) => state.auth.login?.currentUser);
@@ -17,6 +18,7 @@ const CreateDocument = () => {
   });
   const [previewFileName, setPreviewFileName] = useState(null);
   const [message, setMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const handleChange = (e) => {
     const { name, value, files } = e.target;
@@ -42,6 +44,7 @@ const CreateDocument = () => {
     data.append("file", formData.file);
 
     try {
+      setIsLoading(true);
       await uploadDocument(data, user?.accessToken, dispatch, axiosJWT);
       setMessage("Tạo tài liệu thành công!");
       setFormData({ title: "", description: "", file: null });
@@ -49,6 +52,8 @@ const CreateDocument = () => {
     } catch (error) {
       console.error("Lỗi khi tạo tài liệu:", error);
       setMessage("Có lỗi xảy ra khi tạo tài liệu!");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -71,8 +76,9 @@ const CreateDocument = () => {
           <path fill="currentColor" d="M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,213.3C672,224,768,224,864,213.3C960,203,1056,181,1152,186.7C1248,192,1344,224,1392,240L1440,256L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
         </svg>
       </div>
-
+      <LoadingSpinner isLoading={isLoading} />
       <div className="w-full max-w-2xl relative z-10">
+
         <div className="text-center mb-10 animate-slide-up">
           <DocumentTextIcon className="w-16 h-16 mx-auto text-cyan-600 dark:text-cyan-400 mb-3 animate-pulse" />
           <h2 className="text-3xl sm:text-4xl font-extrabold text-cyan-600 dark:text-cyan-400 tracking-tight drop-shadow-lg">
@@ -118,7 +124,10 @@ const CreateDocument = () => {
                 value={formData.title}
                 onChange={handleChange}
                 required
-                className="w-full pl-12 pr-4 py-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300/50 dark:border-gray-600/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200 hover:bg-gradient-to-r hover:from-gray-100/80 hover:to-gray-50/80 dark:hover:from-gray-800/80 dark:hover:to-gray-700/80"
+                disabled={isLoading}
+                className={`w-full pl-12 pr-4 py-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300/50 dark:border-gray-600/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200 hover:bg-gradient-to-r hover:from-gray-100/80 hover:to-gray-50/80 dark:hover:from-gray-800/80 dark:hover:to-gray-700/80 ${
+                  isLoading ? "opacity-75 cursor-not-allowed" : ""
+                }`}
                 placeholder="Nhập tiêu đề tài liệu"
               />
             </div>
@@ -135,7 +144,10 @@ const CreateDocument = () => {
                 name="description"
                 value={formData.description}
                 onChange={handleChange}
-                className="w-full pl-12 pr-4 py-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300/50 dark:border-gray-600/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 resize-y placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200 hover:bg-gradient-to-r hover:from-gray-100/80 hover:to-gray-50/80 dark:hover:from-gray-800/80 dark:hover:to-gray-700/80"
+                disabled={isLoading}
+                className={`w-full pl-12 pr-4 py-3 bg-white dark:bg-gray-800 text-gray-900 dark:text-gray-100 border border-gray-300/50 dark:border-gray-600/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 resize-y placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200 hover:bg-gradient-to-r hover:from-gray-100/80 hover:to-gray-50/80 dark:hover:from-gray-800/80 dark:hover:to-gray-700/80 ${
+                  isLoading ? "opacity-75 cursor-not-allowed" : ""
+                }`}
                 placeholder="Nhập mô tả tài liệu (không bắt buộc)"
                 rows="4"
               />
@@ -147,7 +159,9 @@ const CreateDocument = () => {
             <div className="relative">
               <label
                 htmlFor="file"
-                className="group flex items-center justify-center w-full h-40 sm:h-48 bg-gray-100/80 dark:bg-gray-800/80 border-2 border-gray-300/50 dark:border-gray-600/50 rounded-xl cursor-pointer hover:bg-gradient-to-r hover:from-gray-200/80 hover:to-gray-100/80 dark:hover:from-gray-700/80 dark:hover:to-gray-600/80 hover:border-cyan-500 dark:hover:border-cyan-400 transition-all duration-300 shadow-md"
+                className={`group flex items-center justify-center w-full h-40 sm:h-48 bg-gray-100/80 dark:bg-gray-800/80 border-2 border-gray-300/50 dark:border-gray-600/50 rounded-xl cursor-pointer hover:bg-gradient-to-r hover:from-gray-200/80 hover:to-gray-100/80 dark:hover:from-gray-700/80 dark:hover:to-gray-600/80 hover:border-cyan-500 dark:hover:border-cyan-400 transition-all duration-300 shadow-md ${
+                  isLoading ? "opacity-75 cursor-not-allowed" : ""
+                }`}
               >
                 {previewFileName ? (
                   <div className="relative w-full h-full flex items-center justify-center">
@@ -174,6 +188,7 @@ const CreateDocument = () => {
                   id="file"
                   name="file"
                   onChange={handleChange}
+                  disabled={isLoading}
                   className="hidden"
                   required
                 />
@@ -188,7 +203,10 @@ const CreateDocument = () => {
 
           <button
             type="submit"
-            className="w-full flex items-center justify-center gap-3 bg-gradient-to-r from-cyan-600 to-blue-600 dark:from-cyan-500 dark:to-blue-500 hover:from-cyan-700 hover:to-blue-700 dark:hover:from-cyan-600 dark:hover:to-blue-600 text-white font-semibold py-3 sm:py-4 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105"
+            disabled={isLoading}
+            className={`w-full flex items-center justify-center gap-3 bg-gradient-to-r from-cyan-600 to-blue-600 dark:from-cyan-500 dark:to-blue-500 text-white font-semibold py-3 sm:py-4 rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl hover:scale-105 ${
+              isLoading ? "opacity-75 cursor-not-allowed" : "hover:from-cyan-700 hover:to-blue-700 dark:hover(click)=>(handleDecreaseQuantity)from-cyan-600 dark:hover:to-blue-600"
+            }`}
           >
             <PaperClipIcon className="w-6 h-6 text-white transform hover:scale-110 transition-transform duration-200" />
             Tạo tài liệu

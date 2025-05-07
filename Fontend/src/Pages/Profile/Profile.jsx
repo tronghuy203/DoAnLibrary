@@ -80,6 +80,10 @@ const Profile = () => {
     }
   }, [user, navigate, dispatch, axiosJWT]);
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   const handleDelete = (id) => {
     if (!user || !axiosJWT) {
       setError("Không thể xóa tài khoản. Vui lòng đăng nhập lại.");

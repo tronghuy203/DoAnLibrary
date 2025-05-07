@@ -11,6 +11,7 @@ const ResetPassword = () => {
   const [error, setError] = useState("");
   const [showNewPassword, setShowNewPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -19,13 +20,14 @@ const ResetPassword = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
-
-    if (newPassword !== confirmPassword) {
-      setError("Mật khẩu xác nhận không khớp!");
-      return;
-    }
+    setIsLoading(true);
 
     try {
+      if (newPassword !== confirmPassword) {
+        setError("Mật khẩu xác nhận không khớp!");
+        return;
+      }
+
       await resetPassword(
         { email, newPassword, confirmNewPassword: confirmPassword },
         dispatch
@@ -34,6 +36,8 @@ const ResetPassword = () => {
       navigate("/login");
     } catch (err) {
       setError(err.message || "Có lỗi xảy ra. Vui lòng thử lại.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -56,6 +60,16 @@ const ResetPassword = () => {
         className="relative bg-white dark:bg-zinc-900 p-6 sm:p-8 rounded-3xl shadow-lg w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg"
       >
         <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-blue-400/30 to-cyan-500/30 blur-xl opacity-50 dark:from-blue-600/20 dark:to-cyan-600/20 -z-10"></div>
+
+        {isLoading && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black/50 dark:bg-zinc-900/70 z-50 rounded-3xl">
+            <div className="relative w-16 h-16">
+              <div className="absolute inset-0 border-4 border-t-transparent border-cyan-500 dark:border-cyan-400 rounded-full animate-spin-continuous"></div>
+              <div className="absolute inset-2 border-4 border-r-transparent border-blue-600 dark:border-blue-500 rounded-full animate-spin-continuous-reverse"></div>
+              <div className="absolute inset-4 bg-gradient-to-r from-cyan-500 to-blue-600 dark:from-cyan-600 dark:to-blue-700 rounded-full opacity-50 animate-pulse"></div>
+            </div>
+          </div>
+        )}
 
         <div className="relative z-10">
           <motion.h2
@@ -136,7 +150,7 @@ const ResetPassword = () => {
                   onClick={toggleConfirmPasswordVisibility}
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
-                  className="absolute inset-y-0 right-3 flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors duration-200 focus:outline-none"
+                  className="absolute inset-0 right-3 flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors duration-200 focus:outline-none"
                 >
                   {showConfirmPassword ? (
                     <AiOutlineEyeInvisible className="w-5 h-5" />
@@ -154,7 +168,10 @@ const ResetPassword = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5, duration: 0.5 }}
-              className="w-full py-3 bg-gradient-to-r from-blue-500 to-cyan-600 dark:from-blue-600 dark:to-cyan-700 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-cyan-700 dark:hover:from-blue-700 dark:hover:to-cyan-800 transition-all duration-300 shadow-md"
+              disabled={isLoading}
+              className={`w-full py-3 bg-gradient-to-r from-blue-500 to-cyan-600 dark:from-blue-600 dark:to-cyan-700 text-white font-semibold rounded-lg transition-all duration-300 shadow-md ${
+                isLoading ? "opacity-75 cursor-not-allowed" : "hover:from-blue-600 hover:to-cyan-700 dark:hover:from-blue-700 dark:hover:to-cyan-800"
+              }`}
             >
               Đặt Lại Mật Khẩu
             </motion.button>
@@ -177,6 +194,25 @@ const ResetPassword = () => {
           </motion.div>
         </div>
       </motion.div>
+
+      <style>
+        {`
+          @keyframes spin-continuous {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+          @keyframes spin-continuous-reverse {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(-360deg); }
+          }
+          .animate-spin-continuous {
+            animation: spin-continuous 1s linear infinite;
+          }
+          .animate-spin-continuous-reverse {
+            animation: spin-continuous-reverse 1s linear infinite;
+          }
+        `}
+      </style>
     </div>
   );
 };

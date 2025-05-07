@@ -8,6 +8,7 @@ const VerifyOTP = () => {
   const [otp, setOtp] = useState(["", "", "", "", "", ""]);
   const [error, setError] = useState("");
   const [resendMessage, setResendMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const location = useLocation();
@@ -48,25 +49,36 @@ const VerifyOTP = () => {
     e.preventDefault();
     setError("");
     setResendMessage("");
-    const otpCode = otp.join("");
+    setIsLoading(true);
 
-    const response = await verifyResetCode(email, otpCode, dispatch);
+    try {
+      const otpCode = otp.join("");
+      const response = await verifyResetCode(email, otpCode, dispatch);
 
-    if (response.success) {
-      navigate("/reset-password", { state: { email } });
-    } else {
-      setError(response.message || "Mã OTP không hợp lệ. Vui lòng thử lại.");
+      if (response.success) {
+        navigate("/reset-password", { state: { email } });
+      } else {
+        setError(response.message || "Mã OTP không hợp lệ. Vui lòng thử lại.");
+      }
+    } catch (err) {
+      setError(err.message || "Mã OTP không hợp lệ. Vui lòng thử lại.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleResendOTP = async () => {
     setError("");
     setResendMessage("");
+    setIsLoading(true);
+
     try {
       const response = await resendResetCode(email, dispatch);
       setResendMessage(response.message || "Mã OTP đã được gửi lại.");
     } catch (err) {
       setError(err.message || "Không thể gửi lại mã OTP. Vui lòng thử lại.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -79,6 +91,16 @@ const VerifyOTP = () => {
         className="relative bg-white dark:bg-zinc-900 p-6 sm:p-8 rounded-3xl shadow-lg w-full max-w-sm sm:max-w-md md:max-w-lg"
       >
         <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-blue-400/30 to-cyan-500/30 blur-xl opacity-50 dark:from-blue-600/20 dark:to-cyan-600/20 -z-10"></div>
+
+        {isLoading && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black/50 dark:bg-zinc-900/70 z-50">
+            <div className="relative w-16 h-16">
+              <div className="absolute inset-0 border-4 border-t-transparent border-cyan-500 dark:border-cyan-400 rounded-full animate-spin-continuous"></div>
+              <div className="absolute inset-2 border-4 border-r-transparent border-blue-600 dark:border-blue-500 rounded-full animate-spin-continuous-reverse"></div>
+              <div className="absolute inset-4 bg-gradient-to-r from-cyan-500 to-blue-600 dark:from-cyan-600 dark:to-blue-700 rounded-full opacity-50 animate-pulse"></div>
+            </div>
+          </div>
+        )}
 
         <div className="relative z-10">
           <motion.h2
@@ -153,7 +175,10 @@ const VerifyOTP = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5, duration: 0.5 }}
-              className="w-full py-3 bg-gradient-to-r from-blue-500 to-cyan-600 dark:from-blue-600 dark:to-cyan-700 text-white font-semibold rounded-lg hover:from-blue-600 hover:to-cyan-700 dark:hover:from-blue-700 dark:hover:to-cyan-800 transition-all duration-300 shadow-md"
+              disabled={isLoading}
+              className={`w-full py-3 bg-gradient-to-r from-blue-500 to-cyan-600 dark:from-blue-600 dark:to-cyan-700 text-white font-semibold rounded-lg transition-all duration-300 shadow-md ${
+                isLoading ? "opacity-75 cursor-not-allowed" : "hover:from-blue-600 hover:to-cyan-700 dark:hover:from-blue-700 dark:hover:to-cyan-800"
+              }`}
             >
               Xác Minh
             </motion.button>
@@ -168,7 +193,10 @@ const VerifyOTP = () => {
             Không nhận được mã?{" "}
             <button
               onClick={handleResendOTP}
-              className="text-blue-600 dark:text-blue-400 hover:text-blue-700 dark:hover:text-blue-300 font-medium transition-all duration-200 relative group"
+              disabled={isLoading}
+              className={`text-blue-600 dark:text-blue-400 font-medium transition-all duration-200 relative group ${
+                isLoading ? "opacity-75 cursor-not-allowed" : "hover:text-blue-700 dark:hover:text-blue-300"
+              }`}
             >
               Gửi lại OTP
               <span className="absolute left-0 bottom-0 w-0 h-0.5 bg-blue-600 dark:bg-blue-400 group-hover:w-full transition-all duration-300"></span>
@@ -176,6 +204,25 @@ const VerifyOTP = () => {
           </motion.p>
         </div>
       </motion.div>
+
+      <style>
+        {`
+          @keyframes spin-continuous {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+          @keyframes spin-continuous-reverse {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(-360deg); }
+          }
+          .animate-spin-continuous {
+            animation: spin-continuous 1s linear infinite;
+          }
+          .animate-spin-continuous-reverse {
+            animation: spin-continuous-reverse 1s linear infinite;
+          }
+        `}
+      </style>
     </div>
   );
 };

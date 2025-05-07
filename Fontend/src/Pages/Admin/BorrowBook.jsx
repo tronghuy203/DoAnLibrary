@@ -44,17 +44,21 @@ const BorrowBook = () => {
       if (!borrowList || !user?.accessToken) return;
 
       try {
-        const penaltyPromises = borrowList.map(async (record) => {
-          try {
-            const penalty = await getPenaltyByBorrow(record._id, user.accessToken, axiosJWT);
-            return { borrowId: record._id, penalty };
-          } catch (err) {
-            return { borrowId: record._id, penalty: null };
-          }
-        });
+        const penaltyPromises = borrowList
+          .filter((record) => record.status === "overdue")
+          .map(async (record) => {
+            try {
+              const penalty = await getPenaltyByBorrow(record._id, user.accessToken, axiosJWT);
+              return { borrowId: record._id, penalty };
+            } catch (err) {
+              return { borrowId: record._id, penalty: null };
+            }
+          });
         const penaltyResults = await Promise.all(penaltyPromises);
         const penaltyMap = penaltyResults.reduce((acc, { borrowId, penalty }) => {
-          acc[borrowId] = penalty;
+          if (penalty) {
+            acc[borrowId] = penalty;
+          }
           return acc;
         }, {});
         setPenalties(penaltyMap);
@@ -65,6 +69,7 @@ const BorrowBook = () => {
 
     fetchPenalties();
   }, [borrowList, user?.accessToken, axiosJWT]);
+
 
   const handleConfirmPickup = async (id) => {
     try {

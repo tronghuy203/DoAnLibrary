@@ -46,7 +46,6 @@ const DocumentsPage = () => {
       setError(null);
 
       const documents = await getUserDocuments(user._id, user.accessToken, axiosJWT);
-      console.log("User Documents:", documents);
       setUserDocuments(Array.isArray(documents) ? documents : []);
     } catch (err) {
       console.error("API Error:", err);
@@ -81,20 +80,23 @@ const DocumentsPage = () => {
     fetchDocuments();
   }, [user, fetchDocuments, navigate]);
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   const getDocumentStatus = (status) => {
     switch (status) {
       case "pending":
-        return "Chờ duyệt";
+        return { text: "Chờ duyệt", icon: <ClockIcon className="h-4 w-4" /> };
       case "approved":
-        return "Đã duyệt";
+        return { text: "Đã duyệt", icon: <CheckCircleIcon className="h-4 w-4" /> };
       case "rejected":
-        return "Bị từ chối";
+        return { text: "Bị từ chối", icon: <XCircleIcon className="h-4 w-4" /> };
       default:
-        return "Không xác định";
+        return { text: "Không xác định", icon: null };
     }
   };
 
-  // Pagination logic
   const totalPages = Math.ceil(userDocuments.length / itemsPerPage);
   const paginatedDocuments = userDocuments.slice(
     (currentPage - 1) * itemsPerPage,
@@ -150,7 +152,7 @@ const DocumentsPage = () => {
                   <ClockIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                   Đang tải danh sách tài liệu...
                 </p>
-              ) : paginatedDocuments.length === 0 ? (
+              ) : userDocuments.length === 0 ? (
                 <p className="text-gray-500 dark:text-gray-400 flex items-center gap-2 text-sm sm:text-base">
                   <DocumentTextIcon className="h-4 w-4 sm:h-5 sm:w-5" />
                   Bạn chưa tải lên tài liệu nào.
@@ -176,7 +178,7 @@ const DocumentsPage = () => {
                                 : "bg-gray-50 dark:bg-gray-700"
                             } hover:bg-gray-100 dark:hover:bg-gray-600 transition-all duration-200`}
                           >
-                            <td className="px-4 py-3">{doc.title || "N/A"}</td>
+                            <td className="px-4 py-3 truncate max-w-[300px]">{doc.title || "N/A"}</td>
                             <td className="px-4 py-3">
                               {doc.createdAt
                                 ? new Date(doc.createdAt).toLocaleDateString("vi-VN")
@@ -199,78 +201,96 @@ const DocumentsPage = () => {
                                 ) : (
                                   <XCircleIcon className="h-5 w-5" />
                                 )}
-                                {getDocumentStatus(doc.status)}
+                                {getDocumentStatus(doc.status).text}
                               </span>
                             </td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
-                  </div>
-                  <div className="md:hidden space-y-4">
-                    {paginatedDocuments.map((doc, index) => (
-                      <div
-                        key={doc._id || index}
-                        className="bg-gray-50 dark:bg-gray-700 p-4 rounded-xl shadow-sm"
-                      >
-                        <p className="text-sm font-semibold text-gray-900 dark:text-white">
-                          <span className="font-medium">Tiêu đề:</span>{" "}
-                          {doc.title || "N/A"}
-                        </p>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">
-                          <span className="font-medium">Ngày tải lên:</span>{" "}
-                          {doc.createdAt
-                            ? new Date(doc.createdAt).toLocaleDateString("vi-VN")
-                            : "N/A"}
-                        </p>
-                        <p className="text-sm text-gray-600 dark:text-gray-300">
-                          <span className="font-medium">Trạng thái:</span>{" "}
-                          <span
-                            className={`inline-flex items-center gap-2 px-2 py-1 rounded-full text-xs font-medium ${
-                              doc.status === "approved"
-                                ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
-                                : doc.status === "pending"
-                                ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
-                                : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+                    {totalPages > 1 && (
+                      <div className="mt-6 flex justify-center gap-2">
+                        <button
+                          onClick={() => handlePageChange(currentPage - 1)}
+                          disabled={currentPage === 1}
+                          className="px-3 py-1 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-50"
+                        >
+                          Trước
+                        </button>
+                        {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                          <button
+                            key={page}
+                            onClick={() => handlePageChange(page)}
+                            className={`px-3 py-1 rounded-md ${
+                              currentPage === page
+                                ? "bg-blue-500 text-white"
+                                : "bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white"
                             }`}
                           >
-                            {getDocumentStatus(doc.status)}
-                          </span>
-                        </p>
-                      </div>
-                    ))}
-                  </div>
-                  {totalPages > 1 && (
-                    <div className="mt-6 flex justify-center gap-2">
-                      <button
-                        onClick={() => handlePageChange(currentPage - 1)}
-                        disabled={currentPage === 1}
-                        className="px-3 py-1 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-50"
-                      >
-                        Trước
-                      </button>
-                      {Array.from({ length: totalPages }, (_, index) => index + 1).map((page) => (
+                            {page}
+                          </button>
+                        ))}
                         <button
-                          key={page}
-                          onClick={() => handlePageChange(page)}
-                          className={`px-3 py-1 rounded-md ${
-                            currentPage === page
-                              ? "bg-blue-500 text-white"
-                              : "bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white"
-                          }`}
+                          onClick={() => handlePageChange(currentPage + 1)}
+                          disabled={currentPage === totalPages}
+                          className="px-3 py-1 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-50"
                         >
-                          {page}
+                          Sau
                         </button>
-                      ))}
-                      <button
-                        onClick={() => handlePageChange(currentPage + 1)}
-                        disabled={currentPage === totalPages}
-                        className="px-3 py-1 rounded-md bg-gray-200 dark:bg-gray-700 text-gray-900 dark:text-white disabled:opacity-50"
-                      >
-                        Sau
-                      </button>
-                    </div>
-                  )}
+                      </div>
+                    )}
+                  </div>
+                  <div className="md:hidden space-y-4 max-h-[600px] overflow-y-auto custom-scrollbar">
+                    {userDocuments.map((doc, index) => {
+                      const statusDisplay = getDocumentStatus(doc.status);
+                      return (
+                        <div
+                          key={doc._id || index}
+                          className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md border border-gray-200 dark:border-gray-700"
+                        >
+                          <div className="flex justify-between items-start mb-2">
+                            <h3 className="text-base font-semibold text-gray-900 dark:text-white truncate">
+                              {doc.title || "N/A"}
+                            </h3>
+                            <span
+                              className={`px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${
+                                doc.status === "approved"
+                                  ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+                                  : doc.status === "pending"
+                                  ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
+                                  : "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+                              }`}
+                            >
+                              {statusDisplay.icon}
+                              {statusDisplay.text}
+                            </span>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2 text-sm text-gray-600 dark:text-gray-300">
+                            <div>
+                              <span className="font-medium">Ngày tải lên:</span>{" "}
+                              {doc.createdAt
+                                ? new Date(doc.createdAt).toLocaleDateString("vi-VN")
+                                : "N/A"}
+                            </div>
+                            <div>
+                              <span className="font-medium">Trạng thái:</span>{" "}
+                              <span
+                                className={`inline-flex items-center gap-1 ${
+                                  doc.status === "approved"
+                                    ? "text-green-800 dark:text-green-300"
+                                    : doc.status === "pending"
+                                    ? "text-yellow-800 dark:text-yellow-300"
+                                    : "text-red-800 dark:text-red-300"
+                                }`}
+                              >
+                                {statusDisplay.text}
+                              </span>
+                            </div>
+                          </div>
+                        </div>
+                      );
+                    })}
+                  </div>
                 </>
               )}
             </section>

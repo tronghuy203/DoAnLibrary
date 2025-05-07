@@ -16,10 +16,18 @@ const Register = () => {
   const [errors, setErrors] = useState({});
   const [showPassword, setShowPassword] = useState(false);
   const [showConfirmPassword, setShowConfirmPassword] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
 
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const inputRefs = useRef([]);
+
+  useEffect(() => {
+    window.scrollTo({
+      top: 0,
+      behavior: "smooth", 
+    });
+  }, []); 
 
   const validateFields = (fields) => {
     const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
@@ -47,14 +55,13 @@ const Register = () => {
   
     const newUser = { email, username, password, confirmPassword };
     try {
-      console.log("Sending to server:", newUser);
+      setIsLoading(true);
       await registerUser(newUser, dispatch, navigate);
       setStep(2);
       setVerificationCode(["", "", "", "", "", ""]);
       setCountdown(60);
       setErrors({});
     } catch (err) {
-      console.log("Server response:", err.response);
       const serverError = err.response?.data || "Đăng ký thất bại. Vui lòng thử lại.";
       console.log("Server error:", serverError);
       setErrors(
@@ -68,6 +75,8 @@ const Register = () => {
           ? { confirmPassword: "Mật khẩu không khớp." }
           : { general: serverError }
       );
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -81,6 +90,7 @@ const Register = () => {
 
     const verifyData = { email, code };
     try {
+      setIsLoading(true);
       await verifyEmail(verifyData, dispatch, navigate);
       setErrors({});
     } catch (err) {
@@ -92,6 +102,8 @@ const Register = () => {
           ? { general: "Không tìm thấy thông tin đăng ký. Vui lòng đăng ký lại." }
           : { general: serverError }
       );
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -162,6 +174,16 @@ const Register = () => {
     >
       <div className="absolute inset-0 bg-gradient-to-br from-gray-900/80 via-gray-800/70 to-black/80 dark:from-zinc-900/80 dark:via-zinc-800/70 dark:to-black/80 backdrop-blur-md transition-all duration-300"></div>
       <div className="absolute inset-0 bg-[radial-gradient(circle_at_center,_rgba(0,255,255,0.15),_transparent_70%)] opacity-40 animate-pulse-slow"></div>
+
+      {isLoading && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black/50 dark:bg-zinc-900/70 z-50">
+            <div className="relative w-16 h-16">
+              <div className="absolute inset-0 border-4 border-t-transparent border-cyan-500 dark:border-cyan-400 rounded-full animate-spin-continuous"></div>
+              <div className="absolute inset-2 border-4 border-r-transparent border-blue-600 dark:border-blue-500 rounded-full animate-spin-continuous-reverse"></div>
+              <div className="absolute inset-4 bg-gradient-to-r from-cyan-500 to-blue-600 dark:from-cyan-600 dark:to-blue-700 rounded-full opacity-50 animate-pulse"></div>
+            </div>
+          </div>
+        )}
 
       <div className="relative mt-10 z-10 w-full max-w-md bg-white/95 dark:bg-zinc-800/95 backdrop-blur-xl rounded-3xl shadow-2xl p-8 sm:p-10 transition-all duration-500 hover:shadow-[0_0_30px_rgba(0,255,255,0.25)] animate-slide-up">
         <h2 className="text-4xl font-bold text-center text-gray-900 dark:text-white mb-10 tracking-wide bg-gradient-to-r from-cyan-600 to-blue-600 bg-clip-text text-transparent leading-tight pb-1">
@@ -276,7 +298,10 @@ const Register = () => {
 
             <button
               type="submit"
-              className="w-full py-3 bg-gradient-to-r from-cyan-500 to-blue-600 dark:from-cyan-600 dark:to-blue-700 text-white font-semibold rounded-xl hover:from-cyan-600 hover:to-blue-700 dark:hover:from-cyan-700 dark:hover:to-blue-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+              disabled={isLoading}
+              className={`w-full py-3 bg-gradient-to-r from-cyan-500 to-blue-600 dark:from-cyan-600 dark:to-blue-700 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 ${
+                isLoading ? "opacity-75 cursor-not-allowed" : "hover:from-cyan-600 hover:to-blue-700 dark:hover:from-cyan-700 dark:hover:to-blue-800"
+              } flex items-center justify-center`}
             >
               Đăng ký
             </button>
@@ -317,7 +342,10 @@ const Register = () => {
 
             <button
               type="submit"
-              className="w-full py-3 bg-gradient-to-r from-cyan-500 to-blue-600 dark:from-cyan-600 dark:to-blue-700 text-white font-semibold rounded-xl hover:from-cyan-600 hover:to-blue-700 dark:hover:from-cyan-700 dark:hover:to-blue-800 transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1"
+              disabled={isLoading}
+              className={`w-full py-3 bg-gradient-to-r from-cyan-500 to-blue-600 dark:from-cyan-600 dark:to-blue-700 text-white font-semibold rounded-xl transition-all duration-300 shadow-lg hover:shadow-xl transform hover:-translate-y-1 ${
+                isLoading ? "opacity-75 cursor-not-allowed" : "hover:from-cyan-600 hover:to-blue-700 dark:hover:from-cyan-700 dark:hover:to-blue-800"
+              } flex items-center justify-center`}
             >
               Xác thực
             </button>
@@ -349,6 +377,25 @@ const Register = () => {
           </div>
         )}
       </div>
+
+      <style>
+       {`
+          @keyframes spin-continuous {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+          @keyframes spin-continuous-reverse {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(-360deg); }
+          }
+          .animate-spin-continuous {
+            animation: spin-continuous 1s linear infinite;
+          }
+          .animate-spin-continuous-reverse {
+            animation: spin-continuous-reverse 1s linear infinite;
+          }
+        `}
+      </style>
     </section>
   );
 };
