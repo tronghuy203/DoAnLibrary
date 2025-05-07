@@ -32,6 +32,10 @@ const DetailDocument = () => {
   const shareRef = useRef(null);
 
   useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [id]);
+
+  useEffect(() => {
     const fetchDocument = async () => {
       if (!user) {
         navigate("/login");

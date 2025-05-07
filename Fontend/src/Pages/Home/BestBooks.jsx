@@ -54,6 +54,7 @@ const BestBooks = () => {
 
   const handleOrderClick = () => {
     navigate("/all-books");
+    window.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   return (

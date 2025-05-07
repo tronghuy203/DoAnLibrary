@@ -64,7 +64,11 @@ const ListDocument = () => {
     return d.toISOString().split("T")[0];
   };
 
-  const groupedData = documents.reduce((acc, doc) => {
+  const approvedDocuments = useMemo(() => {
+    return documents.filter((doc) => doc.status === "approved");
+  }, [documents]);
+
+  const groupedData = approvedDocuments.reduce((acc, doc) => {
     if (Array.isArray(doc.viewHistory)) {
       doc.viewHistory.forEach((v) => {
         const date = formatDate(v.date);
@@ -156,8 +160,8 @@ const ListDocument = () => {
 
   const indexOfLastDocument = currentPage * documentsPerPage;
   const indexOfFirstDocument = indexOfLastDocument - documentsPerPage;
-  const currentDocuments = documents.slice(indexOfFirstDocument, indexOfLastDocument);
-  const totalPages = Math.ceil(documents.length / documentsPerPage);
+  const currentDocuments = approvedDocuments.slice(indexOfFirstDocument, indexOfLastDocument);
+  const totalPages = Math.ceil(approvedDocuments.length / documentsPerPage);
 
   const handlePageChange = (pageNumber) => {
     setCurrentPage(pageNumber);

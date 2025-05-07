@@ -15,8 +15,9 @@ import {
   ChevronUpIcon,
   ChevronDownIcon,
   HashtagIcon,
-  DocumentTextIcon
+  DocumentTextIcon,
 } from "@heroicons/react/24/outline";
+import LoadingSpinner from "./LoadingSpinner";
 
 const CreateBook = () => {
   const [book, setBook] = useState({
@@ -27,10 +28,12 @@ const CreateBook = () => {
     quantity: "1",
     category: "",
     image: null,
+    description: "",
   });
   const [previewImage, setPreviewImage] = useState(null);
   const [message, setMessage] = useState("");
   const [categories, setCategories] = useState([]);
+  const [isLoading, setIsLoading] = useState(false);
   const dispatch = useDispatch();
   const user = useSelector((state) => state.auth.login.currentUser);
   const accessToken = user?.accessToken;
@@ -39,6 +42,7 @@ const CreateBook = () => {
   useEffect(() => {
     const fetchCategories = async () => {
       try {
+        setIsLoading(true);
         if (!accessToken) {
           console.warn("Chưa đăng nhập, không thể lấy danh mục.");
           return;
@@ -51,6 +55,8 @@ const CreateBook = () => {
         }
       } catch (err) {
         console.error("Lỗi khi lấy danh sách danh mục:", err);
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -58,7 +64,7 @@ const CreateBook = () => {
   }, [accessToken, axiosJWT, dispatch]);
 
   const formatPrice = (value) => {
-    const num = parseInt(value.replace(/\./g, "")) || 0;
+    const num = parseInt(value.replace(/\./g, ""), 10) || 0;
     return num.toString().replace(/\B(?=(\d{3})+(?!\d))/g, ".");
   };
 
@@ -76,25 +82,25 @@ const CreateBook = () => {
   };
 
   const handleIncrease = () => {
-    const rawValue = parseInt(book.price.replace(/\./g, "")) || 0;
+    const rawValue = parseInt(book.price.replace(/\./g, ""), 10) || 0;
     const newValue = rawValue + 1000;
     setBook({ ...book, price: formatPrice(newValue.toString()) });
   };
 
   const handleDecrease = () => {
-    const rawValue = parseInt(book.price.replace(/\./g, "")) || 0;
+    const rawValue = parseInt(book.price.replace(/\./g, ""), 10) || 0;
     const newValue = Math.max(0, rawValue - 1000);
     setBook({ ...book, price: formatPrice(newValue.toString()) });
   };
 
   const handleIncreaseQuantity = () => {
-    const rawValue = parseInt(book.quantity.replace(/\./g, "")) || 1;
+    const rawValue = parseInt(book.quantity.replace(/\./g, ""), 10) || 1;
     const newValue = rawValue + 1;
     setBook({ ...book, quantity: newValue.toString() });
   };
 
   const handleDecreaseQuantity = () => {
-    const rawValue = parseInt(book.quantity.replace(/\./g, "")) || 1;
+    const rawValue = parseInt(book.quantity.replace(/\./g, ""), 10) || 1;
     const newValue = Math.max(1, rawValue - 1);
     setBook({ ...book, quantity: newValue.toString() });
   };
@@ -110,6 +116,7 @@ const CreateBook = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      setIsLoading(true);
       if (!accessToken) {
         setMessage("Bạn cần đăng nhập để tạo sách.");
         return;
@@ -126,7 +133,6 @@ const CreateBook = () => {
 
       const data = await createBook(formData, accessToken, dispatch, axiosJWT);
       setMessage("Sách đã được tạo thành công!");
-      console.log("Created Book:", data);
 
       setBook({
         title: "",
@@ -136,11 +142,14 @@ const CreateBook = () => {
         quantity: "1",
         category: "",
         image: null,
+        description: "",
       });
       setPreviewImage(null);
     } catch (err) {
       setMessage("Có lỗi xảy ra khi tạo sách!");
       console.error(err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -157,12 +166,21 @@ const CreateBook = () => {
           <div className="absolute w-2 h-2 bg-purple-400/50 dark:bg-purple-500/30 rounded-full top-[70%] left-[30%] animate-particle"></div>
           <div className="absolute w-2 h-2 bg-cyan-400/50 dark:bg-cyan-500/30 rounded-full top-[10%] left-[60%] animate-particle-slow"></div>
         </div>
-        <svg className="absolute bottom-0 left-0 w-full h-32 text-cyan-200/20 dark:text-cyan-800/20" viewBox="0 0 1440 320" preserveAspectRatio="none">
-          <path fill="currentColor" d="M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,213.3C672,224,768,224,864,213.3C960,203,1056,181,1152,186.7C1248,192,1344,224,1392,240L1440,256L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
+        <svg
+          className="absolute bottom-0 left-0 w-full h-32 text-cyan-200/20 dark:text-cyan-800/20"
+          viewBox="0 0 1440 320"
+          preserveAspectRatio="none"
+        >
+          <path
+            fill="currentColor"
+            d="M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,213.3C672,224,768,224,864,213.3C960,203,1056,181,1152,186.7C1248,192,1344,224,1392,240L1440,256L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"
+          ></path>
         </svg>
       </div>
-
+      
+      <LoadingSpinner isLoading={isLoading} />
       <div className="w-full max-w-2xl bg-white/90 dark:bg-gray-800/90 p-6 sm:p-8 rounded-3xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 transform transition-all duration-300 hover:shadow-[0_0_30px_rgba(0,255,255,0.2)] relative z-10">
+
         <h2 className="text-3xl sm:text-4xl font-extrabold text-center text-cyan-600 dark:text-cyan-400 mb-8 sm:mb-12 tracking-tight drop-shadow-lg animate-slide-up">
           Tạo sách mới
         </h2>
@@ -199,7 +217,10 @@ const CreateBook = () => {
                   value={book.title}
                   onChange={handleChange}
                   required
-                  className="w-full pl-8 sm:pl-12 pr-3 sm:pr-4 py-2 sm:py-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-300 hover:bg-gray-100 dark:hover:bg-gray-600 text-xs sm:text-base"
+                  disabled={isLoading}
+                  className={`w-full pl-8 sm:pl-12 pr-3 sm:pr-4 py-2 sm:py-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-300 hover:bg-gray-100 dark:hover:bg-gray-600 text-xs sm:text-base ${
+                    isLoading ? "opacity-75 cursor-not-allowed" : ""
+                  }`}
                   placeholder="Nhập tiêu đề sách"
                 />
               </div>
@@ -217,7 +238,10 @@ const CreateBook = () => {
                   value={book.author}
                   onChange={handleChange}
                   required
-                  className="w-full pl-8 sm:pl-12 pr-3 sm:pr-4 py-2 sm:py-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-300 hover:bg-gray-100 dark:hover:bg-gray-600 text-xs sm:text-base"
+                  disabled={isLoading}
+                  className={`w-full pl-8 sm:pl-12 pr-3 sm:pr-4 py-2 sm:py-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-300 hover:bg-gray-100 dark:hover:bg-gray-600 text-xs sm:text-base ${
+                    isLoading ? "opacity-75 cursor-not-allowed" : ""
+                  }`}
                   placeholder="Nhập tên tác giả"
                 />
               </div>
@@ -238,7 +262,10 @@ const CreateBook = () => {
                   value={book.price}
                   onChange={handleChange}
                   required
-                  className="w-full pl-8 sm:pl-12 pr-16 py-2 sm:py-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-300 hover:bg-gray-100 dark:hover:bg-gray-600 text-xs sm:text-base"
+                  disabled={isLoading}
+                  className={`w-full pl-8 sm:pl-12 pr-16 py-2 sm:py-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-300 hover:bg-gray-100 dark:hover:bg-gray-600 text-xs sm:text-base ${
+                    isLoading ? "opacity-75 cursor-not-allowed" : ""
+                  }`}
                   placeholder="Nhập giá sách"
                   onKeyPress={(e) => {
                     if (!/[0-9]/.test(e.key)) {
@@ -250,14 +277,20 @@ const CreateBook = () => {
                   <button
                     type="button"
                     onClick={handleIncrease}
-                    className="p-0.5 text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 transition-colors duration-200"
+                    disabled={isLoading}
+                    className={`p-0.5 text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 transition-colors duration-200 ${
+                      isLoading ? "opacity-75 cursor-not-allowed" : ""
+                    }`}
                   >
                     <ChevronUpIcon className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
                   </button>
                   <button
                     type="button"
                     onClick={handleDecrease}
-                    className="p-0.5 text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 transition-colors duration-200"
+                    disabled={isLoading}
+                    className={`p-0.5 text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 transition-colors duration-200 ${
+                      isLoading ? "opacity-75 cursor-not-allowed" : ""
+                    }`}
                   >
                     <ChevronDownIcon className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
                   </button>
@@ -278,7 +311,10 @@ const CreateBook = () => {
                   min="1"
                   required
                   type="text"
-                  className="w-full pl-8 sm:pl-12 pr-16 py-2 sm:py-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-300 hover:bg-gray-100 dark:hover:bg-gray-600 text-xs sm:text-base"
+                  disabled={isLoading}
+                  className={`w-full pl-8 sm:pl-12 pr-16 py-2 sm:py-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-300 hover:bg-gray-100 dark:hover:bg-gray-600 text-xs sm:text-base ${
+                    isLoading ? "opacity-75 cursor-not-allowed" : ""
+                  }`}
                   onKeyPress={(e) => {
                     if (!/[0-9]/.test(e.key)) {
                       e.preventDefault();
@@ -289,14 +325,20 @@ const CreateBook = () => {
                   <button
                     type="button"
                     onClick={handleIncreaseQuantity}
-                    className="p-0.5 text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 transition-colors duration-200"
+                    disabled={isLoading}
+                    className={`p-0.5 text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 transition-colors duration-200 ${
+                      isLoading ? "opacity-75 cursor-not-allowed" : ""
+                    }`}
                   >
                     <ChevronUpIcon className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
                   </button>
                   <button
                     type="button"
                     onClick={handleDecreaseQuantity}
-                    className="p-0.5 text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 transition-colors duration-200"
+                    disabled={isLoading}
+                    className={`p-0.5 text-cyan-600 dark:text-cyan-400 hover:text-cyan-700 dark:hover:text-cyan-300 transition-colors duration-200 ${
+                      isLoading ? "opacity-75 cursor-not-allowed" : ""
+                    }`}
                   >
                     <ChevronDownIcon className="w-4 h-4 text-cyan-600 dark:text-cyan-400" />
                   </button>
@@ -318,28 +360,35 @@ const CreateBook = () => {
                 onChange={handleChange}
                 required
                 type="number"
-                className="w-full pl-8 sm:pl-12 pr-3 sm:pr-4 py-2 sm:py-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-300 hover:bg-gray-100 dark:hover:bg-gray-600 text-xs sm:text-base"
+                disabled={isLoading}
+                className={`w-full pl-8 sm:pl-12 pr-3 sm:pr-4 py-2 sm:py-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-300 hover:bg-gray-100 dark:hover:bg-gray-600 text-xs sm:text-base ${
+                  isLoading ? "opacity-75 cursor-not-allowed" : ""
+                }`}
                 placeholder="Nhập năm xuất bản"
               />
             </div>
           </div>
-          <div className="mb-6">
-           <label className="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2" htmlFor="description">
-             Mô tả
-           </label>
-           <div className="relative">
-             <DocumentTextIcon className="absolute left-3 top-4 w-5 h-5 text-cyan-500 dark:text-cyan-400" />
-             <textarea
-               id="description"
-               name="description"
-               value={book.description}
-               onChange={handleChange}
-               className="w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 resize-y placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200"
-               placeholder="Nhập mô tả sách"
-               rows="4"
-             />
-           </div>
-         </div>
+
+          <div className="mb-6 animate-slide-up">
+            <label className="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2" htmlFor="description">
+              Mô tả
+            </label>
+            <div className="relative">
+              <DocumentTextIcon className="absolute left-3 top-4 w-5 h-5 text-cyan-500 dark:text-cyan-400" />
+              <textarea
+                id="description"
+                name="description"
+                value={book.description}
+                onChange={handleChange}
+                disabled={isLoading}
+                className={`w-full pl-10 pr-4 py-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 resize-y placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200 ${
+                  isLoading ? "opacity-75 cursor-not-allowed" : ""
+                }`}
+                placeholder="Nhập mô tả sách"
+                rows="4"
+              />
+            </div>
+          </div>
 
           <div className="mb-6 animate-slide-up">
             <label className="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2" htmlFor="category">
@@ -353,7 +402,10 @@ const CreateBook = () => {
                 value={book.category}
                 onChange={handleChange}
                 required
-                className="w-full pl-8 sm:pl-12 pr-3 sm:pr-4 py-2 sm:py-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 appearance-none placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-300 hover:bg-gray-100 dark:hover:bg-gray-600 text-xs sm:text-base"
+                disabled={isLoading}
+                className={`w-full pl-8 sm:pl-12 pr-3 sm:pr-4 py-2 sm:py-3 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300 dark:border-gray-600 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 appearance-none placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-300 hover:bg-gray-100 dark:hover:bg-gray-600 text-xs sm:text-base ${
+                  isLoading ? "opacity-75 cursor-not-allowed" : ""
+                }`}
               >
                 <option value="">Chọn danh mục</option>
                 {categories.map((cat) => (
@@ -370,7 +422,9 @@ const CreateBook = () => {
             <div className="relative">
               <label
                 htmlFor="image"
-                className="group flex items-center justify-center w-full h-48 bg-gray-50 dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-xl cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 hover:border-cyan-500 dark:hover:border-cyan-400 transition-all duration-300 shadow-md"
+                className={`group flex items-center justify-center w-full h-48 bg-gray-50 dark:bg-gray-700 border-2 border-gray-300 dark:border-gray-600 rounded-xl cursor-pointer hover:bg-gray-100 dark:hover:bg-gray-600 hover:border-cyan-500 dark:hover:border-cyan-400 transition-all duration-300 shadow-md ${
+                  isLoading ? "opacity-75 cursor-not-allowed" : ""
+                }`}
               >
                 {previewImage ? (
                   <div className="relative w-full h-full">
@@ -380,7 +434,9 @@ const CreateBook = () => {
                       className="w-full h-full object-cover rounded-xl group-hover:opacity-90 transition-opacity duration-300"
                     />
                     <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-300">
-                      <span className="text-cyan-600 dark:text-cyan-400 font-medium bg-gray-900/70 dark:bg-gray-800/70 px-3 py-1 rounded-full">Thay ảnh</span>
+                      <span className="text-cyan-600 dark:text-cyan-400 font-medium bg-gray-900/70 dark:bg-gray-800/70 px-3 py-1 rounded-full">
+                        Thay ảnh
+                      </span>
                     </div>
                   </div>
                 ) : (
@@ -396,6 +452,7 @@ const CreateBook = () => {
                   id="image"
                   accept="image/*"
                   onChange={handleFileChange}
+                  disabled={isLoading}
                   className="hidden"
                 />
               </label>
@@ -409,7 +466,10 @@ const CreateBook = () => {
 
           <button
             type="submit"
-            className="w-full flex items-center justify-center gap-1.5 sm:gap-2 bg-gradient-to-r from-cyan-500 dark:from-cyan-400 to-blue-600 dark:to-blue-500 hover:from-cyan-600 dark:hover:from-cyan-500 hover:to-blue-700 dark:hover:to-blue-600 text-white font-semibold py-2 sm:py-3 rounded-lg sm:rounded-xl transition-all duration-300 shadow-md sm:shadow-lg hover:shadow-lg sm:hover:shadow-xl transform hover:-translate-y-0.5 sm:hover:-translate-y-1 text-xs sm:text-base"
+            disabled={isLoading}
+            className={`w-full flex items-center justify-center gap-1.5 sm:gap-2 bg-gradient-to-r from-cyan-500 dark:from-cyan-400 to-blue-600 dark:to-blue-500 text-white font-semibold py-2 sm:py-3 rounded-lg sm:rounded-xl transition-all duration-300 shadow-md sm:shadow-lg transform ${
+              isLoading ? "opacity-75 cursor-not-allowed" : "hover:from-cyan-600 dark:hover:from-cyan-500 hover:to-blue-700 dark:hover:to-blue-600 hover:shadow-lg sm:hover:shadow-xl hover:-translate-y-0.5 sm:hover:-translate-y-1"
+            }`}
           >
             <BookOpenIcon className="w-4 h-4 sm:w-5 sm:h-5 text-white" />
             Tạo sách

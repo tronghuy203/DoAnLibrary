@@ -8,20 +8,28 @@ import { motion, AnimatePresence } from "framer-motion";
 const ForgotPassword = () => {
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
   const dispatch = useDispatch();
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     setError("");
+    setIsLoading(true);
 
-    const message = await forgotPassword(email, dispatch);
-    if (message === "Email không tồn tại.") {
-      setError("Email không tồn tại trong hệ thống.");
-    } else if (message === "Mã xác thực đặt lại mật khẩu đã được gửi.") {
-      navigate("/verify-reset-code", { state: { email } });
-    } else {
+    try {
+      const message = await forgotPassword(email, dispatch);
+      if (message === "Email không tồn tại.") {
+        setError("Email không tồn tại trong hệ thống.");
+      } else if (message === "Mã xác thực đặt lại mật khẩu đã được gửi.") {
+        navigate("/verify-reset-code", { state: { email } });
+      } else {
+        setError("Có lỗi xảy ra. Vui lòng thử lại.");
+      }
+    } catch (err) {
       setError("Có lỗi xảy ra. Vui lòng thử lại.");
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -34,6 +42,16 @@ const ForgotPassword = () => {
         className="relative bg-white dark:bg-zinc-900 p-6 sm:p-8 rounded-3xl shadow-lg w-full max-w-xs sm:max-w-sm md:max-w-md lg:max-w-lg"
       >
         <div className="absolute inset-0 rounded-3xl bg-gradient-to-r from-cyan-400/30 to-blue-500/30 blur-xl opacity-50 dark:from-cyan-600/20 dark:to-blue-600/20 -z-10"></div>
+
+        {isLoading && (
+          <div className="fixed inset-0 flex items-center justify-center bg-black/50 dark:bg-zinc-900/70 z-50">
+            <div className="relative w-16 h-16">
+              <div className="absolute inset-0 border-4 border-t-transparent border-cyan-500 dark:border-cyan-400 rounded-full animate-spin-continuous"></div>
+              <div className="absolute inset-2 border-4 border-r-transparent border-blue-600 dark:border-blue-500 rounded-full animate-spin-continuous-reverse"></div>
+              <div className="absolute inset-4 bg-gradient-to-r from-cyan-500 to-blue-600 dark:from-cyan-600 dark:to-blue-700 rounded-full opacity-50 animate-pulse"></div>
+            </div>
+          </div>
+        )}
 
         <div className="relative">
           <motion.h2
@@ -59,7 +77,7 @@ const ForgotPassword = () => {
                 initial={{ opacity: 0, y: -10 }}
                 animate={{ opacity: 1, y: 0 }}
                 exit={{ opacity: 0, y: -10 }}
-                className="mb-4 sm:mb-6 p-3 bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-300 text-xs sm:text-sm rounded-lg text-center"
+                className="mbCatalan 4 sm:mb-6 p-3 bg-red-100 dark:bg-red-900/40 text-red-600 dark:text-red-300 text-xs sm:text-sm rounded-lg text-center"
               >
                 {error}
               </motion.div>
@@ -96,7 +114,10 @@ const ForgotPassword = () => {
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.5, duration: 0.5 }}
-              className="w-full py-3 bg-gradient-to-r from-cyan-500 to-blue-600 dark:from-cyan-600 dark:to-blue-700 text-white font-semibold rounded-lg hover:from-cyan-600 hover:to-blue-700 dark:hover:from-cyan-700 dark:hover:to-blue-800 transition-all duration-300 shadow-md"
+              disabled={isLoading}
+              className={`w-full py-3 bg-gradient-to-r from-cyan-500 to-blue-600 dark:from-cyan-600 dark:to-blue-700 text-white font-semibold rounded-lg transition-all duration-300 shadow-md ${
+                isLoading ? "opacity-75 cursor-not-allowed" : "hover:from-cyan-600 hover:to-blue-700 dark:hover:from-cyan-700 dark:hover:to-blue-800"
+              }`}
             >
               Gửi Mã OTP
             </motion.button>
@@ -119,6 +140,25 @@ const ForgotPassword = () => {
           </motion.div>
         </div>
       </motion.div>
+
+      <style>
+        {`
+          @keyframes spin-continuous {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+          }
+          @keyframes spin-continuous-reverse {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(-360deg); }
+          }
+          .animate-spin-continuous {
+            animation: spin-continuous 1s linear infinite;
+          }
+          .animate-spin-continuous-reverse {
+            animation: spin-continuous-reverse 1s linear infinite;
+          }
+        `}
+      </style>
     </div>
   );
 };

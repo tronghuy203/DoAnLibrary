@@ -10,6 +10,7 @@ import {
   PencilIcon,
   TrashIcon,
 } from "@heroicons/react/24/outline";
+import LoadingSpinner from "./LoadingSpinner";
 
 const ListCategory = () => {
   const [categories, setCategories] = useState([]);
@@ -17,6 +18,7 @@ const ListCategory = () => {
   const [newCategoryName, setNewCategoryName] = useState("");
   const [editingCategory, setEditingCategory] = useState(null);
   const [message, setMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false);
 
   const dispatch = useDispatch();
   const user = useSelector((state) => state.auth.login.currentUser);
@@ -26,6 +28,7 @@ const ListCategory = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
+        setIsLoading(true);
         if (!accessToken) {
           setError("Bạn cần đăng nhập để xem danh sách danh mục.");
           return;
@@ -40,6 +43,8 @@ const ListCategory = () => {
       } catch (err) {
         console.error("Lỗi khi lấy danh sách danh mục:", err);
         setError("Không thể tải danh sách danh mục.");
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -53,6 +58,7 @@ const ListCategory = () => {
     }
 
     try {
+      setIsLoading(true);
       const newCategory = { name: newCategoryName };
       const res = await createCategory(dispatch, newCategory, accessToken, axiosJWT);
       setCategories((prev) => [...prev, res]);
@@ -61,6 +67,8 @@ const ListCategory = () => {
     } catch (err) {
       setMessage("Không thể tạo danh mục.");
       console.error(err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -68,6 +76,7 @@ const ListCategory = () => {
     if (!editingCategory || !editingCategory.name) return;
 
     try {
+      setIsLoading(true);
       const res = await updateCategory(editingCategory._id, { name: editingCategory.name }, accessToken, dispatch, axiosJWT);
       setCategories((prev) =>
         prev.map((category) => (category._id === res._id ? res : category))
@@ -77,17 +86,22 @@ const ListCategory = () => {
     } catch (err) {
       setMessage("Không thể cập nhật danh mục.");
       console.error(err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
   const handleDeleteCategory = async (categoryId) => {
     try {
+      setIsLoading(true);
       await deleteCategory(categoryId, accessToken, dispatch, axiosJWT);
       setCategories((prev) => prev.filter((category) => category._id !== categoryId));
       setMessage("Danh mục đã được xóa thành công!");
     } catch (err) {
       setMessage("Không thể xóa danh mục.");
       console.error(err);
+    } finally {
+      setIsLoading(false);
     }
   };
 
@@ -108,8 +122,9 @@ const ListCategory = () => {
           <path fill="currentColor" d="M0,224L48,213.3C96,203,192,181,288,181.3C384,181,480,203,576,213.3C672,224,768,224,864,213.3C960,203,1056,181,1152,186.7C1248,192,1344,224,1392,240L1440,256L1440,320L1392,320C1344,320,1248,320,1152,320C1056,320,960,320,864,320C768,320,672,320,576,320C480,320,384,320,288,320C192,320,96,320,48,320L0,320Z"></path>
         </svg>
       </div>
-
+      <LoadingSpinner isLoading={isLoading} />
       <div className="w-full max-w-4xl bg-white/80 dark:bg-gray-800/80 backdrop-blur-md p-6 sm:p-8 rounded-3xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 transform transition-all duration-300 hover:shadow-[0_0_30px_rgba(0,255,255,0.2)] relative z-10">
+
         <h2 className="text-3xl sm:text-4xl font-extrabold text-center text-cyan-600 dark:text-cyan-400 mb-8 sm:mb-12 tracking-tight drop-shadow-lg animate-slide-up">
           Quản lý danh mục
         </h2>
@@ -146,11 +161,15 @@ const ListCategory = () => {
               onChange={(e) => setNewCategoryName(e.target.value)}
               placeholder="Nhập tên danh mục mới"
               className="w-full pl-8 sm:pl-12 pr-3 sm:pr-4 py-2 sm:py-3 bg-gray-50/80 dark:bg-gray-700/80 text-gray-900 dark:text-gray-100 border border-gray-300/50 dark:border-gray-600/50 rounded-lg sm:rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-300 hover:bg-gray-100/80 dark:hover:bg-gray-600/80 text-xs sm:text-base backdrop-blur-sm"
+              disabled={isLoading}
             />
           </div>
           <button
             onClick={handleCreateCategory}
-            className="w-full flex items-center justify-center gap-1.5 sm:gap-2 bg-gradient-to-r from-cyan-500 dark:from-cyan-400 to-blue-600 dark:to-blue-500 hover:from-cyan-600 dark:hover:from-cyan-500 hover:to-blue-700 dark:hover:to-blue-600 text-white font-semibold py-2 sm:py-3 rounded-lg sm:rounded-xl transition-all duration-300 shadow-md sm:shadow-lg hover:shadow-lg sm:hover:shadow-xl transform hover:-translate-y-0.5 sm:hover:-translate-y-1 text-xs sm:text-base"
+            className={`w-full flex items-center justify-center gap-1.5 sm:gap-2 bg-gradient-to-r from-cyan-500 dark:from-cyan-400 to-blue-600 dark:to-blue-500 text-white font-semibold py-2 sm:py-3 rounded-lg sm:rounded-xl transition-all duration-300 shadow-md sm:shadow-lg transform ${
+              isLoading ? "opacity-75 cursor-not-allowed" : "hover:from-cyan-600 dark:hover:from-cyan-500 hover:to-blue-700 dark:hover:to-blue-600 hover:shadow-lg sm:hover:shadow-xl hover:-translate-y-0.5 sm:hover:-translate-y-1"
+            }`}
+            disabled={isLoading}
           >
             <TagIcon className="w-4 h-4 sm:w-5 sm:h-5" />
             Thêm danh mục
@@ -174,6 +193,7 @@ const ListCategory = () => {
                         setEditingCategory({ ...editingCategory, name: e.target.value })
                       }
                       className="w-full sm:w-64 pl-4 pr-4 py-2 bg-gray-100/80 dark:bg-gray-700/80 text-gray-900 dark:text-gray-100 border border-gray-300/50 dark:border-gray-600/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 transition-all duration-300 hover:bg-gray-200/80 dark:hover:bg-gray-600/80 text-sm sm:text-base backdrop-blur-sm"
+                      disabled={isLoading}
                     />
                   ) : (
                     <span className="text-gray-900 dark:text-gray-100 font-medium text-sm sm:text-base">{category.name}</span>
@@ -183,7 +203,10 @@ const ListCategory = () => {
                   {editingCategory?._id === category._id ? (
                     <button
                       onClick={handleUpdateCategory}
-                      className="w-full sm:w-auto flex items-center justify-center gap-1 bg-green-500 dark:bg-green-400 hover:bg-green-600 dark:hover:bg-green-500 text-white font-medium py-1.5 px-3 rounded-full transition-all duration-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 text-sm"
+                      className={`w-full sm:w-auto flex items-center justify-center gap-1 bg-green-500 dark:bg-green-400 text-white font-medium py-1.5 px-3 rounded-full transition-all duration-200 shadow-sm transform ${
+                        isLoading ? "opacity-75 cursor-not-allowed" : "hover:bg-green-600 dark:hover:bg-green-500 hover:shadow-md hover:-translate-y-0.5"
+                      }`}
+                      disabled={isLoading}
                     >
                       <CheckCircleIcon className="w-4 h-4" />
                       Cập nhật
@@ -192,14 +215,20 @@ const ListCategory = () => {
                     <>
                       <button
                         onClick={() => setEditingCategory(category)}
-                        className="w-32 mx-auto sm:w-auto flex items-center justify-center gap-1 bg-yellow-500 dark:bg-yellow-400 hover:bg-yellow-600 dark:hover:bg-yellow-500 text-white font-medium py-1.5 px-3 rounded-full transition-all duration-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 text-sm"
+                        className={`w-32 mx-auto sm:w-auto flex items-center justify-center gap-1 bg-yellow-500 dark:bg-yellow-400 text-white font-medium py-1.5 px-3 rounded-full transition-all duration-200 shadow-sm transform ${
+                          isLoading ? "opacity-75 cursor-not-allowed" : "hover:bg-yellow-600 dark:hover:bg-yellow-500 hover:shadow-md hover:-translate-y-0.5"
+                        }`}
+                        disabled={isLoading}
                       >
                         <PencilIcon className="w-4 h-4" />
                         Chỉnh sửa
                       </button>
                       <button
                         onClick={() => handleDeleteCategory(category._id)}
-                        className="w-32 mx-auto sm:w-auto flex items-center justify-center gap-1 bg-red-500 dark:bg-red-400 hover:bg-red-600 dark:hover:bg-red-500 text-white font-medium py-1.5 px-3 rounded-full transition-all duration-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 text-sm"
+                        className={`w-32 mx-auto sm:w-auto flex items-center justify-center gap-1 bg-red-500 dark:bg-red-400 text-white font-medium py-1.5 px-3 rounded-full transition-all duration-200 shadow-sm transform ${
+                          isLoading ? "opacity-75 cursor-not-allowed" : "hover:bg-red-600 dark:hover:bg-red-500 hover:shadow-md hover:-translate-y-0.5"
+                        }`}
+                        disabled={isLoading}
                       >
                         <TrashIcon className="w-4 h-4" />
                         Xóa

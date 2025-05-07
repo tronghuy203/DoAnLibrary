@@ -6,6 +6,7 @@ import { loginSuccess } from "../../redux/authSlice";
 import { useNavigate } from "react-router-dom";
 import { motion } from "framer-motion";
 import { FaTimes, FaFilePdf, FaImage } from "react-icons/fa";
+import LoadingSpinner from "../Admin/LoadingSpinner";
 
 const UploadDocument = () => {
   const user = useSelector((state) => state.auth.login?.currentUser);
@@ -18,6 +19,7 @@ const UploadDocument = () => {
   const [file, setFile] = useState(null);
   const [thumbnail, setThumbnail] = useState(null);
   const [message, setMessage] = useState("");
+  const [isLoading, setIsLoading] = useState(false); 
 
   const allowedFileTypes = [
     "application/pdf",
@@ -51,6 +53,7 @@ const UploadDocument = () => {
       if (thumbnail) formData.append("thumbnail", thumbnail);
 
       try {
+        setIsLoading(true); 
         await uploadDocument(formData, user.accessToken, dispatch, axiosJWT);
         setMessage("Tài liệu đã được tải lên và đang chờ admin phê duyệt!");
         setTitle("");
@@ -61,6 +64,8 @@ const UploadDocument = () => {
         console.error("Upload failed:", error);
         const errorMessage = error.response?.data?.message || "Đã xảy ra lỗi khi tải lên tài liệu!";
         setMessage(errorMessage);
+      } finally {
+        setIsLoading(false); 
       }
     },
     [title, description, file, thumbnail, user?.accessToken, dispatch, axiosJWT]
@@ -85,7 +90,9 @@ const UploadDocument = () => {
 
   const handleDragOver = (e) => {
     e.preventDefault();
-    e.currentTarget.classList.add("border-indigo-500", "bg-indigo-100/20");
+    if (!isLoading) {
+      e.currentTarget.classList.add("border-indigo-500", "bg-indigo-100/20");
+    }
   };
 
   const handleDragLeave = (e) => {
@@ -96,6 +103,7 @@ const UploadDocument = () => {
   const handleDropFile = (e) => {
     e.preventDefault();
     e.currentTarget.classList.remove("border-indigo-500", "bg-indigo-100/20");
+    if (isLoading) return;
     const droppedFile = e.dataTransfer.files[0];
     if (droppedFile && allowedFileTypes.includes(droppedFile.type)) {
       setFile(droppedFile);
@@ -107,6 +115,7 @@ const UploadDocument = () => {
   const handleDropThumbnail = (e) => {
     e.preventDefault();
     e.currentTarget.classList.remove("border-indigo-500", "bg-indigo-100/20");
+    if (isLoading) return;
     const droppedFile = e.dataTransfer.files[0];
     if (droppedFile && allowedImageTypes.includes(droppedFile.type)) {
       setThumbnail(droppedFile);
@@ -117,6 +126,7 @@ const UploadDocument = () => {
 
   return (
     <div className="min-h-screen py-12 bg-gradient-to-br from-gray-100 via-gray-200 to-gray-300 dark:from-zinc-900 dark:via-zinc-800 dark:to-black flex items-center justify-center transition-colors duration-500 relative overflow-hidden">
+      <LoadingSpinner isLoading={isLoading} /> 
       <motion.div
         initial={{ opacity: 0, scale: 0.95 }}
         animate={{ opacity: 1, scale: 1 }}
@@ -132,7 +142,7 @@ const UploadDocument = () => {
             initial={{ opacity: 0, y: -10 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.4 }}
-            className={`mb-6 p-4 rounded-xl text-center text retrato-sm font-medium shadow-sm ${
+            className={`mb-6 p-4 rounded-xl text-center text-sm font-medium shadow-sm ${
               message.includes("thành công") || message.includes("phê duyệt")
                 ? "bg-green-100 text-green-900 dark:bg-green-900/80 dark:text-green-100"
                 : "bg-red-100 text-red-900 dark:bg-red-900/80 dark:text-red-100"
@@ -150,7 +160,10 @@ const UploadDocument = () => {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               required
-              className="w-full p-4 rounded-xl bg-gray-100/70 dark:bg-zinc-700/70 text-gray-800 dark:text-white border border-gray-300/50 dark:border-zinc-600/50 focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder-gray-500 dark:placeholder-zinc-400 transition-all duration-300"
+              disabled={isLoading}
+              className={`w-full p-4 rounded-xl bg-gray-100/70 dark:bg-zinc-700/70 text-gray-800 dark:text-white border border-gray-300/50 dark:border-zinc-600/50 focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder-gray-500 dark:placeholder-zinc-400 transition-all duration-300 ${
+                isLoading ? "opacity-75 cursor-not-allowed" : ""
+              }`}
             />
           </div>
 
@@ -160,12 +173,17 @@ const UploadDocument = () => {
               value={description}
               onChange={(e) => setDescription(e.target.value)}
               required
-              className="w-full p-4 rounded-xl bg-gray-100/70 dark:bg-zinc-700/70 text-gray-800 dark:text-white border border-gray-300/50 dark:border-zinc-600/50 focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder-gray-500 dark:placeholder-zinc-400 transition-all duration-300"
+              disabled={isLoading} 
+              className={`w-full p-4 rounded-xl bg-gray-100/70 dark:bg-zinc-700/70 text-gray-800 dark:text-white border border-gray-300/50 dark:border-zinc-600/50 focus:outline-none focus:ring-2 focus:ring-indigo-500 placeholder-gray-500 dark:placeholder-zinc-400 transition-all duration-300 ${
+                isLoading ? "opacity-75 cursor-not-allowed" : ""
+              }`}
             />
           </div>
 
           <div
-            className="relative p-6 rounded-xl bg-gray-100/50 dark:bg-zinc-700/50 border-2 border-dashed border-gray-300/50 dark:border-zinc-600/50 transition-all duration-300"
+            className={`relative p-6 rounded-xl bg-gray-100/50 dark:bg-zinc-700/50 border-2 border-dashed border-gray-300/50 dark:border-zinc-600/50 transition-all duration-300 ${
+              isLoading ? "opacity-75 cursor-not-allowed" : ""
+            }`}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDropFile}
@@ -181,12 +199,14 @@ const UploadDocument = () => {
               onChange={(e) => setFile(e.target.files[0])}
               required
               accept=".pdf,.doc,.docx"
+              disabled={isLoading}
               className="absolute inset-0 opacity-0 cursor-pointer"
             />
             {file && (
               <button
                 type="button"
                 onClick={handleClearFile}
+                disabled={isLoading}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-red-500 transition-colors"
               >
                 <FaTimes />
@@ -195,7 +215,9 @@ const UploadDocument = () => {
           </div>
 
           <div
-            className="relative p-6 rounded-xl bg-gray-100/50 dark:bg-zinc-700/50 border-2 border-dashed border-gray-300/50 dark:border-zinc-600/50 transition-all duration-300"
+            className={`relative p-6 rounded-xl bg-gray-100/50 dark:bg-zinc-700/50 border-2 border-dashed border-gray-300/50 dark:border-zinc-600/50 transition-all duration-300 ${
+              isLoading ? "opacity-75 cursor-not-allowed" : ""
+            }`}
             onDragOver={handleDragOver}
             onDragLeave={handleDragLeave}
             onDrop={handleDropThumbnail}
@@ -210,12 +232,14 @@ const UploadDocument = () => {
               type="file"
               onChange={(e) => setThumbnail(e.target.files[0])}
               accept="image/jpeg,image/png"
+              disabled={isLoading} 
               className="absolute inset-0 opacity-0 cursor-pointer"
             />
             {thumbnail && (
               <button
                 type="button"
                 onClick={handleClearThumbnail}
+                disabled={isLoading}
                 className="absolute right-3 top-1/2 transform -translate-y-1/2 text-gray-500 hover:text-red-500 transition-colors"
               >
                 <FaTimes />
@@ -227,7 +251,10 @@ const UploadDocument = () => {
             whileHover={{ scale: 1.03, boxShadow: "0 4px 14px rgba(0, 0, 0, 0.2)" }}
             whileTap={{ scale: 0.97 }}
             type="submit"
-            className="w-full bg-indigo-600 text-white py-3 rounded-xl font-semibold hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 transition-all duration-300 shadow-md"
+            disabled={isLoading} 
+            className={`w-full bg-indigo-600 text-white py-3 rounded-xl font-semibold hover:bg-indigo-700 dark:bg-indigo-500 dark:hover:bg-indigo-600 transition-all duration-300 shadow-md ${
+              isLoading ? "opacity-75 cursor-not-allowed" : ""
+            }`}
           >
             Tải lên
           </motion.button>
@@ -237,7 +264,10 @@ const UploadDocument = () => {
           whileHover={{ scale: 1.03, boxShadow: "0 4px 14px rgba(0, 0, 0, 0.2)" }}
           whileTap={{ scale: 0.97 }}
           onClick={handleBackClick}
-          className="mt-6 w-full bg-gray-600 text-white py-3 rounded-xl font-semibold hover:bg-gray-700 dark:bg-zinc-600 dark:hover:bg-zinc-700 transition-all duration-300 shadow-md"
+          disabled={isLoading} 
+          className={`mt-6 w-full bg-gray-600 text-white py-3 rounded-xl font-semibold hover:bg-gray-700 dark:bg-zinc-600 dark:hover:bg-zinc-700 transition-all duration-300 shadow-md ${
+            isLoading ? "opacity-75 cursor-not-allowed" : ""
+          }`}
         >
           Quay lại danh sách tài liệu
         </motion.button>

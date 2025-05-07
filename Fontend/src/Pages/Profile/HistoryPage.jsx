@@ -116,6 +116,10 @@ const HistoryPage = () => {
     fetchData();
   }, [user, fetchData, navigate]);
 
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: 'smooth' });
+  }, []);
+
   const handlePayPenalty = async (penaltyId, method) => {
     console.log("handlePayPenalty được gọi với:", { penaltyId, method });
     if (!penaltyId || !penalties[penaltyId]) {
@@ -171,14 +175,13 @@ const HistoryPage = () => {
     }
   };
 
-  // Phân trang cho lịch sử mượn sách
   const totalBorrowPages = Math.ceil(borrowHistory.length / itemsPerPage);
   const borrowPageData = borrowHistory.slice(
     (currentBorrowPage - 1) * itemsPerPage,
     currentBorrowPage * itemsPerPage
   );
 
-  // Phân trang cho lịch sử thanh toán
+
   const totalPaymentPages = Math.ceil(paymentHistory.length / itemsPerPage);
   const paymentPageData = paymentHistory.slice(
     (currentPaymentPage - 1) * itemsPerPage,
@@ -277,7 +280,7 @@ const HistoryPage = () => {
             setIsSidebarOpen={setIsSidebarOpen}
           />
           <main className="lg:w-3/4 space-y-6">
-          <section className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-2xl shadow-lg animate-fade-in-up">
+            <section className="bg-white dark:bg-gray-800 p-4 sm:p-6 rounded-2xl shadow-lg animate-fade-in-up">
               <h2 className="text-xl sm:text-2xl font-semibold text-gray-900 dark:text-white mb-4 sm:mb-6 flex items-center gap-2">
                 <BookOpenIcon className="h-5 w-5 sm:h-6 sm:w-6" />
                 Lịch sử mượn sách
@@ -374,7 +377,7 @@ const HistoryPage = () => {
                                 {penalty && penalty.status === "pending" && (
                                   <button
                                     onClick={() => handlePayPenalty(penalty._id, "vnpay")}
-                                    className="bg-blue-500 dark:bg-blue-400 hover:bg-blue-600 dark:hover ganska-blue-500 text-white font-semibold py-1 px-3 rounded-md transition-all duration-200 hover:shadow-md flex items-center gap-1 text-sm whitespace-nowrap"
+                                    className="bg-blue-500 dark:bg-blue-400 hover:bg-blue-600 dark:hover:bg-blue-500 text-white font-semibold py-1 px-3 rounded-md transition-all duration-200 hover:shadow-md flex items-center gap-1 text-sm whitespace-nowrap"
                                   >
                                     <CreditCardIcon className="w-4 h-4" />
                                     Thanh toán
@@ -405,6 +408,96 @@ const HistoryPage = () => {
                     {totalBorrowPages > 1 && renderPagination(currentBorrowPage, totalBorrowPages, handleBorrowPageChange)}
                   </div>
                   <div className="md:hidden space-y-4 max-h-[600px] overflow-y-auto custom-scrollbar">
+                    {borrowHistory.map((record, index) => {
+                      const statusDisplay = getStatusDisplay(record.status, record.returnDate);
+                      const penalty = penalties[record._id];
+                      return (
+                        <div
+                          key={record._id || index}
+                          className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md border border-gray-200 dark:border-gray-700"
+                        >
+                          <div className="flex justify-between items-start mb-2">
+                            <h3 className="text-base font-semibold text-gray-900 dark:text-white truncate">
+                              {record.bookId?.title || "N/A"}
+                            </h3>
+                            <span
+                              className={`px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${
+                                record.status === "overdue"
+                                  ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+                                  : record.status === "borrowing"
+                                  ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+                                  : record.status === "waiting_pickup"
+                                  ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
+                                  : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+                              }`}
+                            >
+                              {statusDisplay.icon}
+                              {statusDisplay.text}
+                            </span>
+                          </div>
+                          <div className="grid grid-cols-2 gap-2 text-sm text-gray-600 dark:text-gray-300">
+                            <div>
+                              <span className="font-medium">Ngày mượn:</span>{" "}
+                              {record.borrowDate
+                                ? new Date(record.borrowDate).toLocaleDateString("vi-VN")
+                                : "N/A"}
+                            </div>
+                            <div>
+                              <span className="font-medium">Hạn trả:</span>{" "}
+                              {record.dueDate
+                                ? new Date(record.dueDate).toLocaleDateString("vi-VN")
+                                : "N/A"}
+                            </div>
+                            <div>
+                              <span className="font-medium">Ngày trả:</span>{" "}
+                              {record.returnDate
+                                ? new Date(record.returnDate).toLocaleDateString("vi-VN")
+                                : "Chưa trả"}
+                            </div>
+                            <div>
+                              <span className="font-medium">Phạt:</span>{" "}
+                              {penalty ? (
+                                <span
+                                  className={`inline-flex items-center gap-1 ${
+                                    penalty.status === "pending"
+                                      ? "text-red-800 dark:text-red-300"
+                                      : "text-green-800 dark:text-green-300"
+                                  }`}
+                                >
+                                  {penalty.amount.toLocaleString("vi-VN")} ₫
+                                  ({penalty.status === "pending" ? "Chưa trả" : "Đã trả"})
+                                </span>
+                              ) : (
+                                "Không có"
+                              )}
+                            </div>
+                            <div>
+                              <span className="font-medium">Xác nhận:</span>{" "}
+                              <span
+                                className={`inline-flex items-center gap-1 ${
+                                  record.adminConfirmed
+                                    ? "text-green-800 dark:text-green-300"
+                                    : "text-gray-800 dark:text-gray-300"
+                                }`}
+                              >
+                                {record.adminConfirmed ? "Đã xác nhận" : "Chưa xác nhận"}
+                              </span>
+                            </div>
+                          </div>
+                          {penalty && penalty.status === "pending" && (
+                            <div className="mt-3">
+                              <button
+                                onClick={() => handlePayPenalty(penalty._id, "vnpay")}
+                                className="bg-blue-500 dark:bg-blue-400 hover:bg-blue-600 dark:hover:bg-blue-500 text-white font-semibold py-1 px-3 rounded-md transition-all duration-200 hover:shadow-md flex items-center gap-1 text-sm"
+                              >
+                                <CreditCardIcon className="w-4 h-4" />
+                                Thanh toán phạt
+                              </button>
+                            </div>
+                          )}
+                        </div>
+                      );
+                    })}
                   </div>
                 </>
               )}
@@ -453,7 +546,7 @@ const HistoryPage = () => {
                               {payment.amount ? payment.amount.toLocaleString("vi-VN") : "N/A"} ₫
                             </td>
                             <td className="px-4 py-3 whitespace-nowrap">
-                              {payment.method === "vnpay" ? "Thẻ ngân hàng" : "N/A"}
+                              {payment.method === "vnpay" ? "Thẻ ngân hàng" : payment.method === "cash" ? "Tiền mặt" : "N/A"}
                             </td>
                             <td className="px-4 py-3">
                               <span

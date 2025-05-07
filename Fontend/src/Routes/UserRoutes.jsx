@@ -1,4 +1,3 @@
-// src/routes/UserRoutes.jsx
 import { lazy, Suspense } from "react";
 import { Routes, Route } from "react-router-dom";
 import UserLayout from "../Layouts/UserLayout";
@@ -52,7 +51,6 @@ const UserRoutes = () => {
           <Route path="/payment-failed" element={<PaymentFailed />}/>
           <Route path="/membership-list" element={<MembershipList />}/>
           <Route path="/chat" element={<Chat />}/>
-          <Route path="/chatbot" element={<Chatbot />}/>
         </Routes>
         <Chatbot />
       </Suspense>

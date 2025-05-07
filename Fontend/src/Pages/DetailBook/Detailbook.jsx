@@ -26,6 +26,11 @@ const DetailBook = () => {
   const shareRef = useRef(null);
   const recommendedRef = useRef(null);
 
+
+  useEffect(() => {
+    window.scrollTo({ top: 0, behavior: "smooth" });
+  }, [id]); 
+
   const calculateAverageRating = (reviews) => {
     if (!reviews || reviews.length === 0) return { rating: 0, count: 0 };
     const total = reviews.reduce((sum, review) => sum + review.rating, 0);
