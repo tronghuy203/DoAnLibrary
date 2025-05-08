@@ -35,7 +35,7 @@ function createVnpayUrl(paymentData, ipAddr) {
   vnpParams = sortObject(vnpParams);
   let signData = querystring.stringify(vnpParams);
   let hmac = crypto.createHmac("sha512", vnpayConfig.vnp_HashSecret);
-  let signed = hmac.update(Buffer.from(signData, "utf-8")).digest("hex");
+  let signed = hmac.update(signData).digest("hex");
   vnpParams["vnp_SecureHash"] = signed;
 
   return `${vnpayConfig.vnp_Url}?${querystring.stringify(vnpParams)}`;
@@ -129,7 +129,7 @@ const membershipController = {
       vnpParams = sortObject(vnpParams);
       let signData = querystring.stringify(vnpParams);
       let hmac = crypto.createHmac("sha512", vnpayConfig.vnp_HashSecret);
-      let signed = hmac.update(Buffer.from(signData, "utf-8")).digest("hex");
+      let signed = hmac.update(signData).digest("hex");
 
       if (secureHash !== signed) {
         return res.status(400).json({ message: "Chữ ký không hợp lệ" });

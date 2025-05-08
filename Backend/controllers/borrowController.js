@@ -39,7 +39,7 @@ function createVnpayUrl(paymentData, ipAddr) {
   const crypto = require("crypto");
   let signData = querystring.stringify(vnpParams);
   let hmac = crypto.createHmac("sha512", vnpayConfig.vnp_HashSecret);
-  let signed = hmac.update(Buffer.from(signData, "utf-8")).digest("hex");
+  let signed = hmac.update(signData).digest("hex");
   vnpParams["vnp_SecureHash"] = signed;
 
   return `${vnpayConfig.vnp_Url}?${querystring.stringify(vnpParams)}`;
@@ -147,9 +147,7 @@ const borrowController = {
       const { requestId } = req.params;
       const { method } = req.body;
       const userId = req.user.id;
-      const ipAddr =
-        req.headers["x-forwarded-for"] || req.connection.remoteAddress;
-
+      const ipAddr = req.headers["x-forwarded-for"]?.split(",")[0] || req.connection.remoteAddress;
       const request = await BorrowRequest.findById(requestId);
       if (!request)
         return res.status(404).json({ message: "Không tìm thấy yêu cầu mượn" });
@@ -246,7 +244,7 @@ const borrowController = {
       const crypto = require("crypto");
       let signData = querystring.stringify(vnpParams);
       let hmac = crypto.createHmac("sha512", vnpayConfig.vnp_HashSecret);
-      let signed = hmac.update(Buffer.from(signData, "utf-8")).digest("hex");
+      let signed = hmac.update(signData).digest("hex");
   
       if (secureHash !== signed) {
         return res.status(400).json({ message: "Chữ ký không hợp lệ" });
