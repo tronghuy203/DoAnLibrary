@@ -55,7 +55,7 @@ const membershipController = {
     try {
       const { membershipId, method } = req.body;
       const userId = req.user.id;
-      const ipAddr = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+      const ipAddr = req.headers["x-forwarded-for"]?.split(",")[0] || req.connection.remoteAddress;
 
       const membership = await Membership.findById(membershipId);
       if (!membership) {
