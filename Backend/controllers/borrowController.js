@@ -1,3 +1,4 @@
+require("dotenv").config();
 const vnpayConfig = require("../config/vnpay");
 const BorrowRequest = require("../models/BorrowRequest");
 const BorrowRecord = require("../models/BorrowRecord");
@@ -294,11 +295,11 @@ const borrowController = {
           await book.save();
         }
   
-        res.redirect(`http://localhost:3000/payment-redirect?txnRef=${txnRef}`);
+        res.redirect(`${process.env.CLIENT_URL}/payment-redirect?txnRef=${txnRef}`);
       } else {
         payment.status = "failed";
         await payment.save();
-        res.redirect("http://localhost:3000/payment-failed");
+        res.redirect(`${process.env.CLIENT_URL}/payment-failed`);
       }
     } catch (err) {
       console.error("Error in vnpayReturn:", err);

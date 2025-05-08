@@ -26,7 +26,7 @@ export const requestBorrow = async (bookId, accessToken, dispatch, axiosJWT) => 
   dispatch(addBorrowRequestStart());
   try {
     const myRequests = await axiosJWT.get(
-      "http://localhost:8000/v1/borrow/my-requests",
+      `${process.env.REACT_APP_SERVER_URL}/v1/borrow/my-requests`,
       {
         headers: { token: `Bearer ${accessToken}` },
       }
@@ -42,7 +42,7 @@ export const requestBorrow = async (bookId, accessToken, dispatch, axiosJWT) => 
     }
 
     const res = await axiosJWT.post(
-      "http://localhost:8000/v1/borrow/request",
+      `${process.env.REACT_APP_SERVER_URL}/v1/borrow/request`,
       { bookId },
       {
         headers: { token: `Bearer ${accessToken}` },
@@ -62,7 +62,7 @@ export const getBorrowRequestDetails = async (requestId, accessToken, dispatch, 
   dispatch(getBorrowRequestDetailsStart());
   try {
     const res = await axiosJWT.get(
-      `http://localhost:8000/v1/borrow/request/${requestId}`,
+      `${process.env.REACT_APP_SERVER_URL}/v1/borrow/request/${requestId}`,
       {
         headers: { token: `Bearer ${accessToken}` },
       }
@@ -86,7 +86,7 @@ export const payRentalFeeAndCreateBorrow = async (
 ) => {
   try {
     const res = await axiosJWT.post(
-      `http://localhost:8000/v1/borrow/pay-rental/${requestId}`,
+      `${process.env.REACT_APP_SERVER_URL}/v1/borrow/pay-rental/${requestId}`,
       { method },
       {
         headers: { token: `Bearer ${accessToken}` },
@@ -116,7 +116,7 @@ export const payRentalFeeAndCreateBorrow = async (
 export const checkPaymentStatus = async (txnRef, accessToken, dispatch, axiosJWT) => {
   try {
     const res = await axiosJWT.get(
-      `http://localhost:8000/v1/borrow/check-payment-status?txnRef=${txnRef}`,
+      `${process.env.REACT_APP_SERVER_URL}/v1/borrow/check-payment-status?txnRef=${txnRef}`,
       {
         headers: { token: `Bearer ${accessToken}` },
       }
@@ -136,7 +136,7 @@ export const confirmPickup = async (
 ) => {
   try {
     const res = await axiosJWT.put(
-      `http://localhost:8000/v1/borrow/confirm-pickup/${borrowId}`,
+      `${process.env.REACT_APP_SERVER_URL}/v1/borrow/confirm-pickup/${borrowId}`,
       {},
       {
         headers: { token: `Bearer ${accessToken}` },
@@ -159,7 +159,7 @@ export const confirmReturn = async (
 ) => {
   try {
     const res = await axiosJWT.put(
-      `http://localhost:8000/v1/borrow/confirm-return/${borrowId}`,
+      `${process.env.REACT_APP_SERVER_URL}/v1/borrow/confirm-return/${borrowId}`,
       {},
       {
         headers: { token: `Bearer ${accessToken}` },
@@ -177,7 +177,7 @@ export const confirmReturn = async (
 export const payPenalty = async (penaltyId, method, accessToken, dispatch, axiosJWT) => {
   try {
     const res = await axiosJWT.post(
-      `http://localhost:8000/v1/borrow/pay-penalty/${penaltyId}`,
+      `${process.env.REACT_APP_SERVER_URL}/v1/borrow/pay-penalty/${penaltyId}`,
       { method },
       {
         headers: { Authorization: `Bearer ${accessToken}` },
@@ -192,7 +192,7 @@ export const payPenalty = async (penaltyId, method, accessToken, dispatch, axios
 
 export const getPenaltyByBorrow = async (borrowId, accessToken, axiosJWT) => {
   try {
-    const res = await axiosJWT.get(`http://localhost:8000/v1/borrow/penalty/${borrowId}`, {
+    const res = await axiosJWT.get(`${process.env.REACT_APP_SERVER_URL}/v1/borrow/penalty/${borrowId}`, {
       headers: { token: `Bearer ${accessToken}` },
     });
     return res.data;
@@ -204,7 +204,7 @@ export const getPenaltyByBorrow = async (borrowId, accessToken, axiosJWT) => {
 export const getAllBorrowRecords = async (accessToken, dispatch, axiosJWT) => {
   dispatch(getBorrowsStart());
   try {
-    const res = await axiosJWT.get("http://localhost:8000/v1/borrow/all", {
+    const res = await axiosJWT.get(`${process.env.REACT_APP_SERVER_URL}/v1/borrow/all`, {
       headers: { token: `Bearer ${accessToken}` },
     }); 
     dispatch(getBorrowsSuccess(res.data));
@@ -217,7 +217,7 @@ export const getAllBorrowRecords = async (accessToken, dispatch, axiosJWT) => {
 export const getTotalRevenue = async (accessToken, dispatch, axiosJWT) => {
   dispatch(getTotalRevenueStart());
   try {
-    const res = await axiosJWT.get("http://localhost:8000/v1/borrow/revenue/total", {
+    const res = await axiosJWT.get(`${process.env.REACT_APP_SERVER_URL}/v1/borrow/revenue/total`, {
       headers: { token: `Bearer ${accessToken}` },
     });
     dispatch(getTotalRevenueSuccess(res.data.totalRevenue));
@@ -231,7 +231,7 @@ export const getTotalRevenue = async (accessToken, dispatch, axiosJWT) => {
 
 export const getPaymentHistory = async (userId, accessToken, axiosJWT) => {
   try {
-    const res = await axiosJWT.get(`http://localhost:8000/v1/borrow/history/${userId}`,
+    const res = await axiosJWT.get(`${process.env.REACT_APP_SERVER_URL}/v1/borrow/history/${userId}`,
       {
         headers: { token: `Bearer ${accessToken}` },
       }
@@ -246,7 +246,7 @@ export const getPaymentHistory = async (userId, accessToken, axiosJWT) => {
 export const getDailyRevenue = async (accessToken, dispatch, axiosJWT) => {
   dispatch(getDailyRevenueStart());
   try {
-    const res = await axiosJWT.get("http://localhost:8000/v1/borrow/revenue/daily", {
+    const res = await axiosJWT.get(`${process.env.REACT_APP_SERVER_URL}/v1/borrow/revenue/daily`, {
       headers: { token: `Bearer ${accessToken}` },
     });
     dispatch(getDailyRevenueSuccess(res.data));

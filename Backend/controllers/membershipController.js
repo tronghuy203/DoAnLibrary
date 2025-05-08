@@ -1,3 +1,4 @@
+require("dotenv").config();
 const Membership = require("../models/Membership");
 const UserMembership = require("../models/UserMembership");
 const User = require("../models/User");
@@ -164,11 +165,11 @@ const membershipController = {
           membership: { membershipId: payment.membershipId, userMembershipId: userMembership._id },
         });
 
-        res.redirect(`http://localhost:3000/payment-redirect?txnRef=${txnRef}`);
+        res.redirect(`${process.env.CLIENT_URL}/payment-redirect?txnRef=${txnRef}`);
       } else {
         payment.status = "failed";
         await payment.save();
-        res.redirect("http://localhost:3000/payment-failed");
+        res.redirect(`${process.env.CLIENT_URL}/payment-failed`);
       }
     } catch (err) {
       res.status(500).json({ message: "Lỗi xử lý callback", error: err.message });

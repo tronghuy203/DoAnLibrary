@@ -19,7 +19,7 @@ import {
 export const getAllBooks = async (accessToken, dispatch,axiosJWT) => {
   dispatch(getBooksStart());
   try {
-    const res = await axiosJWT.get("http://localhost:8000/v1/books", {
+    const res = await axiosJWT.get(`${process.env.REACT_APP_SERVER_URL}/v1/books`, {
       headers: { token: `Bearer ${accessToken}` },
     });
     dispatch(getBooksSuccess(Array.isArray(res.data) ? res.data : []));
@@ -34,7 +34,7 @@ export const getAllBooks = async (accessToken, dispatch,axiosJWT) => {
 export const getBookDetail = async (bookId, accessToken, dispatch, axiosJWT) => {
   dispatch(getBookDetailStart());
   try {
-    const res = await axiosJWT.get(`http://localhost:8000/v1/books/${bookId}`, {
+    const res = await axiosJWT.get(`${process.env.REACT_APP_SERVER_URL}/v1/books/${bookId}`, {
       headers: { token: `Bearer ${accessToken}` },
     });
     dispatch(getBookDetailSuccess(res.data));
@@ -49,7 +49,7 @@ export const getBookDetail = async (bookId, accessToken, dispatch, axiosJWT) => 
 export const createBook = async (book, accessToken, dispatch,axiosJWT) => {
   dispatch(createBookStart());
   try {
-    const res = await axiosJWT.post("http://localhost:8000/v1/books", book, {
+    const res = await axiosJWT.post(`${process.env.REACT_APP_SERVER_URL}/v1/books`, book, {
       headers: { token: `Bearer ${accessToken}` },
     });
     dispatch(createBookSuccess(res.data));
@@ -64,7 +64,7 @@ export const createBook = async (book, accessToken, dispatch,axiosJWT) => {
 export const updateBook = async (bookId, updatedBook, accessToken, dispatch,axiosJWT) => {
   dispatch(updateBookStart());
   try {
-    const res = await axiosJWT.put(`http://localhost:8000/v1/books/${bookId}`, updatedBook, {
+    const res = await axiosJWT.put(`${process.env.REACT_APP_SERVER_URL}/v1/books/${bookId}`, updatedBook, {
       headers: {  
         "Content-Type": "multipart/form-data",
         token: `Bearer ${accessToken}` },
@@ -81,7 +81,7 @@ export const updateBook = async (bookId, updatedBook, accessToken, dispatch,axio
 export const deleteBook = async (bookId, accessToken, dispatch,axiosJWT) => {
   dispatch(deleteBookStart());
   try {
-    await axiosJWT.delete(`http://localhost:8000/v1/books/${bookId}`, {
+    await axiosJWT.delete(`${process.env.REACT_APP_SERVER_URL}/v1/books/${bookId}`, {
       headers: { token: `Bearer ${accessToken}` },
     });
     dispatch(deleteBookSuccess(bookId));

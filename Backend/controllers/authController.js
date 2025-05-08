@@ -14,7 +14,7 @@ let refreshTokens = [];
 const googleClient = new OAuth2Client({
   clientId: process.env.GOOGLE_CLIENT_ID,
   clientSecret: process.env.GOOGLE_CLIENT_SECRET,
-  redirectUri: "http://localhost:8000/v1/auth/google/callback",
+  redirectUri: `${process.env.SERVER_URL}/v1/auth/google/callback`,
 });
 
 const transporter = nodemailer.createTransport({
