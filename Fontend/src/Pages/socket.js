@@ -4,7 +4,7 @@ let socket;
 
 export const initSocket = () => {
   if (!socket || !socket.connected) {
-    socket = io("http://localhost:8000", {
+    socket = io(process.env.REACT_APP_SERVER_URL, {
       withCredentials: true,
       autoConnect: true,
       reconnection: true,

@@ -19,7 +19,7 @@ import {
 export const getReviews = async (type, itemId, dispatch) => {
   dispatch(getReviewsStart());
   try {
-    const res = await axios.get(`http://localhost:8000/v1/reviews/${type}/${itemId}`);
+    const res = await axios.get(`${process.env.REACT_APP_SERVER_URL}/v1/reviews/${type}/${itemId}`);
     dispatch(getReviewsSuccess(res.data));
     return res.data;
   } catch (err) {
@@ -31,7 +31,7 @@ export const getReviews = async (type, itemId, dispatch) => {
 export const addReview = async (reviewData, accessToken, dispatch, axiosJWT) => {
   dispatch(addReviewStart());
   try {
-    const res = await axiosJWT.post(`http://localhost:8000/v1/reviews`, reviewData, {
+    const res = await axiosJWT.post(`${process.env.REACT_APP_SERVER_URL}/v1/reviews`, reviewData, {
       headers: { token: `Bearer ${accessToken}` },
     });
     dispatch(addReviewSuccess(res.data));
@@ -44,7 +44,7 @@ export const addReview = async (reviewData, accessToken, dispatch, axiosJWT) => 
 
 export const updateReview = async (id, data, accessToken, dispatch, axiosJWT) => {
   try {
-    const res = await axiosJWT.put(`http://localhost:8000/v1/reviews/${id}`, data, {
+    const res = await axiosJWT.put(`${process.env.REACT_APP_SERVER_URL}/v1/reviews/${id}`, data, {
       headers: { token: `Bearer ${accessToken}` },
     });
     dispatch(updateReviewSuccess(res.data.review));
@@ -57,7 +57,7 @@ export const updateReview = async (id, data, accessToken, dispatch, axiosJWT) =>
 
 export const deleteReview = async (id, data, accessToken, dispatch, axiosJWT) => {
   try {
-    await axiosJWT.delete(`http://localhost:8000/v1/reviews/${id}`, {
+    await axiosJWT.delete(`${process.env.REACT_APP_SERVER_URL}/v1/reviews/${id}`, {
       headers: { token: `Bearer ${accessToken}` },
       data,
     });
@@ -71,7 +71,7 @@ export const deleteReview = async (id, data, accessToken, dispatch, axiosJWT) =>
 export const addReply = async (reviewId, replyData, accessToken, dispatch, axiosJWT) => {
   try {
     const res = await axiosJWT.post(
-      `http://localhost:8000/v1/reviews/reply/${reviewId}`,
+      `${process.env.REACT_APP_SERVER_URL}/v1/reviews/reply/${reviewId}`,
       replyData,
       { headers: { token: `Bearer ${accessToken}` } }
     );
@@ -86,7 +86,7 @@ export const addReply = async (reviewId, replyData, accessToken, dispatch, axios
 export const updateReply = async (replyId, data, accessToken, dispatch, axiosJWT) => {
   try {
     const res = await axiosJWT.put(
-      `http://localhost:8000/v1/reviews/reply/${replyId}`,
+      `${process.env.REACT_APP_SERVER_URL}/v1/reviews/reply/${replyId}`,
       data,
       { headers: { token: `Bearer ${accessToken}` } }
     );
@@ -100,7 +100,7 @@ export const updateReply = async (replyId, data, accessToken, dispatch, axiosJWT
 
 export const deleteReply = async (replyId, data, accessToken, dispatch, axiosJWT) => {
   try {
-    await axiosJWT.delete(`http://localhost:8000/v1/reviews/reply/${replyId}`, {
+    await axiosJWT.delete(`${process.env.REACT_APP_SERVER_URL}/v1/reviews/reply/${replyId}`, {
       headers: { token: `Bearer ${accessToken}` },
     });
     dispatch(deleteReplySuccess({ reviewId: data.reviewId, replyId }));

@@ -27,7 +27,7 @@ import {
 export const getAllDocumentsAdmin = async (accessToken, dispatch, axiosJWT) => {
     dispatch(getDocumentsStart());
     try {
-      const res = await axiosJWT.get("http://localhost:8000/v1/documents", {
+      const res = await axiosJWT.get(`${process.env.REACT_APP_SERVER_URL}/v1/documents`, {
         headers: { token: `Bearer ${accessToken}` },
       });
       dispatch(getDocumentsSuccess(res.data));
@@ -42,7 +42,7 @@ export const getAllDocumentsAdmin = async (accessToken, dispatch, axiosJWT) => {
 export const getAllDocumentsUser = async (accessToken, dispatch, axiosJWT) => {
     dispatch(getDocumentsStart());
     try {
-      const res = await axiosJWT.get("http://localhost:8000/v1/documents", {
+      const res = await axiosJWT.get(`${process.env.REACT_APP_SERVER_URL}/v1/documents`, {
         headers: { token: `Bearer ${accessToken}` },
       });
       dispatch(getDocumentsSuccess(res.data));
@@ -57,7 +57,7 @@ export const getAllDocumentsUser = async (accessToken, dispatch, axiosJWT) => {
 export const getPendingDocuments = async (accessToken, dispatch, axiosJWT) => {
   dispatch(getPendingDocumentsStart());
   try {
-    const res = await axiosJWT.get("http://localhost:8000/v1/documents/pending", {
+    const res = await axiosJWT.get(`${process.env.REACT_APP_SERVER_URL}/v1/documents/pending`, {
       headers: { token: `Bearer ${accessToken}` },
     });
     dispatch(getPendingDocumentsSuccess(res.data));
@@ -73,7 +73,7 @@ export const approveDocument = async (documentId, accessToken, dispatch, axiosJW
   dispatch(approveDocumentStart());
   try {
     const res = await axiosJWT.put(
-      `http://localhost:8000/v1/documents/approve/${documentId}`,
+      `${process.env.REACT_APP_SERVER_URL}/v1/documents/approve/${documentId}`,
       {},
       {
         headers: { token: `Bearer ${accessToken}` },
@@ -92,7 +92,7 @@ export const rejectDocument = async (documentId, accessToken, dispatch, axiosJWT
   dispatch(rejectDocumentStart());
   try {
     const res = await axiosJWT.put(
-      `http://localhost:8000/v1/documents/reject/${documentId}`,
+      `${process.env.REACT_APP_SERVER_URL}/v1/documents/reject/${documentId}`,
       {},
       {
         headers: { token: `Bearer ${accessToken}` },
@@ -110,7 +110,7 @@ export const rejectDocument = async (documentId, accessToken, dispatch, axiosJWT
 export const getDocumentDetail = async (documentId, accessToken, dispatch, axiosJWT) => {
   dispatch(getDocumentDetailStart());
   try {
-    const res = await axiosJWT.get(`/v1/documents/${documentId}`, {
+    const res = await axiosJWT.get(`${process.env.REACT_APP_SERVER_URL}/v1/documents/${documentId}`, {
       headers: { token: `Bearer ${accessToken}` },
     });
     dispatch(getDocumentDetailSuccess(res.data));
@@ -124,7 +124,7 @@ export const getDocumentDetail = async (documentId, accessToken, dispatch, axios
 
 export const getUserDocuments = async (userId, accessToken, axiosJWT) => {
   try {
-    const res = await axiosJWT.get(`http://localhost:8000/v1/documents/user/${userId}`, {
+    const res = await axiosJWT.get(`${process.env.REACT_APP_SERVER_URL}/v1/documents/user/${userId}`, {
       headers: { token: `Bearer ${accessToken}` },
     });
     return res.data;
@@ -136,7 +136,7 @@ export const getUserDocuments = async (userId, accessToken, axiosJWT) => {
 
 export const viewDocument = async (documentId, accessToken, dispatch, axiosJWT) => {
   try {
-    const res = await axiosJWT.get(`/v1/documents/view/${documentId}`, {
+    const res = await axiosJWT.get(`${process.env.REACT_APP_SERVER_URL}/v1/documents/view/${documentId}`, {
       headers: { token: `Bearer ${accessToken}` },
     });
     const { _id, views, viewHistory } = res.data;
@@ -149,7 +149,7 @@ export const viewDocument = async (documentId, accessToken, dispatch, axiosJWT) 
 
 export const downloadDocument = async (documentId, accessToken, documentTitle, dispatch, axiosJWT) => {
   try {
-    const response = await axiosJWT.get(`/v1/documents/download/${documentId}`, {
+    const response = await axiosJWT.get(`${process.env.REACT_APP_SERVER_URL}/v1/documents/download/${documentId}`, {
       headers: { token: `Bearer ${accessToken}` },
       responseType: "blob",
     });
@@ -174,7 +174,7 @@ export const downloadDocument = async (documentId, accessToken, documentTitle, d
     document.body.removeChild(link);
     window.URL.revokeObjectURL(url);
 
-    const updatedDoc = await axiosJWT.get(`/v1/documents/${documentId}`, {
+    const updatedDoc = await axiosJWT.get(`${process.env.REACT_APP_SERVER_URL}/v1/documents/${documentId}`, {
       headers: { token: `Bearer ${accessToken}` },
     });
     dispatch(
@@ -206,7 +206,7 @@ export const downloadDocument = async (documentId, accessToken, documentTitle, d
 export const uploadDocument = async (documentData, accessToken, dispatch, axiosJWT) => {
     dispatch(uploadDocumentStart());
     try {
-      const res = await axiosJWT.post("http://localhost:8000/v1/documents/upload", documentData, {
+      const res = await axiosJWT.post(`${process.env.REACT_APP_SERVER_URL}/v1/documents/upload`, documentData, {
         headers: {
           "Content-Type": "multipart/form-data",
           token: `Bearer ${accessToken}`,
@@ -225,7 +225,7 @@ export const uploadDocument = async (documentData, accessToken, dispatch, axiosJ
 export const deleteDocument = async (documentId, accessToken, dispatch, axiosJWT) => {
   dispatch(deleteDocumentStart());
   try {
-    await axiosJWT.delete(`http://localhost:8000/v1/documents/${documentId}`, {
+    await axiosJWT.delete(`${process.env.REACT_APP_SERVER_URL}/v1/documents/${documentId}`, {
       headers: { token: `Bearer ${accessToken}` },
     });
     dispatch(deleteDocumentSuccess(documentId));

@@ -13,7 +13,7 @@ import {
 export const getAllMemberships = async (accessToken, dispatch, axiosJWT) => {
   dispatch(getMembershipsStart());
   try {
-    const res = await axiosJWT.get("http://localhost:8000/v1/membership", {
+    const res = await axiosJWT.get(`${process.env.REACT_APP_SERVER_URL}/v1/membership`, {
       headers: { token: `Bearer ${accessToken}` },
     });
     dispatch(getMembershipsSuccess(res.data));
@@ -33,7 +33,7 @@ export const getMembershipStatus = async (accessToken, dispatch, axiosJWT) => {
   dispatch(getMembershipStatusStart());
   try {
     const res = await axiosJWT.get(
-      "http://localhost:8000/v1/membership/status",
+      `${process.env.REACT_APP_SERVER_URL}/v1/membership/status`,
       {
         headers: { token: `Bearer ${accessToken}` },
       }
@@ -61,7 +61,7 @@ export const purchaseMembership = async (
   dispatch(purchaseMembershipStart());
   try {
     const res = await axiosJWT.post(
-      "http://localhost:8000/v1/membership/purchase",
+      `${process.env.REACT_APP_SERVER_URL}/v1/membership/purchase`,
       { membershipId, method },
       {
         headers: { token: `Bearer ${accessToken}` },

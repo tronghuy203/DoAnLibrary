@@ -4,7 +4,7 @@ export const sendChatMessage = async (message, userId, accessToken, dispatch, ax
   dispatch(sendChatMessageStart());
   try {
     const res = await axiosJWT.post(
-      "http://localhost:8000/v1/chatbot/chat",
+      `${process.env.REACT_APP_SERVER_URL}/v1/chatbot/chat`,
       { message, userId },
       {
         headers: { token: `Bearer ${accessToken}` },
@@ -33,7 +33,7 @@ export const fetchChatHistory = async (userId, accessToken, dispatch, axiosJWT) 
   dispatch(fetchChatHistoryStart());
   try {
     const res = await axiosJWT.post(
-      "http://localhost:8000/v1/chatbot/history",
+      `${process.env.REACT_APP_SERVER_URL}/v1/chatbot/history`,
       { userId },
       {
         headers: { token: `Bearer ${accessToken}` },
