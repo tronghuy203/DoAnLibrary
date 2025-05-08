@@ -37,7 +37,7 @@ function createVnpayUrl(paymentData, ipAddr) {
 
   const querystring = require("qs");
   const crypto = require("crypto");
-  let signData = querystring.stringify(vnpParams);
+  let signData = querystring.stringify(vnpParams,{ encode: false });
   let hmac = crypto.createHmac("sha512", vnpayConfig.vnp_HashSecret);
   let signed = hmac.update(Buffer.from(signData, "utf-8")).digest("hex");
   vnpParams["vnp_SecureHash"] = signed;
