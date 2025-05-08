@@ -380,7 +380,7 @@ const borrowController = {
       const { penaltyId } = req.params;
       const { method } = req.body;
       const userId = req.user.id;
-      const ipAddr = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+      const ipAddr = req.headers["x-forwarded-for"]?.split(",")[0] || req.connection.remoteAddress;
   
       const penalty = await Penalty.findById(penaltyId);
       if (!penalty) {
