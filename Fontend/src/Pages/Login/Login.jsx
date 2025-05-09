@@ -8,7 +8,6 @@ import { FcGoogle } from "react-icons/fc";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
 import { GoogleLogin } from "@react-oauth/google";
 
-
 const Login = () => {
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -82,7 +81,7 @@ const Login = () => {
     }
   };
 
-  const handleGoogleFailure = () => {
+  const handleGoogleFailure = (error) => {
     setErrors({ general: "Đăng nhập bằng Google thất bại. Vui lòng thử lại." });
   };
 
@@ -225,25 +224,26 @@ const Login = () => {
           <GoogleLogin
             onSuccess={handleGoogleSuccess}
             onError={handleGoogleFailure}
+            useOneTap={false}
             render={(renderProps) => (
               <button
                 onClick={renderProps.onClick}
                 disabled={renderProps.disabled || isLoading}
-                className={`w-full flex items-center justify-start py-2.5 px-3 bg-white dark:bg-zinc-800 text-gray-700 dark:text-gray-200 font-medium border border-gray-300 dark:border-zinc-600 rounded-md transition-all duration-200 shadow-sm ${
+                className={`w-full flex items-center justify-center py-2.5 px-3 bg-white dark:bg-zinc-800 text-gray-700 dark:text-gray-200 font-medium border border-gray-300 dark:border-zinc-600 rounded-md transition-all duration-200 shadow-sm ${
                   isLoading ? "opacity-75 cursor-not-allowed" : "hover:bg-gray-100 dark:hover:bg-zinc-700"
                 }`}
               >
-                <FcGoogle className="w-5 h-5" />
-                <p className="text-sm text-center mx-auto font-normal">Đăng nhập bằng Google</p>
+                <FcGoogle className="w-5 h-5 mr-2" />
+                <span className="text-sm font-normal">Đăng nhập bằng Google</span>
               </button>
             )}
           />
           <button
             onClick={handleFacebookLogin}
-            className={`w-full flex items-center justify-start py-2.5 px-3 bg-white dark:bg-zinc-800 text-gray-700 dark:text-gray-200 font-medium border border-gray-300 dark:border-zinc-600 rounded-md transition-all duration-200 shadow-sm ${
+            disabled={isLoading}
+            className={`w-full flex items-center justify-center py-2.5 px-3 bg-white dark:bg-zinc-800 text-gray-700 dark:text-gray-200 font-medium border border-gray-300 dark:border-zinc-600 rounded-md transition-all duration-200 shadow-sm ${
               isLoading ? "opacity-75 cursor-not-allowed" : "hover:bg-gray-100 dark:hover:bg-zinc-700"
             }`}
-            disabled={isLoading}
           >
             <FaFacebook className="w-5 h-5 text-blue-600" />
             <p className="text-sm text-center mx-auto font-normal">Đăng nhập bằng Facebook</p>
@@ -260,7 +260,7 @@ const Login = () => {
           </Link>
         </div>
       </div>
-       <style>
+      <style>
         {`
           @keyframes spin-continuous {
             0% { transform: rotate(0deg); }
@@ -275,6 +275,15 @@ const Login = () => {
           }
           .animate-spin-continuous-reverse {
             animation: spin-continuous-reverse 1s linear infinite;
+          }
+          .w-full {
+            width: 100% !important;
+          }
+          .flex.items-center.justify-center {
+            display: flex !important;
+            align-items: center !important;
+            justify-content: center !important;
+            gap: 8px !important;
           }
         `}
       </style>
