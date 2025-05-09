@@ -26,7 +26,7 @@ const app = express();
 const server = http.createServer(app);
 const io = new Server(server, {
   cors: {
-    origin: "http://localhost:3000",
+    origin: process.env.CLIENT_URL,
     methods: ["GET", "POST"],
     credentials: true,
   },
@@ -34,12 +34,12 @@ const io = new Server(server, {
 
 connectDB();
 
-app.use(cors(
-    {
-        origin: "http://localhost:3000",
-  credentials: true,
-    }
-));
+app.use(
+  cors({
+    origin: process.env.CLIENT_URL,
+    credentials: true,
+  })
+);
 app.use(cookieParser());
 app.use(express.json());
 
@@ -58,49 +58,51 @@ app.use("/v1/chat", chatRoute);
 app.use("/v1/chatbot", chatbotRoute);
 
 io.on("connection", (socket) => {
-    console.log("A user connected:", socket.id);
+  console.log("A user connected:", socket.id);
 
-    socket.on("joinChat", async ({ chatId, userId }) => {
-      socket.join(chatId);
+  socket.on("joinChat", async ({ chatId, userId }) => {
+    socket.join(chatId);
 
+    const chat = await Chat.findById(chatId);
+    if (!chat.participants.includes(userId)) {
+      socket.emit("error", { message: "Unauthorized access to chat" });
+      return;
+    }
+
+    console.log(`User ${userId} joined chat ${chatId}`);
+  });
+
+  socket.on("sendMessage", async ({ chatId, userId, content }) => {
+    try {
       const chat = await Chat.findById(chatId);
       if (!chat.participants.includes(userId)) {
         socket.emit("error", { message: "Unauthorized access to chat" });
         return;
       }
 
-      console.log(`User ${userId} joined chat ${chatId}`);
-    });
+      const message = await Message.create({
+        chatId,
+        sender: userId,
+        content,
+      });
 
-    socket.on("sendMessage", async ({ chatId, userId, content }) => {
-      try {
-        const chat = await Chat.findById(chatId);
-        if (!chat.participants.includes(userId)) {
-          socket.emit("error", { message: "Unauthorized access to chat" });
-          return;
-        }
+      const populatedMessage = await Message.findById(message._id).populate(
+        "sender",
+        "username avatar"
+      );
 
-        const message = await Message.create({
-          chatId,
-          sender: userId,
-          content,
-        });
-
-        const populatedMessage = await Message.findById(message._id).populate(
-          "sender",
-          "username avatar"
-        );
-
-        io.to(chatId).emit("newMessage", populatedMessage);
-      } catch (error) {
-        socket.emit("error", { message: "Failed to send message" });
-      }
-    });
-
-    socket.on("disconnect", () => {
-      console.log("User disconnected:", socket.id);
-    });
+      io.to(chatId).emit("newMessage", populatedMessage);
+    } catch (error) {
+      socket.emit("error", { message: "Failed to send message" });
+    }
   });
-server.listen(8000, () => {
-  console.log("Server is running");
+
+  socket.on("disconnect", () => {
+    console.log("User disconnected:", socket.id);
+  });
+});
+const PORT = process.env.PORT || 8000;
+
+server.listen(PORT, () => {
+  console.log(`Server is running on port ${PORT}`);
 });

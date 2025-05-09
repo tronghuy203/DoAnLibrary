@@ -4,7 +4,7 @@ export const getRevenueByType = (accessToken, dispatch, axiosJWT) => {
   return async () => {
     dispatch(paymentGetStart());
     try {
-      const res = await axiosJWT.get("/v1/payment/revenue-by-type", {
+      const res = await axiosJWT.get(`${process.env.REACT_APP_SERVER_URL}/v1/payment/revenue-by-type`, {
         headers: { token: `Bearer ${accessToken}` },
       });
       dispatch(paymentGetSuccess(res.data));

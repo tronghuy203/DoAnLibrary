@@ -40,7 +40,7 @@ import {
 export const loginUser = async (user, dispatch, navigate) => {
   dispatch(loginStart());
   try {
-    const res = await axios.post("/v1/auth/login", user);
+    const res = await axios.post(`${process.env.REACT_APP_SERVER_URL}/v1/auth/login`, user);
     dispatch(loginSuccess(res.data));
     localStorage.setItem("accessToken", res.data.accessToken);
     if (res.data.admin) {
@@ -57,7 +57,7 @@ export const loginUser = async (user, dispatch, navigate) => {
 export const googleLogin = async (token, dispatch, navigate) => {
   dispatch(loginStart());
   try {
-    const res = await axios.post("/v1/auth/google", { token });
+    const res = await axios.post(`${process.env.REACT_APP_SERVER_URL}/v1/auth/google`, { token });
     dispatch(loginSuccess(res.data));
     localStorage.setItem("accessToken", res.data.accessToken);
     if (res.data.admin) {
@@ -73,7 +73,7 @@ export const googleLogin = async (token, dispatch, navigate) => {
 export const facebookLogin = async (data, dispatch, navigate) => {
   dispatch(loginStart());
   try {
-    const res = await axios.post("/v1/auth/facebook", data);
+    const res = await axios.post(`${process.env.REACT_APP_SERVER_URL}/v1/auth/facebook`, data);
     dispatch(loginSuccess(res.data));
     localStorage.setItem("accessToken", res.data.accessToken);
     if (res.data.admin) {
@@ -90,7 +90,7 @@ export const facebookLogin = async (data, dispatch, navigate) => {
 export const registerUser = async (user, dispatch, navigate) => {
   dispatch(registerStart());
   try {
-    const res = await axios.post("/v1/auth/register", user);
+    const res = await axios.post(`${process.env.REACT_APP_SERVER_URL}/v1/auth/register`, user);
     dispatch(registerSuccess());
     return res.data;
   } catch (err) {
@@ -102,7 +102,7 @@ export const registerUser = async (user, dispatch, navigate) => {
 export const forgotPassword = async (email, dispatch) => {
   dispatch(forgotPasswordStart());
   try {
-    const res = await axios.post("/v1/auth/forgot-password", { email });
+    const res = await axios.post(`${process.env.REACT_APP_SERVER_URL}/v1/auth/forgot-password`, { email });
     dispatch(forgotPasswordSuccess());
     return res.data;
   } catch (error) {
@@ -114,7 +114,7 @@ export const forgotPassword = async (email, dispatch) => {
 export const resendResetCode = async (email, dispatch) => {
   dispatch(resendResetCodeStart());
   try {
-    const res = await axios.post("/v1/auth/resend-reset-code", { email });
+    const res = await axios.post(`${process.env.REACT_APP_SERVER_URL}/v1/auth/resend-reset-code`, { email });
     dispatch(resendResetCodeSuccess());
     return res.data;
   } catch (error) {
@@ -126,7 +126,7 @@ export const resendResetCode = async (email, dispatch) => {
 export const verifyResetCode = async (email, code, dispatch) => {
   dispatch(verifyResetCodeStart());
   try {
-    const res = await axios.post("/v1/auth/verify-reset-code", { email, code });
+    const res = await axios.post(`${process.env.REACT_APP_SERVER_URL}/v1/auth/verify-reset-code`, { email, code });
     dispatch(verifyResetCodeSuccess());
     return res.data;
   } catch (error) {
@@ -138,7 +138,7 @@ export const verifyResetCode = async (email, code, dispatch) => {
 export const resetPassword = async (data, dispatch) => {
   dispatch(resetPasswordStart());
   try {
-    const res = await axios.post("/v1/auth/reset-password", data);
+    const res = await axios.post(`${process.env.REACT_APP_SERVER_URL}/v1/auth/reset-password`, data);
     dispatch(resetPasswordSuccess());
     return res.data;
   } catch (error) {
@@ -150,7 +150,7 @@ export const resetPassword = async (data, dispatch) => {
 export const verifyEmail = async (data, dispatch, navigate) => {
   dispatch(verifyEmailStart());
   try {
-    await axios.post("/v1/auth/verify-email", data);
+    await axios.post(`${process.env.REACT_APP_SERVER_URL}/v1/auth/verify-email`, data);
     dispatch(verifyEmailSuccess());
     navigate("/login");
   } catch (err) {
@@ -161,7 +161,7 @@ export const verifyEmail = async (data, dispatch, navigate) => {
 
 export const resendVerificationCode = async (email) => {
   try {
-    const res = await axios.post("/v1/auth/resend-verification", { email });
+    const res = await axios.post(`${process.env.REACT_APP_SERVER_URL}/v1/auth/resend-verification`, { email });
     return res;
   } catch (err) {
     throw err;
@@ -171,7 +171,7 @@ export const resendVerificationCode = async (email) => {
 export const getAllUsers = async (accessToken, dispatch, axiosJWT) => {
   dispatch(getUsersStart());
   try {
-    const res = await axiosJWT.get("/v1/user", {
+    const res = await axiosJWT.get(`${process.env.REACT_APP_SERVER_URL}/v1/user`, {
       headers: { token: `Bearer ${accessToken}` },
     });
     dispatch(getUsersSuccess(res.data));
@@ -188,7 +188,7 @@ export const updateUser = async (
   axiosJWT
 ) => {
   try {
-    const res = await axiosJWT.put(`/v1/user/${userId}`, userData, {
+    const res = await axiosJWT.put(`${process.env.REACT_APP_SERVER_URL}/v1/user/${userId}`, userData, {
       headers: { token: `Bearer ${accessToken}` },
     });
 
@@ -202,7 +202,7 @@ export const deleteUser = (userId, accessToken, navigate, axiosJWT) => {
   return async (dispatch) => {
     dispatch(deleteUserStart());
     try {
-      const res = await axiosJWT.delete("/v1/user/" + userId, {
+      const res = await axiosJWT.delete(`${process.env.REACT_APP_SERVER_URL}/v1/user/` + userId, {
         headers: { token: `Bearer ${accessToken}` },
       });
 
@@ -227,7 +227,7 @@ export const updateUserProfile = async (
 ) => {
   dispatch(updateUserStart());
   try {
-    const res = await axiosJWT.put(`/v1/user/update-profile/${userId}`, data, {
+    const res = await axiosJWT.put(`${process.env.REACT_APP_SERVER_URL}/v1/user/update-profile/${userId}`, data, {
       headers: { token: `Bearer ${accessToken}` },
     });
     dispatch(updateUserSuccess(res.data));
@@ -242,7 +242,7 @@ export const updateUserProfile = async (
 
 export const getBorrowHistory = async (userId, accessToken, axiosJWT) => {
   try {
-    const res = await axiosJWT.get(`/v1/user/history/${userId}`, {
+    const res = await axiosJWT.get(`${process.env.REACT_APP_SERVER_URL}/v1/user/history/${userId}`, {
       headers: { token: `Bearer ${accessToken}` },
     });
     return res.data;
@@ -255,7 +255,7 @@ export const getBorrowHistory = async (userId, accessToken, axiosJWT) => {
 export const logOut = async (dispatch, id, navigate, accessToken, axiosJWT) => {
   dispatch(logoutStart());
   try {
-    await axiosJWT.post("/v1/auth/logout", id, {
+    await axiosJWT.post(`${process.env.REACT_APP_SERVER_URL}/v1/auth/logout`, id, {
       headers: { token: `Bearer ${accessToken}` },
     });
     dispatch(logoutSuccess());
@@ -266,7 +266,7 @@ export const logOut = async (dispatch, id, navigate, accessToken, axiosJWT) => {
 };
 export const uploadAvatar = async (formData, accessToken, axiosJWT) => {
   try {
-    const res = await axiosJWT.post("/v1/user/upload-avatar", formData, {
+    const res = await axiosJWT.post(`${process.env.REACT_APP_SERVER_URL}/v1/user/upload-avatar`, formData, {
       headers: {
         token: `Bearer ${accessToken}`,
         "Content-Type": "multipart/form-data",

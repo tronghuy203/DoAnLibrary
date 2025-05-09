@@ -16,7 +16,7 @@ import {
 export const getChatUsers = async (accessToken, dispatch, axiosJWT) => {
   dispatch(getUsersStart());
   try {
-    const res = await axiosJWT.get("/v1/chat/users", {
+    const res = await axiosJWT.get(`${process.env.REACT_APP_SERVER_URL}/v1/chat/users`, {
       headers: { token: `Bearer ${accessToken}` },
     });
     dispatch(getUsersSuccess(res.data));
@@ -34,7 +34,7 @@ export const getChatUsers = async (accessToken, dispatch, axiosJWT) => {
 export const getAdmin = async (accessToken, dispatch, axiosJWT) => {
   dispatch(getAdminStart());
   try {
-    const res = await axiosJWT.get("/v1/user/admin", {
+    const res = await axiosJWT.get(`${process.env.REACT_APP_SERVER_URL}/v1/user/admin`, {
       headers: { token: `Bearer ${accessToken}` },
     });
     dispatch(getAdminSuccess(res.data));
@@ -51,7 +51,7 @@ export const createChat = async (userId, accessToken, dispatch, axiosJWT) => {
   dispatch(createChatStart());
   try {
     const res = await axiosJWT.post(
-      "/v1/chat/create",
+      `${process.env.REACT_APP_SERVER_URL}/v1/chat/create`,
       { userId },
       {
         headers: { token: `Bearer ${accessToken}` },
@@ -77,7 +77,7 @@ export const getChatHistory = async (
 ) => {
   dispatch(getHistoryStart());
   try {
-    const res = await axiosJWT.get(`/v1/chat/history/${chatId}`, {
+    const res = await axiosJWT.get(`${process.env.REACT_APP_SERVER_URL}/v1/chat/history/${chatId}`, {
       headers: { token: `Bearer ${accessToken}` },
     });
     dispatch(getHistorySuccess({ chatId, messages: res.data }));

@@ -18,7 +18,7 @@ const processQueue = (error, token = null) => {
 
 const refreshToken = async () => {
   try {
-    const res = await axios.post("/v1/auth/refresh", {}, { withCredentials: true });
+    const res = await axios.post(`${process.env.REACT_APP_SERVER_URL}/v1/auth/refresh`, {}, { withCredentials: true });
     return res.data;
   } catch (err) {
     console.error("Refresh token failed:", err);

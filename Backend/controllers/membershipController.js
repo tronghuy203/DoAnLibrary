@@ -1,3 +1,4 @@
+require("dotenv").config();
 const Membership = require("../models/Membership");
 const UserMembership = require("../models/UserMembership");
 const User = require("../models/User");
@@ -34,7 +35,7 @@ function createVnpayUrl(paymentData, ipAddr) {
   vnpParams = sortObject(vnpParams);
   let signData = querystring.stringify(vnpParams);
   let hmac = crypto.createHmac("sha512", vnpayConfig.vnp_HashSecret);
-  let signed = hmac.update(Buffer.from(signData, "utf-8")).digest("hex");
+  let signed = hmac.update(signData).digest("hex");
   vnpParams["vnp_SecureHash"] = signed;
 
   return `${vnpayConfig.vnp_Url}?${querystring.stringify(vnpParams)}`;
@@ -54,7 +55,7 @@ const membershipController = {
     try {
       const { membershipId, method } = req.body;
       const userId = req.user.id;
-      const ipAddr = req.headers["x-forwarded-for"] || req.connection.remoteAddress;
+      const ipAddr = req.headers["x-forwarded-for"]?.split(",")[0] || req.connection.remoteAddress;
 
       const membership = await Membership.findById(membershipId);
       if (!membership) {
@@ -126,9 +127,9 @@ const membershipController = {
       delete vnpParams["vnp_SecureHashType"];
 
       vnpParams = sortObject(vnpParams);
-      let signData = querystring.stringify(vnpParams, { encode: false });
+      let signData = querystring.stringify(vnpParams);
       let hmac = crypto.createHmac("sha512", vnpayConfig.vnp_HashSecret);
-      let signed = hmac.update(Buffer.from(signData, "utf-8")).digest("hex");
+      let signed = hmac.update(signData).digest("hex");
 
       if (secureHash !== signed) {
         return res.status(400).json({ message: "Chữ ký không hợp lệ" });
@@ -164,11 +165,11 @@ const membershipController = {
           membership: { membershipId: payment.membershipId, userMembershipId: userMembership._id },
         });
 
-        res.redirect(`http://localhost:3000/payment-redirect?txnRef=${txnRef}`);
+        res.redirect(`${process.env.CLIENT_URL}/payment-redirect?txnRef=${txnRef}`);
       } else {
         payment.status = "failed";
         await payment.save();
-        res.redirect("http://localhost:3000/payment-failed");
+        res.redirect(`${process.env.CLIENT_URL}/payment-failed`);
       }
     } catch (err) {
       res.status(500).json({ message: "Lỗi xử lý callback", error: err.message });

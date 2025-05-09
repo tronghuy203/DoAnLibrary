@@ -54,12 +54,11 @@ const HistoryPage = () => {
 
       const history = await getBorrowHistory(user._id, user.accessToken, axiosJWT);
       setBorrowHistory(Array.isArray(history) ? history : []);
-
+      
       const penaltyPromises = history
-        .filter((record) => record.status === "overdue")
+        .filter((record) => record.status === "overdue" || record.returnDate)
         .map(async (record) => {
           try {
-            console.log("Đang lấy phạt cho borrowId:", record._id);
             const penalty = await getPenaltyByBorrow(record._id, user.accessToken, axiosJWT);
             return { penaltyId: penalty._id, penalty, borrowId: record._id };
           } catch (err) {
@@ -80,7 +79,7 @@ const HistoryPage = () => {
         return acc;
       }, {});
       setPenalties(penaltyMap);
-
+  
       const paymentHistoryData = await getPaymentHistory(user._id, user.accessToken, axiosJWT);
       setPaymentHistory(Array.isArray(paymentHistoryData) ? paymentHistoryData : []);
     } catch (err) {

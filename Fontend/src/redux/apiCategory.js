@@ -16,7 +16,7 @@ import {
 export const getCategory = async (accessToken, dispatch, axiosJWT) => {
     dispatch(getCategoryStart());
     try {
-        const res = await axiosJWT.get("http://localhost:8000/v1/categorys", {
+        const res = await axiosJWT.get(`${process.env.REACT_APP_SERVER_URL}/v1/categorys`, {
             headers: { token: `Bearer ${accessToken}` },
         });
         dispatch(getCategorySuccess(res.data));
@@ -31,7 +31,7 @@ export const getCategory = async (accessToken, dispatch, axiosJWT) => {
 export const createCategory = async (dispatch, categoryData, accessToken, axiosJWT) => {
     dispatch(createCategoryStart());
     try {
-        const res = await axiosJWT.post("http://localhost:8000/v1/categorys", categoryData, {
+        const res = await axiosJWT.post(`${process.env.REACT_APP_SERVER_URL}/v1/categorys`, categoryData, {
             headers: { token: `Bearer ${accessToken}` },
         });
         dispatch(createCategorySuccess(res.data));
@@ -46,7 +46,7 @@ export const createCategory = async (dispatch, categoryData, accessToken, axiosJ
 export const updateCategory = async (categoryId, updatedData, accessToken, dispatch, axiosJWT) => {
     dispatch(updateCategoryStart());
     try {
-        const res = await axiosJWT.put(`http://localhost:8000/v1/categorys/${categoryId}`, updatedData, {
+        const res = await axiosJWT.put(`${process.env.REACT_APP_SERVER_URL}/v1/categorys/${categoryId}`, updatedData, {
             headers: { token: `Bearer ${accessToken}` },
         });
         dispatch(updateCategorySuccess(res.data));
@@ -61,7 +61,7 @@ export const updateCategory = async (categoryId, updatedData, accessToken, dispa
 export const deleteCategory = async (categoryId, accessToken, dispatch, axiosJWT) => {
     dispatch(deleteCategoryStart());
     try {
-        await axiosJWT.delete(`http://localhost:8000/v1/categorys/${categoryId}`, {
+        await axiosJWT.delete(`${process.env.REACT_APP_SERVER_URL}/v1/categorys/${categoryId}`, {
             headers: { token: `Bearer ${accessToken}` },
         });
         dispatch(deleteCategorySuccess(categoryId));
