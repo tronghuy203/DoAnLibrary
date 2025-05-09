@@ -246,38 +246,39 @@ const AdminChat = () => {
                 <p className="text-sm sm:text-base">Không có người dùng nào</p>
               </div>
             ) : (
-              <ul className="space-y-3 sm:space-y-2">
-                {sortedUsers.map((u) => (
-                  <li
-                    key={u._id}
-                    onClick={() => handleSelectUser(u._id)}
-                    className={`cursor-pointer p-2 sm:p-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700/50 transition-all flex items-center gap-2 sm:gap-3 ${
-                      selectedUser === u._id ? "bg-gray-200 dark:bg-gray-700" : ""
-                    }`}
-                  >
-                    <div className="relative">
-                      <img
-                        src={
-                          u.avatar ||
-                          "https://cellphones.com.vn/sforum/wp-content/uploads/2023/10/avatar-trang-4.jpg"
-                        }
-                        alt="avatar"
-                        className="w-8 sm:w-8 h-8 sm:h-8 rounded-full object-cover shadow-md transition-transform duration-200 hover:scale-110"
-                      />
-                      {newMessageUsers.includes(u._id) && (
-                        <span className="absolute top-0 right-0 w-2 sm:w-3 h-2 sm:h-3 bg-red-500 rounded-full animate-pulse"></span>
-                      )}
-                    </div>
-                    <span className="text-gray-900 dark:text-gray-100 text-sm sm:text-base">
-                      {u.username}
-                    </span>
-                  </li>
-                ))}
-              </ul>
+              <div className="h-[calc(80vh-100px)] sm:h-[500px] overflow-y-auto scrollbar scrollbar-w-2 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scrollbar-thumb-blue-500 dark:scrollbar-thumb-blue-400 scrollbar-track-gray-100 dark:scrollbar-track-gray-800 [scrollbar-color:#3b82f6_#f3f4f6] dark:[scrollbar-color:#60a5fa_#1f2937] lg:scrollbar-w-3 lg:scrollbar-thumb-blue-600 dark:lg:scrollbar-thumb-blue-500 lg:scrollbar-track-gray-100 dark:lg:scrollbar-track-gray-800 lg:scrollbar-thumb-hover:blue-700 dark:lg:scrollbar-thumb-hover:blue-600">
+                <ul className="space-y-3 sm:space-y-2">
+                  {sortedUsers.map((u, index) => (
+                    <li
+                      key={u._id}
+                      onClick={() => handleSelectUser(u._id)}
+                      className={`cursor-pointer p-2 sm:p-3 rounded-lg hover:bg-gray-200 dark:hover:bg-gray-700/50 transition-all flex items-center gap-2 sm:gap-3 ${
+                        selectedUser === u._id ? "bg-gray-200 dark:bg-gray-700" : ""
+                      } ${index < 6 ? `sm:animate-in sm:slide-in-from-top-${index + 1} sm:duration-300` : "sm:animate-in sm:fade-in sm:duration-300"}`}
+                    >
+                      <div className="relative">
+                        <img
+                          src={
+                            u.avatar ||
+                            "https://cellphones.com.vn/sforum/wp-content/uploads/2023/10/avatar-trang-4.jpg"
+                          }
+                          alt="avatar"
+                          className="w-8 sm:w-8 h-8 sm:h-8 rounded-full object-cover shadow-md transition-transform duration-200 hover:scale-110"
+                        />
+                        {newMessageUsers.includes(u._id) && (
+                          <span className="absolute top-0 right-0 w-2 sm:w-3 h-2 sm:h-3 bg-red-500 rounded-full animate-pulse"></span>
+                        )}
+                      </div>
+                      <span className="text-gray-900 dark:text-gray-100 text-sm sm:text-base">
+                        {u.username}
+                      </span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
             )}
           </div>
 
-          {/* Khu vực chat */}
           <div
             className={`w-full flex flex-col sm:w-2/3 ${selectedUser ? "block" : "hidden sm:block"}`}
           >
