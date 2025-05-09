@@ -54,7 +54,6 @@ const Login = () => {
       await loginUser(newUser, dispatch, navigate);
       setErrors({});
     } catch (err) {
-      console.log("Server error:", err.response);
       const serverError = err.response?.data;
       if (serverError === "Wrong email") {
         setErrors({ email: "Email không tồn tại." });
@@ -225,6 +224,9 @@ const Login = () => {
             <GoogleLogin
               onSuccess={handleGoogleSuccess}
               onError={handleGoogleFailure}
+              ux_mode="popup"
+              text="signin_with"
+              useOneTap={false}
               disabled={isLoading}
               render={(renderProps) => (
                 <button
