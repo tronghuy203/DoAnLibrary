@@ -6,7 +6,7 @@ import anhnen from "../../Assets/anhnen.jpg";
 import { FaFacebook } from "react-icons/fa";
 import { FcGoogle } from "react-icons/fc";
 import { AiOutlineEye, AiOutlineEyeInvisible } from "react-icons/ai";
-import { GoogleOAuthProvider, GoogleLogin } from "@react-oauth/google";
+import { GoogleOAuthProvider, useGoogleLogin } from "@react-oauth/google";
 
 const Login = () => {
   const [email, setEmail] = useState("");
@@ -70,7 +70,7 @@ const Login = () => {
   const handleGoogleSuccess = async (response) => {
     setIsLoading(true);
     try {
-      await googleLogin(response.credential, dispatch, navigate);
+      await googleLogin(response.access_token, dispatch, navigate);
       setErrors({});
     } catch (err) {
       console.error("Google login error:", err);
@@ -105,6 +105,12 @@ const Login = () => {
       { scope: "public_profile,email" }
     );
   };
+
+  const googleLoginHook = useGoogleLogin({
+    onSuccess: handleGoogleSuccess,
+    onError: handleGoogleFailure,
+    flow: "implicit", 
+  });
 
   const togglePasswordVisibility = () => setShowPassword(!showPassword);
 
@@ -221,26 +227,16 @@ const Login = () => {
           </div>
 
           <div className="space-y-4">
-            <GoogleLogin
-              onSuccess={handleGoogleSuccess}
-              onError={handleGoogleFailure}
-              ux_mode="popup"
-              text="signin_with"
-              useOneTap={false}
+            <button
+              onClick={() => googleLoginHook()}
+              className={`w-full flex items-center justify-start py-2.5 px-3 bg-white dark:bg-zinc-800 text-gray-700 dark:text-gray-200 font-medium border border-gray-300 dark:border-zinc-600 rounded-md transition-all duration-200 shadow-sm ${
+                isLoading ? "opacity-75 cursor-not-allowed" : "hover:bg-gray-100 dark:hover:bg-zinc-700"
+              }`}
               disabled={isLoading}
-              render={(renderProps) => (
-                <button
-                  onClick={renderProps.onClick}
-                  disabled={renderProps.disabled || isLoading}
-                  className={`w-full flex items-center justify-start py-2.5 px-3 bg-white dark:bg-zinc-800 text-gray-700 dark:text-gray-200 font-medium border border-gray-300 dark:border-zinc-600 rounded-md transition-all duration-200 shadow-sm ${
-                    isLoading ? "opacity-75 cursor-not-allowed" : "hover:bg-gray-100 dark:hover:bg-zinc-700"
-                  }`}
-                >
-                  <FcGoogle className="w-5 h-5" />
-                  <p className="text-sm text-center mx-auto font-normal">Đăng nhập bằng Google</p>
-                </button>
-              )}
-            />
+            >
+              <FcGoogle className="w-5 h-5" />
+              <p className="text-sm text-center mx-auto font-normal">Đăng nhập bằng Google</p>
+            </button>
             <button
               onClick={handleFacebookLogin}
               className={`w-full flex items-center justify-start py-2.5 px-3 bg-white dark:bg-zinc-800 text-gray-700 dark:text-gray-200 font-medium border border-gray-300 dark:border-zinc-600 rounded-md transition-all duration-200 shadow-sm ${
