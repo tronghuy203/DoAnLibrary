@@ -21,11 +21,11 @@ const chatbotController = {
           .json({ message: "Vui lòng nhập câu hỏi hợp lệ." });
       }
 
-      const books = await Book.find({}).populate('category').lean().limit(5);
-      const docs = await Document.find({ status: "approved" }).lean().limit(5);
+      const books = await Book.find({}).populate('category').lean().limit(50);
+      const docs = await Document.find({ status: "approved" }).lean().limit(50);
       const reviews = await Review.find({})
         .sort({ createdAt: -1 })
-        .limit(5)
+        .limit(50)
         .populate("userId", "username")
         .lean();
 
