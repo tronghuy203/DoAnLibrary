@@ -2,51 +2,47 @@ import React, { useEffect, useMemo, useState } from "react";
 import { getAllBooks, deleteBook } from "../../redux/apiBooks";
 import { getCategory } from "../../redux/apiCategory";
 import { useDispatch, useSelector } from "react-redux";
-import { Link } from "react-router-dom";
+import { Link, useNavigate } from "react-router-dom";
 import { createAxios } from "../../createInstance";
 import { loginSuccess } from "../../redux/authSlice";
 import { PencilIcon, TrashIcon, MagnifyingGlassIcon } from "@heroicons/react/24/outline";
 
 const ListBook = () => {
-  const [books, setBooks] = useState([]);
   const [searchTerm, setSearchTerm] = useState("");
   const [currentPage, setCurrentPage] = useState(1);
-  const [categories, setCategories] = useState([]);
   const booksPerPage = 4;
 
   const dispatch = useDispatch();
-  const user = useSelector((state) => state.auth.login.currentUser);
+  const navigate = useNavigate();
+  const user = useSelector((state) => state.auth.login?.currentUser);
+  const books = useSelector((state) => state.books.allBooks);
+  const categories = useSelector((state) => state.categories.allCategories);
   const axiosJWT = useMemo(() => createAxios(user, dispatch, loginSuccess), [user, dispatch]);
 
   useEffect(() => {
-    const fetchCategories = async () => {
+    if (!user?.accessToken) {
+      navigate("/login");
+      return;
+    }
+
+    const fetchData = async () => {
       try {
-        const categoriesData = await getCategory(user.accessToken, dispatch, axiosJWT);
-        setCategories(categoriesData);
+        await Promise.all([
+         dispatch(getAllBooks(user.accessToken, axiosJWT)),
+         getCategory(user.accessToken, dispatch, axiosJWT),
+        ]);
       } catch (err) {
-        console.error("Error fetching categories:", err);
+        console.error("Lỗi khi tải dữ liệu:", err);
       }
     };
 
-    fetchCategories();
-    const fetchBooks = async () => {
-      if (!user?.accessToken) return;
-      try {
-        const data = await getAllBooks(user.accessToken, dispatch, axiosJWT);
-        setBooks(Array.isArray(data) ? data : []);
-      } catch (err) {
-        console.error("Lỗi khi tải danh sách sách:", err);
-        setBooks([]);
-      }
-    };
-    fetchBooks();
-  }, [dispatch, axiosJWT, user]);
+    fetchData();
+  }, [dispatch, user, axiosJWT, navigate]);
 
-  const handleDelete = async (bookId) => {
+ const handleDelete = async (bookId) => {
     if (window.confirm("Bạn có chắc chắn muốn xóa sách này không?")) {
       try {
         await deleteBook(bookId, user.accessToken, dispatch, axiosJWT);
-        setBooks((prevBooks) => prevBooks.filter((book) => book._id !== bookId));
       } catch (err) {
         console.error("Lỗi khi xóa sách:", err);
       }
