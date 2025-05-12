@@ -19,17 +19,25 @@ const BestBooks = () => {
   useEffect(() => {
     const fetchReviewStats = async () => {
       if (!books.length) return;
-
       try {
         const stats = {};
-        for (const book of books) {
-          const reviews = await getReviews("book", book._id, dispatch);
+        const reviewPromises = books.map((book) =>
+          getReviews("book", book._id, dispatch).then((reviews) => ({
+            bookId: book._id,
+            reviews,
+          }))
+        );
+        const reviewResults = await Promise.all(reviewPromises);
+
+        for (const { bookId, reviews } of reviewResults) {
           const reviewCount = reviews.length;
           const averageRating =
             reviewCount > 0
-              ? (reviews.reduce((sum, review) => sum + review.rating, 0) / reviewCount).toFixed(1)
+              ? (
+                  reviews.reduce((acc, r) => acc + r.rating, 0) / reviewCount
+                ).toFixed(1)
               : 0;
-          stats[book._id] = { averageRating, reviewCount };
+          stats[bookId] = { averageRating, reviewCount };
         }
         setReviewStats(stats);
       } catch (error) {
@@ -65,13 +73,18 @@ const BestBooks = () => {
   return (
     <div className="py-10 bg-white flex justify-center items-center dark:bg-zinc-900 dark:text-white duration-200">
       <div className="container">
-        <div data-aos="slide-up" className="text-center mb-24 max-w-[400px] mx-auto">
+        <div
+          data-aos="slide-up"
+          className="text-center mb-24 max-w-[400px] mx-auto"
+        >
           <p className="text-sm bg-clip-text text-transparent bg-gradient-to-r from-sky-600 to-cyan-200">
             Sách Thịnh Hành
           </p>
           <h1 className="text-3xl font-bold">Sách Hay Nhất</h1>
           <p className="text-xs text-gray-400">
-            Sách thịnh hành hay nhất là những cuốn sách được nhiều người yêu thích, có nội dung hấp dẫn và giá trị cao, tạo ảnh hưởng lớn trong cộng đồng độc giả.
+            Sách thịnh hành hay nhất là những cuốn sách được nhiều người yêu
+            thích, có nội dung hấp dẫn và giá trị cao, tạo ảnh hưởng lớn trong
+            cộng đồng độc giả.
           </p>
         </div>
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 md:gap-5 place-items-center gap-20">
@@ -108,7 +121,9 @@ const BestBooks = () => {
                         <svg
                           key={i}
                           className={`w-5 h-5 ${
-                            i < Math.round(avg) ? "fill-current" : "fill-none stroke-current"
+                            i < Math.round(avg)
+                              ? "fill-current"
+                              : "fill-none stroke-current"
                           }`}
                           xmlns="http://www.w3.org/2000/svg"
                           viewBox="0 0 24 24"
@@ -117,7 +132,9 @@ const BestBooks = () => {
                         </svg>
                       ))}
                       <span className="ml-2 text-sm text-gray-600 group-hover:text-white dark:text-gray-300">
-                        {avg > 0 ? `${avg}/5 (${count} đánh giá)` : "Chưa có đánh giá"}
+                        {avg > 0
+                          ? `${avg}/5 (${count} đánh giá)`
+                          : "Chưa có đánh giá"}
                       </span>
                     </div>
                     <button

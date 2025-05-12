@@ -14,8 +14,11 @@ const AllBooks = () => {
   const categories = useSelector((state) => state.categories.allCategories);
   const dispatch = useDispatch();
   const navigate = useNavigate();
-  const location = useLocation(); 
-  const axiosJWT = useMemo(() => createAxios(user, dispatch, loginSuccess), [user, dispatch]);
+  const location = useLocation();
+  const axiosJWT = useMemo(
+    () => createAxios(user, dispatch, loginSuccess),
+    [user, dispatch]
+  );
 
   const [selectedCategory, setSelectedCategory] = useState("all");
   const [selectedPriceRange, setSelectedPriceRange] = useState("all");
@@ -24,7 +27,6 @@ const AllBooks = () => {
   const [visibleBooks, setVisibleBooks] = useState(8);
   const [searchQuery, setSearchQuery] = useState("");
   const [reviewStats, setReviewStats] = useState({});
-
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -64,15 +66,26 @@ const AllBooks = () => {
   }, [books]);
 
   const fetchReviewStats = async () => {
+    if (!books.length) return;
     try {
       const stats = {};
-      for (const book of books) {
-        const reviews = await getReviews("book", book._id, dispatch);
-        const averageRating = reviews.reduce((acc, r) => acc + r.rating, 0) / (reviews.length || 1);
-        stats[book._id] = {
-          averageRating: averageRating.toFixed(1),
-          reviewCount: reviews.length,
-        };
+      const reviewPromises = books.map((book) =>
+        getReviews("book", book._id, dispatch).then((reviews) => ({
+          bookId: book._id,
+          reviews,
+        }))
+      );
+      const reviewResults = await Promise.all(reviewPromises);
+
+      for (const { bookId, reviews } of reviewResults) {
+        const reviewCount = reviews.length;
+        const averageRating =
+          reviewCount > 0
+            ? (
+                reviews.reduce((acc, r) => acc + r.rating, 0) / reviewCount
+              ).toFixed(1)
+            : 0;
+        stats[bookId] = { averageRating, reviewCount };
       }
       setReviewStats(stats);
     } catch (error) {
@@ -81,7 +94,9 @@ const AllBooks = () => {
   };
 
   const filteredBooks = books?.filter((book) => {
-    const matchesSearch = book.title.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = book.title
+      .toLowerCase()
+      .includes(searchQuery.toLowerCase());
     const avgRating = parseFloat(reviewStats[book._id]?.averageRating || 0);
 
     return (
@@ -89,7 +104,9 @@ const AllBooks = () => {
       (selectedCategory === "all" || book.category === selectedCategory) &&
       (selectedPriceRange === "all" ||
         (selectedPriceRange === "low" && book.price < 100000) ||
-        (selectedPriceRange === "medium" && book.price >= 100000 && book.price <= 500000) ||
+        (selectedPriceRange === "medium" &&
+          book.price >= 100000 &&
+          book.price <= 500000) ||
         (selectedPriceRange === "high" && book.price > 500000)) &&
       (selectedAuthor === "all" || book.author === selectedAuthor) &&
       (selectedRating === "all" ||
@@ -98,7 +115,10 @@ const AllBooks = () => {
     );
   });
 
-  const categoryOptions = ["all", ...new Set(books?.map((book) => book.category))];
+  const categoryOptions = [
+    "all",
+    ...new Set(books?.map((book) => book.category)),
+  ];
   const authors = ["all", ...new Set(books?.map((book) => book.author))];
 
   const handleLoadMore = () => {
@@ -123,7 +143,9 @@ const AllBooks = () => {
 
       <div className="mb-12 max-w-7xl mx-auto bg-white dark:bg-zinc-800 p-6 rounded-xl shadow-md grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
         <div>
-          <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Danh mục</label>
+          <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
+            Danh mục
+          </label>
           <select
             value={selectedCategory}
             onChange={(e) => setSelectedCategory(e.target.value)}
@@ -138,7 +160,9 @@ const AllBooks = () => {
         </div>
 
         <div>
-          <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Giá</label>
+          <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
+            Giá
+          </label>
           <select
             value={selectedPriceRange}
             onChange={(e) => setSelectedPriceRange(e.target.value)}
@@ -152,7 +176,9 @@ const AllBooks = () => {
         </div>
 
         <div>
-          <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Tác giả</label>
+          <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
+            Tác giả
+          </label>
           <select
             value={selectedAuthor}
             onChange={(e) => setSelectedAuthor(e.target.value)}
@@ -167,7 +193,9 @@ const AllBooks = () => {
         </div>
 
         <div>
-          <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">Đánh giá</label>
+          <label className="block text-sm font-semibold mb-2 text-gray-700 dark:text-gray-300">
+            Đánh giá
+          </label>
           <select
             value={selectedRating}
             onChange={(e) => setSelectedRating(e.target.value)}
@@ -189,24 +217,39 @@ const AllBooks = () => {
               const count = ratingInfo?.reviewCount || 0;
 
               return (
-                <li key={book._id} className="bg-white dark:bg-zinc-800 rounded-2xl shadow-lg overflow-hidden transform hover:scale-105 transition-all duration-300">
+                <li
+                  key={book._id}
+                  className="bg-white dark:bg-zinc-800 rounded-2xl shadow-lg overflow-hidden transform hover:scale-105 transition-all duration-300"
+                >
                   <Link to={`/books/${book._id}`}>
                     <img
-                      src={book.image?.trim() ? book.image : "https://png.pngtree.com/png-vector/20220220/ourmid/pngtree-vector-design-with-pattern-element-for-minimalisticluxurious-cover-menu-invitation-card-bannerbook-vector-png-image_34179868.jpg"}
+                      src={
+                        book.image?.trim()
+                          ? book.image
+                          : "https://png.pngtree.com/png-vector/20220220/ourmid/pngtree-vector-design-with-pattern-element-for-minimalisticluxurious-cover-menu-invitation-card-bannerbook-vector-png-image_34179868.jpg"
+                      }
                       alt={book.title}
                       className="w-full h-64 object-cover"
                     />
                   </Link>
                   <div className="p-6">
-                    <h5 className="text-lg font-semibold mb-2 truncate">{book.title}</h5>
-                    <p className="text-red-600 font-bold text-xl">{book.price.toLocaleString("vi-VN")} ₫</p>
-                    <p className="text-sm mt-1">Tác giả: {book.author || "Không rõ"}</p>
+                    <h5 className="text-lg font-semibold mb-2 truncate">
+                      {book.title}
+                    </h5>
+                    <p className="text-red-600 font-bold text-xl">
+                      {book.price.toLocaleString("vi-VN")} ₫
+                    </p>
+                    <p className="text-sm mt-1">
+                      Tác giả: {book.author || "Không rõ"}
+                    </p>
                     <div className="flex items-center mt-2 text-yellow-400">
                       {[...Array(5)].map((_, i) => (
                         <svg
                           key={i}
                           className={`w-5 h-5 ${
-                            i < Math.round(avg) ? "fill-current" : "fill-none stroke-current"
+                            i < Math.round(avg)
+                              ? "fill-current"
+                              : "fill-none stroke-current"
                           }`}
                           xmlns="http://www.w3.org/2000/svg"
                           viewBox="0 0 24 24"
@@ -215,7 +258,9 @@ const AllBooks = () => {
                         </svg>
                       ))}
                       <span className="ml-2 text-sm text-gray-600 dark:text-gray-300">
-                        {avg > 0 ? `${avg}/5 (${count} đánh giá)` : "Chưa có đánh giá"}
+                        {avg > 0
+                          ? `${avg}/5 (${count} đánh giá)`
+                          : "Chưa có đánh giá"}
                       </span>
                     </div>
                   </div>
@@ -236,7 +281,9 @@ const AllBooks = () => {
           )}
         </>
       ) : (
-        <p className="text-center mt-10 text-gray-500">Không tìm thấy sách nào.</p>
+        <p className="text-center mt-10 text-gray-500">
+          Không tìm thấy sách nào.
+        </p>
       )}
     </div>
   );

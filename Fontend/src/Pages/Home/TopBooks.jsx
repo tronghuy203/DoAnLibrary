@@ -12,21 +12,26 @@ const TopBooks = () => {
 
   useEffect(() => {
     const fetchReviewStats = async () => {
-      if (!books) return;
-
+      if (!books.length) return;
       try {
         const stats = {};
-        for (const book of books) {
-          const reviews = await getReviews("book", book._id, dispatch);
+        const reviewPromises = books.map((book) =>
+          getReviews("book", book._id, dispatch).then((reviews) => ({
+            bookId: book._id,
+            reviews,
+          }))
+        );
+        const reviewResults = await Promise.all(reviewPromises);
+
+        for (const { bookId, reviews } of reviewResults) {
           const reviewCount = reviews.length;
           const averageRating =
             reviewCount > 0
               ? (
-                  reviews.reduce((sum, review) => sum + review.rating, 0) /
-                  reviewCount
+                  reviews.reduce((acc, r) => acc + r.rating, 0) / reviewCount
                 ).toFixed(1)
               : 0;
-          stats[book._id] = { averageRating, reviewCount };
+          stats[bookId] = { averageRating, reviewCount };
         }
         setReviewStats(stats);
       } catch (error) {
