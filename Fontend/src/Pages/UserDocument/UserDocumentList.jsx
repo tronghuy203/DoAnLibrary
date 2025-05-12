@@ -74,14 +74,15 @@ const UserDocumentList = () => {
             <span className="text-sm">{errorMessage}</span>
             <button
               onClick={() => navigate("/membership-list")}
-              className="px-3 py-1 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-all duration-300 text-sm"
+              className="w-40 h-20 px-3 py-1 bg-teal-500 text-white rounded-lg hover:bg-teal-600 transition-all duration-300 text-sm"
             >
-              Nâng cấp
+              Nâng cấp ngay
             </button>
           </div>,
           {
             position: "top-right",
             autoClose: 4000,
+            closeButton: false,
             className: "bg-white/90 dark:bg-gray-800/90 text-gray-900 dark:text-gray-100 rounded-xl shadow-lg backdrop-blur-sm",
             progressClassName: "bg-teal-500",
           }
@@ -152,8 +153,9 @@ const UserDocumentList = () => {
             <motion.div
               animate={{ scale: searchQuery ? 1.2 : 1 }}
               transition={{ duration: 0.3 }}
+              className="absolute left-4 top-1/3"
             >
-              <FaSearch className="absolute left-4 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400" />
+              <FaSearch className="text-gray-500 dark:text-gray-400" />
             </motion.div>
             <input
               type="text"

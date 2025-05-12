@@ -150,7 +150,7 @@ const ResetPassword = () => {
                   onClick={toggleConfirmPasswordVisibility}
                   whileHover={{ scale: 1.1 }}
                   whileTap={{ scale: 0.9 }}
-                  className="absolute inset-0 right-3 flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors duration-200 focus:outline-none"
+                  className="absolute inset-y-0 right-3 flex items-center text-gray-500 dark:text-gray-400 hover:text-gray-700 dark:hover:text-gray-200 transition-colors duration-200 focus:outline-none"
                 >
                   {showConfirmPassword ? (
                     <AiOutlineEyeInvisible className="w-5 h-5" />
