@@ -39,8 +39,12 @@ const UpdateBook = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const user = useSelector((state) => state.auth.login.currentUser);
+  const books = useSelector((state) => state.books.allBooks);
 
-  const axiosJWT = useMemo(() => createAxios(user, dispatch, loginSuccess), [user, dispatch]);
+  const axiosJWT = useMemo(
+    () => createAxios(user, dispatch, loginSuccess),
+    [user, dispatch]
+  );
 
   useEffect(() => {
     const fetchData = async () => {
@@ -51,24 +55,14 @@ const UpdateBook = () => {
           return;
         }
 
-        const categoryData = await getCategory(user.accessToken, dispatch, axiosJWT);
+        const categoryData = await getCategory(
+          user.accessToken,
+          dispatch,
+          axiosJWT
+        );
         setCategories(Array.isArray(categoryData) ? categoryData : []);
 
-        const books = await getAllBooks(user.accessToken, dispatch, axiosJWT);
-        const foundBook = books.find((b) => b._id === bookId);
-        if (foundBook) {
-          setBook({
-            ...foundBook,
-            price: formatPrice(foundBook.price.toString()),
-            quantity: foundBook.quantity ? foundBook.quantity.toString() : "1",
-            publishedYear: foundBook.publishedYear || 0,
-          });
-          if (foundBook.image) {
-            setPreviewImage(foundBook.image);
-          }
-        } else {
-          setError("Không tìm thấy sách.");
-        }
+        await dispatch(getAllBooks(user.accessToken, axiosJWT));
       } catch (error) {
         setError("Lỗi khi tải dữ liệu sách hoặc danh mục.");
         console.error("Error fetching data:", error);
@@ -78,7 +72,27 @@ const UpdateBook = () => {
     };
 
     fetchData();
-  }, [bookId, dispatch, user, axiosJWT]);
+  }, [dispatch, user, axiosJWT]);
+
+  useEffect(() => {
+    if (loading) return;
+
+    const foundBook = books.find((b) => b._id === bookId);
+    if (foundBook) {
+      setBook({
+        ...foundBook,
+        price: formatPrice(foundBook.price.toString()),
+        quantity: foundBook.quantity ? foundBook.quantity.toString() : "1",
+        publishedYear: foundBook.publishedYear || 0,
+      });
+      if (foundBook.image) {
+        setPreviewImage(foundBook.image);
+      }
+    } else if (books.length > 0) {
+      setError("Không tìm thấy sách.");
+      setLoading(false);
+    }
+  }, [books, bookId, loading]);
 
   const formatPrice = (value) => {
     const num = parseInt(value.replace(/\./g, "")) || 0;
@@ -144,15 +158,16 @@ const UpdateBook = () => {
         } else if (key === "image" && book[key] && book[key] instanceof File) {
           formData.append(key, book[key]);
         } else if (key !== "image") {
-          formData.append(key, book[key]);
+          formData.append(key, book[key] || "");
         }
       });
-
       await updateBook(bookId, formData, user.accessToken, dispatch, axiosJWT);
       alert("Cập nhật thành công!");
       navigate("/admin/books/list");
     } catch (error) {
-      setError("Cập nhật thất bại! Vui lòng thử lại.");
+      const errorMessage =
+        error.response?.data?.message || "Cập nhật thất bại! Vui lòng thử lại.";
+      setError(errorMessage);
       console.error("Error updating book:", error);
     }
   };
@@ -453,7 +468,7 @@ const UpdateBook = () => {
               </div>
 
               <div>
-                <label className="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2">
+                <label className="block text-gray-700 dark:text-grey-300 text-sm font-medium mb-2">
                   Hình ảnh
                 </label>
                 <div className="relative">
