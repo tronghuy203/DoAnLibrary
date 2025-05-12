@@ -1,3 +1,4 @@
+import axios from "axios";
 import {
   getBooksStart,
   getBooksSuccess,
@@ -16,12 +17,10 @@ import {
   getBookDetailFailed
 } from "./bookSlice";
 
-export const getAllBooks = async (accessToken, dispatch,axiosJWT) => {
+export const getAllBooks = () => async (dispatch) => {
   dispatch(getBooksStart());
   try {
-    const res = await axiosJWT.get(`${process.env.REACT_APP_SERVER_URL}/v1/books`, {
-      headers: { token: `Bearer ${accessToken}` },
-    });
+    const res = await axios.get(`${process.env.REACT_APP_SERVER_URL}/v1/books`);
     dispatch(getBooksSuccess(Array.isArray(res.data) ? res.data : []));
     return res.data;
   } catch (err) {

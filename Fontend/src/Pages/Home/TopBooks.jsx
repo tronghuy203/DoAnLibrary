@@ -7,7 +7,6 @@ const TopBooks = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const books = useSelector((state) => state.books.allBooks);
-  const user = useSelector((state) => state.auth.login?.currentUser);
 
   const [reviewStats, setReviewStats] = useState({});
 
@@ -36,7 +35,7 @@ const TopBooks = () => {
     };
 
     fetchReviewStats();
-  }, [books, user, dispatch]);
+  }, [books, dispatch]);
 
   const topBooks = useMemo(() => {
     if (!books) return [];

@@ -2,18 +2,23 @@ import React, { useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { getReviews } from "../../redux/apiReview";
+import { getAllBooks } from "../../redux/apiBooks";
 
 const BestBooks = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const books = useSelector((state) => state.books.allBooks);
-  const user = useSelector((state) => state.auth.login?.currentUser);
-
   const [reviewStats, setReviewStats] = React.useState({});
 
   useEffect(() => {
+    if (!books.length) {
+      dispatch(getAllBooks());
+    }
+  }, [dispatch, books]);
+
+  useEffect(() => {
     const fetchReviewStats = async () => {
-      if (!books) return;
+      if (!books.length) return;
 
       try {
         const stats = {};
@@ -33,10 +38,10 @@ const BestBooks = () => {
     };
 
     fetchReviewStats();
-  }, [books, user, dispatch]);
+  }, [books, dispatch]);
 
   const topBooksSorted = useMemo(() => {
-    if (!books) return [];
+    if (!books.length) return [];
 
     return [...books]
       .map((book) => ({
