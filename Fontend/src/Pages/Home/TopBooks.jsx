@@ -94,7 +94,7 @@ const TopBooks = () => {
                       className="h-[220px] w-[150px] object-cover rounded-md"
                     />
                     <div>
-                      <h2 className="font-semibold">{book.title}</h2>
+                      <h2 className="font-semibold w-40">{book.title}</h2>
                       <p className="text-sm text-gray-700 dark:text-gray-400">
                         {book.author || "Không rõ"}
                       </p>
