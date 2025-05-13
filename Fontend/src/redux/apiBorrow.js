@@ -98,7 +98,7 @@ export const payRentalFeeAndCreateBorrow = async (
       console.log("Chuyển hướng đến VNPay với paymentUrl:", res.data.paymentUrl);
       window.location.href = res.data.paymentUrl;
     } else if (method === "cash") {
-      navigate("/payment-success", {
+      navigate("/rental-payment-success", {
         state: {
           payment: res.data.payment,
           borrowRecord: res.data.borrowRecord,

@@ -18,7 +18,9 @@ const DocumentList = lazy(() => import("../Pages/UserDocument/UserDocumentList")
 const DetailDocument = lazy(() => import("../Pages/UserDocument/DetailDocument"));
 const UploadDocument = lazy(() => import("../Pages/UserDocument/UploadDocument"));
 const Payment = lazy(() => import("../Pages/Payment/Payment"));
-const PaymentSuccess = lazy(() => import("../Pages/Payment/PaymentSuccess"));
+const RentalPaymentSuccess = lazy(() => import("../Pages/Payment/RentalPaymentSuccess"));
+const PenaltyPaymentSuccess = lazy(() => import("../Pages/Payment/PenaltyPaymentSuccess"));
+const MembershipPaymentSuccess = lazy(() => import("../Pages/Payment/MembershipPaymentSuccess"));
 const PaymentRedirect = lazy(() => import("../Pages/Payment/PaymentRedirect"));
 const PaymentFailed = lazy(() => import("../Pages/Payment/PaymentFailed"));
 const MembershipList = lazy(() => import("../Pages/Membership/MembershipList"));
@@ -46,7 +48,9 @@ const UserRoutes = () => {
           <Route path="/document/:id" element={<DetailDocument />} />
           <Route path="/upload-document" element={<UploadDocument />} />
           <Route path="/payment/:requestId" element={<Payment />} />
-          <Route path="/payment-success" element={<PaymentSuccess />} />
+          <Route path="/rental-payment-success" element={<RentalPaymentSuccess />} />
+          <Route path="/penalty-payment-success" element={<PenaltyPaymentSuccess />} />
+          <Route path="/membership-payment-success" element={<MembershipPaymentSuccess />} />
           <Route path="/payment-redirect" element={<PaymentRedirect />}/>
           <Route path="/payment-failed" element={<PaymentFailed />}/>
           <Route path="/membership-list" element={<MembershipList />}/>

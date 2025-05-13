@@ -3,11 +3,13 @@ import { useNavigate, useParams } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { createAxios } from "../../createInstance";
 import { loginSuccess } from "../../redux/authSlice";
-import { getDocumentDetail, downloadDocument, viewDocument } from "../../redux/apiDocument";
-import { Worker, Viewer } from "@react-pdf-viewer/core";
+import { getDocumentDetail, downloadDocument } from "../../redux/apiDocument";
+import { Worker, Viewer, SpecialZoomLevel } from "@react-pdf-viewer/core";
+import { zoomPlugin } from "@react-pdf-viewer/zoom";
 import "@react-pdf-viewer/core/lib/styles/index.css";
+import "@react-pdf-viewer/zoom/lib/styles/index.css";
 import { pdfjs } from "react-pdf";
-import { FaShareAlt, FaFacebook, FaInstagram, FaComment } from "react-icons/fa";
+import { FaShareAlt, FaFacebook, FaInstagram, FaComment, FaPlus, FaMinus, FaUndo } from "react-icons/fa";
 import { toast, ToastContainer } from "react-toastify";
 import ReviewSection from "../ReviewSection/ReviewSection";
 
@@ -31,6 +33,9 @@ const DetailDocument = () => {
   const [canViewDocument, setCanViewDocument] = useState(true);
   const shareRef = useRef(null);
 
+  const zoomPluginInstance = zoomPlugin();
+  const { ZoomIn, ZoomOut, Zoom } = zoomPluginInstance;
+
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
   }, [id]);
@@ -43,8 +48,7 @@ const DetailDocument = () => {
       }
 
       if (!user?.accessToken) {
-        const errorMessage = "Bạn cần đăng nhập để xem tài liệu này.";
-        toast.error(errorMessage, {
+        toast.error("Bạn cần đăng nhập để xem tài liệu này.", {
           position: "top-center",
           autoClose: 3000,
         });
@@ -95,8 +99,7 @@ const DetailDocument = () => {
 
   const handleDownload = () => {
     if (!docData) {
-      const errorMessage = "Không có tài liệu để tải xuống.";
-      toast.error(errorMessage, {
+      toast.error("Không có tài liệu để tải xuống.", {
         position: "top-center",
         autoClose: 3000,
       });
@@ -327,16 +330,53 @@ const DetailDocument = () => {
                   Xem trước tài liệu
                 </h3>
                 <div
-                  className="border border-gray-300 dark:border-gray-700 rounded-lg overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 dark:scrollbar-thumb-gray-500 scrollbar-track-gray-200 dark:scrollbar-track-gray-800"
-                  style={{ height: "600px" }}
+                  className="w-full h-[80vh] max-h-[600px] min-h-[400px] border border-gray-300 dark:border-gray-700 rounded-lg overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 dark:scrollbar-thumb-gray-500 scrollbar-track-gray-200 dark:scrollbar-track-gray-800 relative"
                 >
                   <Worker workerUrl={pdfjs.GlobalWorkerOptions.workerSrc}>
-                    <Viewer
-                      fileUrl={docData.fileUrl}
-                      defaultScale={1.0}
-                      theme={{ theme: "auto" }}
-                      scrollMode="vertical"
-                    />
+                    <div className="relative w-full h-full">
+                      <Viewer
+                        fileUrl={docData.fileUrl}
+                        defaultScale={SpecialZoomLevel.PageWidth}
+                        theme={{ theme: "auto" }}
+                        scrollMode="vertical"
+                        plugins={[zoomPluginInstance]}
+                      />
+                      <div className="absolute bottom-4 right-4 flex flex-col gap-2 z-10">
+                        <ZoomIn>
+                          {(props) => (
+                            <button
+                              onClick={props.onClick}
+                              className="block text-gray-800 hover:bg-gray-200/50 rounded-full p-2 sm:p-2 md:p-3 transition-all duration-200"
+                              title="Phóng to"
+                            >
+                              <FaPlus className="w-5 h-5 sm:w-5 md:w-6 sm:h-5 md:h-6" />
+                            </button>
+                          )}
+                        </ZoomIn>
+                        <ZoomOut>
+                          {(props) => (
+                            <button
+                              onClick={props.onClick}
+                              className="block text-gray-800 hover:bg-gray-200/50 rounded-full p-2 sm:p-2 md:p-3 transition-all duration-200"
+                              title="Thu nhỏ"
+                            >
+                              <FaMinus className="w-5 h-5 sm:w-5 md:w-6 sm:h-5 md:h-6" />
+                            </button>
+                          )}
+                        </ZoomOut>
+                        <Zoom>
+                          {({ onZoom }) => (
+                            <button
+                              onClick={() => onZoom(SpecialZoomLevel.PageWidth)}
+                              className="block text-gray-800 hover:bg-gray-200/50 rounded-full p-2 sm:p-2 md:p-3 transition-all duration-200"
+                              title="Đặt lại"
+                            >
+                              <FaUndo className="w-5 h-5 sm:w-5 md:w-6 sm:h-5 md:h-6" />
+                            </button>
+                          )}
+                        </Zoom>
+                      </div>
+                    </div>
                   </Worker>
                 </div>
               </div>
