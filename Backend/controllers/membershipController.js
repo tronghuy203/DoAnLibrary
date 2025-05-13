@@ -165,7 +165,7 @@ const membershipController = {
           membership: { membershipId: payment.membershipId, userMembershipId: userMembership._id },
         });
 
-        res.redirect(`${process.env.CLIENT_URL}/payment-redirect?txnRef=${txnRef}`);
+        res.redirect(`${process.env.CLIENT_URL}/payment-redirect?txnRef=${txnRef}&paymentType=membership`);
       } else {
         payment.status = "failed";
         await payment.save();

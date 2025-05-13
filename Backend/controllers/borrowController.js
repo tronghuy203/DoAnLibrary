@@ -293,7 +293,7 @@ const borrowController = {
           await book.save();
         }
   
-        res.redirect(`${process.env.CLIENT_URL}/payment-redirect?txnRef=${txnRef}`);
+        res.redirect(`${process.env.CLIENT_URL}/payment-redirect?txnRef=${txnRef}&paymentType=${payment.paymentType}`);
       } else {
         payment.status = "failed";
         await payment.save();

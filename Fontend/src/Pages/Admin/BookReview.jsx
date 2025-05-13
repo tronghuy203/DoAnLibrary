@@ -323,14 +323,14 @@ const BookReviews = () => {
                     <div className="flex flex-row sm:flex-col gap-3 self-start sm:self-center">
                       <button
                         onClick={() => handleEdit(review)}
-                        className="flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 dark:from-amber-400 to-amber-600 dark:to-amber-500 hover:from-amber-600 dark:hover:from-amber-500 hover:to-orange-700 dark:hover:to-orange-600 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 text-sm"
+                        className="flex items-center justify-center gap-2 bg-gradient-to-r bg-yellow-500 dark:bg-yellow-600 hover:bg-yellow-600 dark:hover:bg-yellow-500 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 text-sm"
                       >
                         <PencilIcon className="w-5 h-5" />
                         Sửa
                       </button>
                       <button
                         onClick={() => handleDelete(review._id)}
-                        className="flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 dark:from-red-400 to-red-600 dark:to-red-500 hover:from-red-600 dark:hover:from-red-500 hover:to-pink-700 dark:hover:to-pink-600 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 text-sm"
+                        className="flex items-center justify-center gap-2 bg-gradient-to-r bg-red-600 dark:bg-red-600 hover:bg-red-600 dark:hover:bg-red-500 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 text-sm"
                       >
                         <TrashIcon className="w-5 h-5" />
                         Xóa

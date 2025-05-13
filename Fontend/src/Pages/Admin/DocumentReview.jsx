@@ -118,7 +118,6 @@ const DocumentReviews = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex flex-col items-center py-12 px-4 sm:px-8 lg:px-12 transition-all duration-500 ease-in-out relative overflow-hidden">
-      {/* Background Effects */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-gradient-to-br from-cyan-200/40 via-blue-200/30 to-purple-200/40 dark:from-cyan-800/30 dark:via-blue-800/30 dark:to-purple-800/30 animate-gradient-slow"></div>
         <div className="absolute top-[-15%] left-[-15%] w-80 h-80 bg-cyan-400/20 dark:bg-cyan-600/15 rounded-full blur-3xl animate-float"></div>
@@ -302,14 +301,14 @@ const DocumentReviews = () => {
                     <div className="flex flex-row sm:flex-col gap-3 self-start sm:self-center">
                       <button
                         onClick={() => handleEdit(review)}
-                        className="flex items-center justify-center gap-2 bg-gradient-to-r from-amber-500 dark:from-amber-400 to-amber-600 dark:to-amber-500 hover:from-amber-600 dark:hover:from-amber-500 hover:to-orange-700 dark:hover:to-orange-600 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 text-sm"
+                        className="flex items-center justify-center gap-2 bg-gradient-to-r  bg-yellow-500 dark:bg-yellow-600 hover:bg-yellow-600 dark:hover:bg-yellow-500 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 text-sm"
                       >
                         <PencilIcon className="w-5 h-5" />
                         Sửa
                       </button>
                       <button
                         onClick={() => handleDelete(review._id)}
-                        className="flex items-center justify-center gap-2 bg-gradient-to-r from-red-500 dark:from-red-400 to-red-600 dark:to-red-500 hover:from-red-600 dark:hover:from-red-500 hover:to-pink-700 dark:hover:to-pink-600 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 text-sm"
+                        className="flex items-center justify-center gap-2 bg-gradient-to-r  bg-red-600 dark:bg-red-600 hover:bg-red-600 dark:hover:bg-red-500 text-white font-semibold py-2 px-4 rounded-xl transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105 text-sm"
                       >
                         <TrashIcon className="w-5 h-5" />
                         Xóa

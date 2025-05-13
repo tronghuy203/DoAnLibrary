@@ -93,7 +93,7 @@ const ListBook = () => {
 
         <div className="w-full max-w-2xl mx-auto mb-8 sm:mb-10 animate-slide-up">
           <div className="relative">
-            <MagnifyingGlassIcon className="absolute left-3 sm:left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-cyan-600 dark:text-cyan-400" />
+            <MagnifyingGlassIcon className="absolute z-10 left-3 sm:left-4 top-1/2 transform -translate-y-1/2 w-4 h-4 sm:w-5 sm:h-5 text-cyan-600 dark:text-cyan-400" />
             <input
               type="text"
               placeholder="Tìm kiếm sách theo tiêu đề, tác giả hoặc danh mục..."
@@ -169,14 +169,14 @@ const ListBook = () => {
                     </div>
                     <div className="py-2 flex items-center gap-2">
                       <Link to={`/admin/books/update/${book._id}`}>
-                        <button className="w-32 mx-auto sm:w-auto flex items-center justify-center gap-1 bg-yellow-500 dark:bg-yellow-400 hover:bg-yellow-600 dark:hover:bg-yellow-500 text-white font-medium py-1.5 px-3 rounded-full transition-all duration-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 text-sm">
+                        <button className="w-32 mx-auto sm:w-auto flex items-center justify-center gap-1 bg-yellow-500 dark:bg-yellow-600 hover:bg-yellow-600 dark:hover:bg-yellow-500 text-white font-medium py-1.5 px-3 rounded-full transition-all duration-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 text-sm">
                           <PencilIcon className="w-4 h-4" />
                           Sửa
                         </button>
                       </Link>
                       <button
                         onClick={() => handleDelete(book._id)}
-                        className="w-32 mx-auto sm:w-auto flex items-center justify-center gap-1 bg-red-500 dark:bg-red-400 hover:bg-red-600 dark:hover:bg-red-500 text-white font-medium py-1.5 px-3 rounded-full transition-all duration-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 text-sm"
+                        className="w-32 mx-auto sm:w-auto flex items-center justify-center gap-1 bg-red-600 dark:bg-red-600 hover:bg-red-600 dark:hover:bg-red-500 text-white font-medium py-1.5 px-3 rounded-full transition-all duration-200 shadow-sm hover:shadow-md hover:-translate-y-0.5 text-sm"
                       >
                         <TrashIcon className="w-4 h-4" />
                         Xóa

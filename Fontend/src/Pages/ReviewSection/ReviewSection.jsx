@@ -389,41 +389,51 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
           </div>
           <p className="text-gray-700 dark:text-gray-300">{review.comment}</p>
 
-          <div className="flex gap-4 mt-2">
+          <div className="flex gap-3 sm:gap-4 mt-2">
             <button
               onClick={() => handleLike(review._id)}
               className={`flex items-center gap-1 transition-colors ${
-                likes[review._id] === 1
-                  ? "text-blue-500"
-                  : "text-gray-500 hover:text-blue-500"
+                likes[review._id] === 1 ? "text-blue-500" : "text-gray-500 hover:text-blue-500"
               }`}
             >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+              <svg
+                className="w-4 h-4 sm:w-5 sm:h-5"
+                fill="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
                 <path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.91l-.01-.01L23 10z"/>
               </svg>
-              <span>Thích ({likes[review._id] || 0})</span>
+              <span className="text-sm sm:text-base">Thích ({likes[review._id] || 0})</span>
             </button>
             <button
               onClick={() => handleDislike(review._id)}
               className={`flex items-center gap-1 transition-colors ${
-                dislikes[review._id] === 1
-                  ? "text-red-500"
-                  : "text-gray-500 hover:text-red-500"
+                dislikes[review._id] === 1 ? "text-red-500" : "text-gray-500 hover:text-red-500"
               }`}
             >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-                <path d="M15 3H6c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14.73v1.91l.01.01L1 14c0 1.1.9 2 2 2h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 23l6.59-6.59c.36-.36.58-.86.58-1.41V5c0-1.1-.9-2-2-2zm4 0v12h4V3h-4z"/>
+              <svg
+                className="w-4 h-4 sm:w-5 sm:h-5"
+                fill="currentColor"
+                viewBox="0 0 24 24"
+                xmlns="http://www.w3.org/2000/svg"
+              >
+                <path d="M15 3H6c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14-.73v1.91l.01.01L1 14c0 1.1.9 2 2 2h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 23l6.59-6.59c.36-.36.58-.86.58-1.41V5c0-1.1-.9-2-2-2zm4 0v12h4V3h-4z"/>
               </svg>
-              <span>Không thích ({dislikes[review._id] || 0})</span>
+              <span className="text-sm sm:text-base">Không thích ({dislikes[review._id] || 0})</span>
             </button>
             <button
               onClick={() => toggleShowReplies(review._id)}
               className="flex items-center gap-1 text-gray-500 hover:text-green-500 transition-colors"
             >
-              <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+              <svg
+                className="w-4 h-4 sm:w-5 sm:h-5"
+                fill="currentColor"
+                viewBox="0 0 24 24"
+              >
                 <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z" />
               </svg>
-              <span>Phản hồi</span>
+              <span className="text-sm sm:text-base">Phản hồi</span>
             </button>
           </div>
 
@@ -507,41 +517,51 @@ const ReviewSection = ({ type, itemId, user, onReviewsUpdate }) => {
                       </div>
                     )}
                   </div>
-                  <div className="flex gap-4 mt-2">
+                  <div className="flex gap-3 sm:gap-4 mt-2">
                     <button
                       onClick={() => handleLike(reply._id, true)}
                       className={`flex items-center gap-1 transition-colors ${
-                        likes[reply._id] === 1
-                          ? "text-blue-500"
-                          : "text-gray-500 hover:text-blue-500"
+                        likes[reply._id] === 1 ? "text-blue-500" : "text-gray-500 hover:text-blue-500"
                       }`}
                     >
-                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <svg
+                        className="w-4 h-4 sm:w-5 sm:h-5"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
                         <path d="M1 21h4V9H1v12zm22-11c0-1.1-.9-2-2-2h-6.31l.95-4.57.03-.32c0-.41-.17-.79-.44-1.06L14.17 1 7.59 7.59C7.22 7.95 7 8.45 7 9v10c0 1.1.9 2 2 2h9c.83 0 1.54-.5 1.84-1.22l3.02-7.05c.09-.23.14-.47.14-.73v-1.91l-.01-.01L23 10z"/>
                       </svg>
-                      <span>Thích ({likes[reply._id] || 0})</span>
+                      <span className="text-sm sm:text-base">Thích ({likes[reply._id] || 0})</span>
                     </button>
                     <button
                       onClick={() => handleDislike(reply._id, true)}
                       className={`flex items-center gap-1 transition-colors ${
-                        dislikes[reply._id] === 1
-                          ? "text-red-500"
-                          : "text-gray-500 hover:text-red-500"
+                        dislikes[reply._id] === 1 ? "text-red-500" : "text-gray-500 hover:text-red-500"
                       }`}
                     >
-                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+                      <svg
+                        className="w-4 h-4 sm:w-5 sm:h-5"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                        xmlns="http://www.w3.org/2000/svg"
+                      >
                         <path d="M15 3H6c-.83 0-1.54.5-1.84 1.22l-3.02 7.05c-.09.23-.14.47-.14-.73v1.91l.01.01L1 14c0 1.1.9 2 2 2h6.31l-.95 4.57-.03.32c0 .41.17.79.44 1.06L9.83 23l6.59-6.59c.36-.36.58-.86.58-1.41V5c0-1.1-.9-2-2-2zm4 0v12h4V3h-4z"/>
                       </svg>
-                      <span>Không thích ({dislikes[reply._id] || 0})</span>
+                      <span className="text-sm sm:text-base">Không thích ({dislikes[reply._id] || 0})</span>
                     </button>
                     <button
                       onClick={() => toggleShowReplies(review._id)}
                       className="flex items-center gap-1 text-gray-500 hover:text-green-500 transition-colors"
                     >
-                      <svg className="w-5 h-5" fill="currentColor" viewBox="0 0 24 24">
+                      <svg
+                        className="w-4 h-4 sm:w-5 sm:h-5"
+                        fill="currentColor"
+                        viewBox="0 0 24 24"
+                      >
                         <path d="M20 2H4c-1.1 0-2 .9-2 2v18l4-4h14c1.1 0 2-.9 2-2V4c0-1.1-.9-2-2-2zm0 14H6l-2 2V4h16v12z" />
                       </svg>
-                      <span>Phản hồi</span>
+                      <span className="text-sm sm:text-base">Phản hồi</span>
                     </button>
                   </div>
                 </div>

@@ -8,13 +8,26 @@ const PaymentRedirect = () => {
   useEffect(() => {
     const params = new URLSearchParams(location.search);
     const txnRef = params.get("txnRef");
-
-    console.log("PaymentRedirect gọi với txnRef từ URL:", txnRef);
+    const paymentType = params.get("paymentType");
 
     if (txnRef) {
-      navigate("/payment-success", {
-        state: { txnRef },
-      });
+      if (paymentType === "membership") {
+        navigate("/membership-payment-success", {
+          state: { txnRef },
+        });
+      } else if (paymentType === "penalty") {
+        navigate("/penalty-payment-success", {
+          state: { txnRef },
+        });
+      } else if (paymentType === "rental_fee") {
+        navigate("/rental-payment-success", {
+          state: { txnRef },
+        });
+      } else {
+        navigate("/rental-payment-success", {
+          state: { txnRef },
+        });
+      }
     } else {
       console.error("Không tìm thấy txnRef trong URL");
       navigate("/payment-failed");
