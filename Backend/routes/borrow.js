@@ -12,6 +12,8 @@ router.post("/pay-rental/:requestId", middlewareController.verifyToken, borrowCo
 
 router.get("/vnpay_return", borrowController.vnpayReturn);
 
+router.delete("/records/:borrowId", middlewareController.verifyAdmin, borrowController.adminCancelBorrowRecord);
+
 router.put("/confirm-pickup/:borrowId", middlewareController.verifyAdmin, borrowController.confirmPickup);
 
 router.put("/confirm-return/:borrowId", middlewareController.verifyToken, borrowController.confirmReturn);

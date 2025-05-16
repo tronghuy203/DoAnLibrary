@@ -30,6 +30,21 @@ export const getAllBooks = () => async (dispatch) => {
   }
 };
 
+export const getJWTAllBooks = async (accessToken, dispatch,axiosJWT) => {
+  dispatch(getBooksStart());
+  try {
+    const res = await axiosJWT.get(`${process.env.REACT_APP_SERVER_URL}/v1/books`, {
+      headers: { token: `Bearer ${accessToken}` },
+    });
+    dispatch(getBooksSuccess(Array.isArray(res.data) ? res.data : []));
+    return res.data;
+  } catch (err) {
+    dispatch(getBooksFailed());
+    console.error("Lỗi khi tải sách:", err);
+    return [];
+  }
+};
+
 export const getBookDetail = async (bookId, accessToken, dispatch, axiosJWT) => {
   dispatch(getBookDetailStart());
   try {

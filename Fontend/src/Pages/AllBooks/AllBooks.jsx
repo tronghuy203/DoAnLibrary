@@ -4,7 +4,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { createAxios } from "../../createInstance";
 import { loginSuccess } from "../../redux/authSlice";
 import { getAllUsers } from "../../redux/apiRequest";
-import { getAllBooks } from "../../redux/apiBooks";
+import { getJWTAllBooks } from "../../redux/apiBooks";
 import { getCategory } from "../../redux/apiCategory";
 import { getReviews } from "../../redux/apiReview";
 
@@ -49,7 +49,7 @@ const AllBooks = () => {
     const fetchData = async () => {
       try {
         await getAllUsers(user.accessToken, dispatch, axiosJWT);
-        await getAllBooks(user.accessToken, dispatch, axiosJWT);
+        await getJWTAllBooks(user.accessToken, dispatch, axiosJWT);
         await getCategory(user.accessToken, dispatch, axiosJWT);
       } catch (error) {
         console.error("Lỗi khi tải dữ liệu:", error);
