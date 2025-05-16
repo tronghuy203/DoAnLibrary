@@ -20,6 +20,9 @@ import {
   getDailyRevenueFailed,
   getDailyRevenueSuccess,
   getDailyRevenueStart,
+  adminCancelBorrowRecordSuccess,
+  adminCancelBorrowRecordFailed,
+  adminCancelBorrowRecordStart,
 } from "./borrowSlice";
 
 export const requestBorrow = async (bookId, accessToken, dispatch, axiosJWT) => {
@@ -128,6 +131,30 @@ export const checkPaymentStatus = async (txnRef, accessToken, dispatch, axiosJWT
     throw err;
   }
 };
+
+export const adminCancelBorrowRecord = async (
+  borrowId,
+  accessToken,
+  dispatch,
+  axiosJWT
+) => {
+  dispatch(adminCancelBorrowRecordStart());
+  try {
+    const res = await axiosJWT.delete(
+      `${process.env.REACT_APP_SERVER_URL}/v1/borrow/records/${borrowId}`,
+      {
+        headers: { token: `Bearer ${accessToken}` },
+      }
+    );
+    dispatch(adminCancelBorrowRecordSuccess(res.data));
+    return res.data;
+  } catch (err) {
+    dispatch(adminCancelBorrowRecordFailed());
+    console.error("Lỗi hủy bản ghi mượn:", err);
+    throw err;
+  }
+};
+
 export const confirmPickup = async (
   borrowId,
   accessToken,

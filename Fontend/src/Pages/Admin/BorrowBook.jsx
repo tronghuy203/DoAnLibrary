@@ -7,6 +7,7 @@ import {
   confirmPickup,
   confirmReturn,
   getPenaltyByBorrow,
+  adminCancelBorrowRecord,
 } from "../../redux/apiBorrow";
 import {
   ClipboardDocumentCheckIcon,
@@ -14,7 +15,7 @@ import {
   BookOpenIcon,
   ExclamationTriangleIcon,
   CurrencyDollarIcon,
-
+  XCircleIcon,
 } from "@heroicons/react/24/outline";
 
 const BorrowBook = () => {
@@ -56,9 +57,7 @@ const BorrowBook = () => {
           });
         const penaltyResults = await Promise.all(penaltyPromises);
         const penaltyMap = penaltyResults.reduce((acc, { borrowId, penalty }) => {
-          if (penalty) {
-            acc[borrowId] = penalty;
-          }
+          if (penalty) acc[borrowId] = penalty;
           return acc;
         }, {});
         setPenalties(penaltyMap);
@@ -69,7 +68,6 @@ const BorrowBook = () => {
 
     fetchPenalties();
   }, [borrowList, user?.accessToken, axiosJWT]);
-
 
   const handleConfirmPickup = async (id) => {
     try {
@@ -86,6 +84,15 @@ const BorrowBook = () => {
       await getAllBorrowRecords(user.accessToken, dispatch, axiosJWT);
     } catch (err) {
       console.error("Xác nhận trả sách thất bại", err);
+    }
+  };
+
+  const handleCancelBorrowRecord = async (id) => {
+    try {
+      await adminCancelBorrowRecord(id, user.accessToken, dispatch, axiosJWT);
+      await getAllBorrowRecords(user.accessToken, dispatch, axiosJWT);
+    } catch (err) {
+      console.error("Hủy bản ghi mượn thất bại", err);
     }
   };
 
@@ -109,6 +116,8 @@ const BorrowBook = () => {
         return "Quá hạn";
       case "waiting_pickup":
         return "Chờ lấy";
+      case "cancelled":
+        return "Đã hủy";
       default:
         return borrow.status;
     }
@@ -140,10 +149,10 @@ const BorrowBook = () => {
         </svg>
       </div>
 
-      <div className="max-w-6xl mx-auto relative z-10 ">
+      <div className="max-w-6xl mx-auto relative z-10">
         <div className="text-center mb-4 animate-slide-up">
           <BookOpenIcon className="w-16 h-16 mx-auto text-cyan-600 dark:text-cyan-400 animate-pulse" />
-          <h2 className="text-3xl sm:text-4xl font-extrabold text-cyan-600 dark:text-cyan-400 tracking-tight drop-shadow-lg ">
+          <h2 className="text-3xl sm:text-4xl font-extrabold text-cyan-600 dark:text-cyan-400 tracking-tight drop-shadow-lg">
             Quản Lý Mượn Trả Sách
           </h2>
           <p className="mt-2 text-lg sm:text-xl text-gray-600 dark:text-gray-300">
@@ -193,6 +202,8 @@ const BorrowBook = () => {
                             ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
                             : borrow.status === "waiting_pickup"
                             ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
+                                : borrow.status === "cancelled"
+                            ? "bg-red-500 text-red-100 dark:bg-red-500 dark:text-red-100"
                             : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
                         }`}
                       >
@@ -231,7 +242,7 @@ const BorrowBook = () => {
                         {getPenaltyStatusDisplay(borrow)}
                       </span>
                     </div>
-                    <div className="py-2 flex items-center gap-2">
+                    <div className="py-2 flex items-center gap-2 flex-wrap">
                       {!borrow.returnDate &&
                         (borrow.status === "borrowing" || borrow.status === "overdue" ? (
                           <button
@@ -242,13 +253,24 @@ const BorrowBook = () => {
                             Xác nhận trả
                           </button>
                         ) : borrow.status === "waiting_pickup" ? (
-                          <button
-                            onClick={() => handleConfirmPickup(borrow._id)}
-                            className="bg-gradient-to-r from-amber-600 to-amber-700 dark:from-amber-500 dark:to-amber-600 hover:from-amber-700 hover:to-amber-800 dark:hover:from-amber-600 dark:hover:to-amber-700 text-white font-semibold py-2 px-4 sm:px-5 rounded-xl transition-all duration-200 hover:shadow-lg hover:scale-105 flex items-center gap-2 text-base"
-                          >
-                            <ClipboardDocumentCheckIcon className="w-6 h-6 text-white transform hover:rotate-12 transition-transform duration-200" />
-                            Xác nhận lấy
-                          </button>
+                          <>
+                            <button
+                              onClick={() => handleConfirmPickup(borrow._id)}
+                              className="bg-gradient-to-r from-amber-600 to-amber-700 dark:from-amber-500 dark:to-amber-600 hover:from-amber-700 hover:to-amber-800 dark:hover:from-amber-600 dark:hover:to-amber-700 text-white font-semibold py-2 px-4 sm:px-5 rounded-xl transition-all duration-200 hover:shadow-lg hover:scale-105 flex items-center gap-2 text-base"
+                            >
+                              <ClipboardDocumentCheckIcon className="w-6 h-6 text-white transform hover:rotate-12 transition-transform duration-200" />
+                              Xác nhận lấy
+                            </button>
+                            {user.admin && (
+                              <button
+                                onClick={() => handleCancelBorrowRecord(borrow._id)}
+                                className="bg-gradient-to-r from-red-600 to-red-700 dark:from-red-500 dark:to-red-600 hover:from-red-700 hover:to-red-800 dark:hover:from-red-600 dark:hover:to-red-700 text-white font-semibold py-2 px-4 sm:px-5 rounded-xl transition-all duration-200 hover:shadow-lg hover:scale-105 flex items-center gap-2 text-base"
+                              >
+                                <XCircleIcon className="w-6 h-6 text-white transform hover:scale-110 transition-transform duration-200" />
+                                Hủy
+                              </button>
+                            )}
+                          </>
                         ) : null)}
                     </div>
                   </div>
@@ -305,7 +327,7 @@ const BorrowBook = () => {
               Không có đơn mượn nào
             </p>
             <button
-              onClick={() => window.location.href = "/books"}
+              onClick={() => (window.location.href = "/books")}
               className="bg-gradient-to-r from-cyan-600 to-blue-600 dark:from-cyan-500 dark:to-blue-500 hover:from-cyan-700 hover:to-blue-700 dark:hover:from-cyan-600 dark:hover:to-blue-600 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 hover:shadow-lg hover:scale-105 flex items-center gap-2 mx-auto text-base sm:text-lg"
             >
               <BookOpenIcon className="w-6 h-6 text-white" />

@@ -60,6 +60,19 @@ const borrowSlice = createSlice({
       state.error = true;
     },
 
+    adminCancelBorrowRecordStart: (state) => {
+      state.isFetching = true;
+      state.error = false;
+    },
+    adminCancelBorrowRecordSuccess: (state, action) => {
+      state.isFetching = false;
+      state.error = false;
+    },
+    adminCancelBorrowRecordFailed: (state) => {
+      state.isFetching = false;
+      state.error = true;
+    },
+
     confirmPickupSuccess: (state, action) => {
       state.message = "Xác nhận lấy sách thành công!";
     },
@@ -122,6 +135,9 @@ export const {
   getBorrowRequestDetailsFailed,
   payRentalSuccess,
   payRentalFailed,
+  adminCancelBorrowRecordStart,
+  adminCancelBorrowRecordSuccess,
+  adminCancelBorrowRecordFailed,
   confirmPickupSuccess,
   confirmPickupFailed,
   confirmReturnSuccess,
