@@ -155,20 +155,33 @@ export const downloadDocument = async (documentId, accessToken, documentTitle, d
     });
 
     const contentType = response.headers["content-type"];
-    if (!contentType || !contentType.includes("application/pdf")) {
-      throw new Error("Phản hồi không phải file PDF hợp lệ");
+    const allowedMimeTypes = [
+      "application/pdf",
+      "application/msword",
+      "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+    ];
+
+    if (!contentType || !allowedMimeTypes.includes(contentType)) {
+      throw new Error("Phản hồi không phải file PDF, DOC hoặc DOCX hợp lệ");
     }
 
-    const blob = new Blob([response.data], { type: "application/pdf" });
+    let fileExtension = "pdf";
+    if (contentType.includes("msword")) {
+      fileExtension = "doc";
+    } else if (contentType.includes("openxmlformats")) {
+      fileExtension = "docx";
+    }
+
+    const blob = new Blob([response.data], { type: contentType });
     if (blob.size === 0) {
-      throw new Error("File PDF rỗng hoặc không hợp lệ");
+      throw new Error("File rỗng hoặc không hợp lệ");
     }
 
     const url = window.URL.createObjectURL(blob);
     const link = document.createElement("a");
     link.href = url;
     const safeTitle = (documentTitle || "document").replace(/[^a-zA-Z0-9-_]/g, "_");
-    link.download = `${safeTitle}.pdf`;
+    link.download = `${safeTitle}.${fileExtension}`;
     document.body.appendChild(link);
     link.click();
     document.body.removeChild(link);
@@ -196,7 +209,7 @@ export const downloadDocument = async (documentId, accessToken, documentTitle, d
       } else if (err.response.status === 500) {
         errorMessage = "Lỗi server khi tải tài liệu.";
       }
-    } else if (err.message.includes("PDF")) {
+    } else if (err.message.includes("PDF") || err.message.includes("DOC") || err.message.includes("DOCX")) {
       errorMessage = err.message;
     }
     throw new Error(errorMessage);

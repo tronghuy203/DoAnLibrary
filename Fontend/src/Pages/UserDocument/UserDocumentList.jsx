@@ -4,7 +4,7 @@ import { useNavigate } from "react-router-dom";
 import { getAllDocumentsUser, viewDocument } from "../../redux/apiDocument";
 import { createAxios } from "../../createInstance";
 import { loginSuccess } from "../../redux/authSlice";
-import { FaFilePdf, FaFileWord, FaFileExcel, FaSearch } from "react-icons/fa";
+import { FaFilePdf, FaFileWord, FaSearch } from "react-icons/fa";
 import { motion, AnimatePresence } from "framer-motion";
 import { toast, ToastContainer } from "react-toastify";
 import "react-toastify/dist/ReactToastify.css";
@@ -39,7 +39,11 @@ const UserDocumentList = () => {
       );
     }
     if (filterType !== "all") {
-      result = result.filter((doc) => doc.type === filterType);
+      if (filterType === "word") {
+        result = result.filter((doc) => doc.fileType === "doc" || doc.fileType === "docx");
+      } else {
+        result = result.filter((doc) => doc.fileType === filterType);
+      }
     }
     return result;
   }, [documents, searchQuery, filterType]);
@@ -106,16 +110,13 @@ const UserDocumentList = () => {
     setVisibleDocs((prev) => prev + 6);
   };
 
-  const getFileIcon = (type) => {
-    switch (type) {
+  const getFileIcon = (fileType) => {
+    switch (fileType) {
       case "pdf":
         return <FaFilePdf className="text-red-500 w-12 h-12" />;
       case "doc":
       case "docx":
         return <FaFileWord className="text-blue-500 w-12 h-12" />;
-      case "xls":
-      case "xlsx":
-        return <FaFileExcel className="text-green-500 w-12 h-12" />;
       default:
         return <FaFilePdf className="text-gray-500 w-12 h-12" />;
     }
@@ -175,8 +176,7 @@ const UserDocumentList = () => {
           >
             <option value="all">Tất cả</option>
             <option value="pdf">PDF</option>
-            <option value="doc">Word</option>
-            <option value="xls">Excel</option>
+            <option value="word">Word</option>
           </motion.select>
         </motion.div>
 
@@ -226,7 +226,7 @@ const UserDocumentList = () => {
                         />
                       ) : (
                         <div className="w-full h-40 flex items-center justify-center bg-gray-100/50 dark:bg-gray-700/50 rounded-lg">
-                          {getFileIcon(doc.type)}
+                          {getFileIcon(doc.fileType)}
                         </div>
                       )}
                     </div>
