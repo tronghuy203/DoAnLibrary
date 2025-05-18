@@ -305,6 +305,61 @@ const borrowController = {
     }
   },
 
+  adminCancelBorrowRecord: async (req, res) => {
+    try {
+      const { borrowId } = req.params;
+      const user = req.user;
+
+      if (!user.admin) {
+        return res.status(403).json({ message: "Chỉ admin mới có quyền hủy" });
+      }
+
+      const record = await BorrowRecord.findOne({
+        _id: borrowId,
+        status: "waiting_pickup",
+      });
+
+      if (!record) {
+        return res.status(404).json({
+          message: "Không tìm thấy bản ghi mượn hoặc không thể hủy",
+        });
+      }
+
+      record.status = "cancelled";
+      await record.save();
+
+      const book = await Book.findById(record.bookId);
+      if (book) {
+        book.quantity += 1;
+        book.sold = (book.sold || 0) - 1;
+        await book.save();
+      }
+
+      const request = await BorrowRequest.findById(record.requestId);
+      if (request) {
+        request.status = "cancelled";
+        await request.save();
+      }
+
+      const payment = await Payment.findOne({
+        borrowRecordId: record._id,
+        paymentType: "rental_fee",
+      });
+      if (payment) {
+        payment.status = "cancelled";
+        await payment.save();
+      }
+
+      res.status(200).json({ message: "Đã hủy yêu cầu mượn thành công" });
+    } catch (err) {
+      console.error("Lỗi hủy bản ghi mượn:", err);
+      res.status(500).json({
+        message: "Lỗi hủy bản ghi mượn",
+        error: err.message,
+      });
+    }
+  },
+
   // Admin xác nhận người dùng đến lấy sách
   confirmPickup: async (req, res) => {
     try {

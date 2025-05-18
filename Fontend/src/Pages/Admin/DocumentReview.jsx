@@ -171,6 +171,9 @@ const DocumentReviews = () => {
                           ID: {review._id}
                         </p>
                         <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium">
+                          Tên tài liệu: {review.itemTitle}
+                        </p>
+                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium">
                           Người dùng: {review.userId?.username || "Ẩn danh"}
                         </p>
                       </div>

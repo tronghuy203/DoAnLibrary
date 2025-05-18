@@ -305,7 +305,7 @@ const DetailDocument = () => {
                 )}
                 {activeTab === "Nội dung" && (
                   <p className="leading-relaxed">
-                    Nội dung tài liệu sẽ được hiển thị trong phần xem trước bên dưới.
+                    Nội dung tài liệu sẽ được hiển thị trong phần xem trước bên dưới (nếu có).
                   </p>
                 )}
                 {activeTab === "Đánh giá" && null}
@@ -329,56 +329,62 @@ const DetailDocument = () => {
                 <h3 className="text-xl font-semibold text-gray-900 dark:text-white mb-4">
                   Xem trước tài liệu
                 </h3>
-                <div
-                  className="w-full h-[80vh] max-h-[600px] min-h-[400px] border border-gray-300 dark:border-gray-700 rounded-lg overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 dark:scrollbar-thumb-gray-500 scrollbar-track-gray-200 dark:scrollbar-track-gray-800 relative"
-                >
-                  <Worker workerUrl={pdfjs.GlobalWorkerOptions.workerSrc}>
-                    <div className="relative w-full h-full">
-                      <Viewer
-                        fileUrl={docData.fileUrl}
-                        defaultScale={SpecialZoomLevel.PageWidth}
-                        theme={{ theme: "auto" }}
-                        scrollMode="vertical"
-                        plugins={[zoomPluginInstance]}
-                      />
-                      <div className="absolute bottom-4 right-4 flex flex-col gap-2 z-10">
-                        <ZoomIn>
-                          {(props) => (
-                            <button
-                              onClick={props.onClick}
-                              className="block text-gray-800 hover:bg-gray-200/50 rounded-full p-2 sm:p-2 md:p-3 transition-all duration-200"
-                              title="Phóng to"
-                            >
-                              <FaPlus className="w-5 h-5 sm:w-5 md:w-6 sm:h-5 md:h-6" />
-                            </button>
-                          )}
-                        </ZoomIn>
-                        <ZoomOut>
-                          {(props) => (
-                            <button
-                              onClick={props.onClick}
-                              className="block text-gray-800 hover:bg-gray-200/50 rounded-full p-2 sm:p-2 md:p-3 transition-all duration-200"
-                              title="Thu nhỏ"
-                            >
-                              <FaMinus className="w-5 h-5 sm:w-5 md:w-6 sm:h-5 md:h-6" />
-                            </button>
-                          )}
-                        </ZoomOut>
-                        <Zoom>
-                          {({ onZoom }) => (
-                            <button
-                              onClick={() => onZoom(SpecialZoomLevel.PageWidth)}
-                              className="block text-gray-800 hover:bg-gray-200/50 rounded-full p-2 sm:p-2 md:p-3 transition-all duration-200"
-                              title="Đặt lại"
-                            >
-                              <FaUndo className="w-5 h-5 sm:w-5 md:w-6 sm:h-5 md:h-6" />
-                            </button>
-                          )}
-                        </Zoom>
+                {docData.fileType === "pdf" ? (
+                  <div
+                    className="w-full h-[80vh] max-h-[600px] min-h-[400px] border border-gray-300 dark:border-gray-700 rounded-lg overflow-y-auto scrollbar-thin scrollbar-thumb-gray-400 dark:scrollbar-thumb-gray-500 scrollbar-track-gray-200 dark:scrollbar-track-gray-800 relative"
+                  >
+                    <Worker workerUrl={pdfjs.GlobalWorkerOptions.workerSrc}>
+                      <div className="relative w-full h-full">
+                        <Viewer
+                          fileUrl={docData.fileUrl}
+                          defaultScale={SpecialZoomLevel.PageWidth}
+                          theme={{ theme: "auto" }}
+                          scrollMode="vertical"
+                          plugins={[zoomPluginInstance]}
+                        />
+                        <div className="absolute bottom-4 right-4 flex flex-col gap-2 z-10">
+                          <ZoomIn>
+                            {(props) => (
+                              <button
+                                onClick={props.onClick}
+                                className="block text-gray-800 hover:bg-gray-200/50 rounded-full p-2 sm:p-2 md:p-3 transition-all duration-200"
+                                title="Phóng to"
+                              >
+                                <FaPlus className="w-5 h-5 sm:w-5 md:w-6 sm:h-5 md:h-6" />
+                              </button>
+                            )}
+                          </ZoomIn>
+                          <ZoomOut>
+                            {(props) => (
+                              <button
+                                onClick={props.onClick}
+                                className="block text-gray-800 hover:bg-gray-200/50 rounded-full p-2 sm:p-2 md:p-3 transition-all duration-200"
+                                title="Thu nhỏ"
+                              >
+                                <FaMinus className="w-5 h-5 sm:w-5 md:w-6 sm:h-5 md:h-6" />
+                              </button>
+                            )}
+                          </ZoomOut>
+                          <Zoom>
+                            {({ onZoom }) => (
+                              <button
+                                onClick={() => onZoom(SpecialZoomLevel.PageWidth)}
+                                className="block text-gray-800 hover:bg-gray-200/50 rounded-full p-2 sm:p-2 md:p-3 transition-all duration-200"
+                                title="Đặt lại"
+                              >
+                                <FaUndo className="w-5 h-5 sm:w-5 md:w-6 sm:h-5 md:h-6" />
+                              </button>
+                            )}
+                          </Zoom>
+                        </div>
                       </div>
-                    </div>
-                  </Worker>
-                </div>
+                    </Worker>
+                  </div>
+                ) : (
+                  <div className="bg-yellow-100 dark:bg-yellow-900 border border-yellow-500 dark:border-yellow-700 rounded-lg p-4 text-center text-lg font-medium text-yellow-600 dark:text-yellow-400 animate-fade-in">
+                    Không hỗ trợ xem trước tài liệu Word (DOC/DOCX). Vui lòng tải xuống để xem.
+                  </div>
+                )}
               </div>
             ) : (
               <div className="bg-red-100 dark:bg-red-900 border border-red-500 dark:border-red-700 rounded-lg p-4 text-center text-lg font-medium text-red-500 dark:text-red-400 animate-fade-in">
