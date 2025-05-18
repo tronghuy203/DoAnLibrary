@@ -5,6 +5,8 @@ const User = require("../models/User");
 const Membership = require("../models/Membership");
 const UserMembership = require("../models/UserMembership");
 const cloudinary = require("../config/cloudinary");
+const axios = require("axios")
+const contentDisposition = require("content-disposition");
 
 const storage = multer.memoryStorage();
 const upload = multer({
@@ -159,20 +161,32 @@ const documentController = {
         cloudinaryThumbnailId = thumbnailResult.public_id;
       }
 
+      let fileType = "pdf";
+      if (req.files.file[0].mimetype.includes("application/msword")) {
+        fileType = "doc";
+      } else if (
+        req.files.file[0].mimetype.includes(
+          "application/vnd.openxmlformats-officedocument.wordprocessingml.document"
+        )
+      ) {
+        fileType = "docx";
+      }
+
       const newDocument = new Document({
         title,
         description,
         fileUrl: fileResult.secure_url,
         thumbnailUrl,
         uploadedBy: req.user.id,
-        status: 'pending',
+        status: "pending",
         cloudinaryFileId: fileResult.public_id,
         cloudinaryThumbnailId,
+        fileType,
       });
 
       const savedDocument = await newDocument.save();
       res.status(201).json({
-        message: 'Tài liệu đã được tải lên và đang chờ duyệt',
+        message: "Tài liệu đã được tải lên và đang chờ duyệt",
         document: savedDocument,
       });
     } catch (err) {
@@ -334,8 +348,41 @@ const documentController = {
       document.downloads += 1;
       await document.save();
 
-      res.redirect(document.fileUrl);
+      const response = await axios({
+        url: document.fileUrl,
+        method: "GET",
+        responseType: "stream",
+        timeout: 10000,
+      });
+
+      let contentType;
+      switch (document.fileType) {
+        case "pdf":
+          contentType = "application/pdf";
+          break;
+        case "doc":
+          contentType = "application/msword";
+          break;
+        case "docx":
+          contentType =
+            "application/vnd.openxmlformats-officedocument.wordprocessingml.document";
+          break;
+        default:
+          contentType = "application/octet-stream";
+      }
+
+      res.setHeader("Content-Type", contentType);
+      res.setHeader(
+        "Content-Disposition",
+        contentDisposition(`${document.title}.${document.fileType}`)
+      );
+
+      response.data.pipe(res).on("error", (pipeError) => {
+        console.error("Lỗi khi truyền stream:", pipeError);
+        res.status(500).json({ message: "Lỗi khi truyền file" });
+      });
     } catch (err) {
+      console.error("Lỗi khi tải tài liệu:", err);
       res.status(err.status || 500).json({ message: err.message });
     }
   },

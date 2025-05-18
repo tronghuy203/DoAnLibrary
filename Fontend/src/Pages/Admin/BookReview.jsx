@@ -16,7 +16,7 @@ const BookReviews = () => {
   const [editComment, setEditComment] = useState("");
   const [visibleReplies, setVisibleReplies] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
-  const [message, setMessage] = useState(""); // Thêm state cho thông báo
+  const [message, setMessage] = useState("");
   const reviewsPerPage = 4;
 
   const axiosJWT = createAxios(user, dispatch);
@@ -191,6 +191,9 @@ const BookReviews = () => {
                       <div>
                         <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium">
                           ID: {review._id}
+                        </p>
+                        <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium">
+                          Tên sách: {review.itemTitle}
                         </p>
                         <p className="text-xs sm:text-sm text-gray-600 dark:text-gray-400 font-medium">
                           Người dùng: {review.userId?.username || "Ẩn danh"}

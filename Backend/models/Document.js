@@ -15,11 +15,15 @@ const documentSchema = new mongoose.Schema(
       type: String,
       default: "",
     },
-    uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
-    status: { 
+    fileType: { 
       type: String, 
-      enum: ['pending', 'approved', 'rejected'], 
-      default: 'pending' 
+      enum: ["pdf", "doc", "docx"], 
+      required: true },
+    uploadedBy: { type: mongoose.Schema.Types.ObjectId, ref: "User" },
+    status: {
+      type: String,
+      enum: ["pending", "approved", "rejected"],
+      default: "pending",
     },
     views: {
       type: Number,
@@ -29,12 +33,8 @@ const documentSchema = new mongoose.Schema(
       type: Number,
       default: 0,
     },
-    viewHistory: [
-      { date: Date, count: Number }
-    ],
-    downloadHistory: [
-      { date: Date, count: Number }
-    ],
+    viewHistory: [{ date: Date, count: Number }],
+    downloadHistory: [{ date: Date, count: Number }],
     createdAt: {
       type: Date,
       default: Date.now,

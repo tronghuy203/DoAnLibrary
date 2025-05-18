@@ -221,20 +221,25 @@ const Login = () => {
         </div>
 
         <div className="space-y-4">
-          <GoogleLogin
+        <GoogleLogin
             onSuccess={handleGoogleSuccess}
             onError={handleGoogleFailure}
             useOneTap={false}
+            theme="outline"
+            size="large"
+            text="signin_with"
+            shape="rectangular"
+            width={window.innerWidth < 640 ? "315px" : "370px"}
             render={(renderProps) => (
               <button
                 onClick={renderProps.onClick}
                 disabled={renderProps.disabled || isLoading}
-                className={`w-full flex items-center justify-center py-2.5 px-3 bg-white dark:bg-zinc-800 text-gray-700 dark:text-gray-200 font-medium border border-gray-300 dark:border-zinc-600 rounded-md transition-all duration-200 shadow-sm ${
+                className={`w-full flex items-center justify-center py-2 sm:py-3 px-3 sm:px-4 bg-white dark:bg-zinc-800 text-gray-700 dark:text-gray-200 font-medium border border-gray-300 dark:border-zinc-600 rounded-lg sm:rounded-xl transition-all duration-300 shadow-sm hover:shadow-md ${
                   isLoading ? "opacity-75 cursor-not-allowed" : "hover:bg-gray-100 dark:hover:bg-zinc-700"
                 }`}
               >
-                <FcGoogle className="w-5 h-5 mr-2" />
-                <span className="text-sm font-normal">Đăng nhập bằng Google</span>
+                <FcGoogle className="w-5 sm:w-6 h-5 sm:h-6 mr-2 sm:mr-3" />
+                <span className="text-sm sm:text-base font-medium">Đăng nhập bằng Google</span>
               </button>
             )}
           />
