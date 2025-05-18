@@ -2,6 +2,7 @@ const router = require("express").Router();
 const reviewController = require("../controllers/reviewController");
 const middleware = require("../controllers/middlewareController");
 
+router.get("/stats/:type", reviewController.getAllReviewStats);
 router.get("/:type/:itemId", reviewController.getReviews);
 router.post("/", middleware.verifyToken, reviewController.addReview);
 router.put("/:id", middleware.verifyToken, reviewController.updateReview);

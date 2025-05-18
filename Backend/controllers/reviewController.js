@@ -38,6 +38,43 @@ const reviewController = {
     }
   },
 
+  getAllReviewStats: async (req, res) => {
+    try {
+      const { type } = req.params;
+      if (!["book", "document"].includes(type)) {
+        return res.status(400).json({ message: "Loại không hợp lệ" });
+      }
+
+      const reviews = await Review.find({ type })
+        .select("itemId rating")
+        .lean();
+
+      const stats = reviews.reduce((acc, review) => {
+        const { itemId, rating } = review;
+        if (!acc[itemId]) {
+          acc[itemId] = { totalRating: 0, reviewCount: 0 };
+        }
+        acc[itemId].totalRating += rating;
+        acc[itemId].reviewCount += 1;
+        return acc;
+      }, {});
+
+      const result = Object.keys(stats).reduce((acc, itemId) => {
+        const { totalRating, reviewCount } = stats[itemId];
+        acc[itemId] = {
+          averageRating: (totalRating / reviewCount).toFixed(1),
+          reviewCount,
+        };
+        return acc;
+      }, {});
+
+      res.status(200).json(result);
+    } catch (error) {
+      console.error("Lỗi getAllReviewStats:", { type, error: error.message });
+      res.status(500).json({ message: "Lỗi khi lấy thống kê đánh giá", error: error.message });
+    }
+  },
+
   addReview: async (req, res) => {
     try {
       const { itemId, type, userId, rating, comment } = req.body;
