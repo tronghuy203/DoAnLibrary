@@ -28,7 +28,19 @@ export const getReviews = async (type, itemId, dispatch) => {
   }
 };
 
-export const getAllReviewStats = async (type, accessToken, dispatch, axiosJWT) => {
+export const getAllReviewStats = async (type, dispatch) => {
+  dispatch(getReviewsStart());
+  try {
+    const res = await axios.get(`${process.env.REACT_APP_SERVER_URL}/v1/reviews/stats/${type}`);
+    dispatch(getReviewsSuccess([]));
+    return res.data;
+  } catch (err) {
+    dispatch(getReviewsFailed(err.response?.data?.message || "Lỗi tải thống kê đánh giá"));
+    throw err;
+  }
+};
+
+export const getAllReviewStatsJWT = async (type, accessToken, dispatch, axiosJWT) => {
   dispatch(getReviewsStart());
   try {
     const res = await axiosJWT.get(

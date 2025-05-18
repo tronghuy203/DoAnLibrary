@@ -3,32 +3,20 @@ import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
 import { getAllReviewStats } from "../../redux/apiReview";
 import { getAllBooks } from "../../redux/apiBooks";
-import { createAxios } from "../../createInstance";
-import { loginSuccess } from "../../redux/authSlice";
 
 const BestBooks = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
-  const user = useSelector((state) => state.auth.login?.currentUser);
   const books = useSelector((state) => state.books.allBooks);
   const [reviewStats, setReviewStats] = useState({});
   const [isLoadingReviews, setIsLoadingReviews] = useState(false);
   const [errorReviews, setErrorReviews] = useState(null);
 
-  const axiosJWT = useMemo(
-    () => createAxios(user, dispatch, loginSuccess),
-    [user, dispatch]
-  );
-
-  useEffect(() => {
-    if (!user) {
-      navigate("/login");
-      return;
-    }
+ useEffect(() => {
     if (!books.length) {
-      getAllBooks(user.accessToken, dispatch, axiosJWT);
+      dispatch(getAllBooks());
     }
-  }, [dispatch, books, user, navigate, axiosJWT]);
+  }, [dispatch, books])
 
   useEffect(() => {
     if (books.length > 0) {
@@ -40,7 +28,7 @@ const BestBooks = () => {
     setIsLoadingReviews(true);
     setErrorReviews(null);
     try {
-      const stats = await getAllReviewStats("book", user.accessToken, dispatch, axiosJWT);
+      const stats = await getAllReviewStats("book", dispatch);
       setReviewStats(stats);
     } catch (error) {
       console.error("Lỗi khi lấy thống kê đánh giá:", error);
