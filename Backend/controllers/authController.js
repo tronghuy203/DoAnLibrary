@@ -395,7 +395,6 @@ const authController = {
       let user = await User.findOne({ $or: [{ email }, { googleId }] });
 
       if (!user) {
-        // Nếu không có tài khoản, tạo mới và đăng nhập luôn
         user = new User({
           username: name || `user_${googleId}`,
           email,
@@ -405,7 +404,6 @@ const authController = {
         await user.save();
         await assignFreeMembership(user._id);
       } else if (!user.googleId) {
-        // Nếu tài khoản đã tồn tại qua đăng ký thường, liên kết với googleId
         user.googleId = googleId;
         user.isVerified = true;
         await user.save();
@@ -453,7 +451,6 @@ const authController = {
       let user = await User.findOne({ $or: [{ email }, { facebookId }] });
 
       if (!user) {
-        // Tạo tài khoản mới nếu chưa tồn tại
         user = new User({
           username: name || `user_${facebookId}`,
           email: email || `${facebookId}@facebook.com`,

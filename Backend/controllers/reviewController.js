@@ -1,6 +1,8 @@
 const Review = require("../models/Review");
 const Reply = require("../models/Reply");
 const User = require("../models/User");
+const Book = require("../models/Book");
+const Document = require("../models/Document");
 
 const reviewController = {
   getReviews: async (req, res) => {
@@ -47,7 +49,20 @@ const reviewController = {
         return res.status(400).json({ message: "Vui lòng nhập đánh giá hợp lệ." });
       }
 
-      const newReview = new Review({ itemId, type, userId, rating, comment });
+      let itemTitle = "";
+      if (type === "book") {
+        const book = await Book.findById(itemId).select("title").lean();
+        if (!book) return res.status(404).json({ message: "Sách không tồn tại" });
+        itemTitle = book.title;
+      } else if (type === "document") {
+        const document = await Document.findById(itemId).select("title").lean();
+        if (!document) return res.status(404).json({ message: "Tài liệu không tồn tại" });
+        itemTitle = document.title;
+      } else {
+        return res.status(400).json({ message: "Loại không hợp lệ" });
+      }
+
+      const newReview = new Review({ itemId, type, userId, rating, comment, itemTitle });
       await newReview.save();
 
       res.status(201).json({
@@ -56,6 +71,7 @@ const reviewController = {
         type,
         rating,
         comment,
+        itemTitle,
         createdAt: newReview.createdAt,
         userId: {
           _id: user._id,
