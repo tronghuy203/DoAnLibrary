@@ -6,7 +6,7 @@ import { loginSuccess } from "../../redux/authSlice";
 import { getAllUsers } from "../../redux/apiRequest";
 import { getJWTAllBooks } from "../../redux/apiBooks";
 import { getCategory } from "../../redux/apiCategory";
-import { getAllReviewStats } from "../../redux/apiReview";
+import { getAllReviewStatsJWT } from "../../redux/apiReview";
 
 const AllBooks = () => {
   const user = useSelector((state) => state.auth.login?.currentUser);
@@ -71,7 +71,7 @@ const AllBooks = () => {
     setIsLoadingReviews(true);
     setErrorReviews(null);
     try {
-      const stats = await getAllReviewStats("book", user.accessToken, dispatch, axiosJWT);
+      const stats = await getAllReviewStatsJWT("book", user.accessToken, dispatch, axiosJWT);
       setReviewStats(stats);
     } catch (error) {
       console.error("Lỗi khi lấy thống kê đánh giá:", error);
