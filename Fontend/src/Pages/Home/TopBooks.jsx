@@ -19,10 +19,10 @@ const TopBooks = () => {
   }, [dispatch, books]);
 
   useEffect(() => {
-    if (books.length > 0) {
+    if (books.length > 0 && Object.keys(reviewStats).length === 0) {
       fetchReviewStats();
     }
-  }, [books]);
+  }, [books, reviewStats]);
 
   const fetchReviewStats = async () => {
     setIsLoadingReviews(true);
@@ -70,11 +70,6 @@ const TopBooks = () => {
             vô tận, mở rộng tầm hiểu biết và thay đổi cách nhìn về thế giới.
           </p>
         </div>
-        {isLoadingReviews && (
-          <div className="animate-pulse flex justify-center items-center mb-8">
-            <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-32"></div>
-          </div>
-        )}
         {errorReviews && (
           <p className="text-center text-red-500 mb-8">{errorReviews}</p>
         )}

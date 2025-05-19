@@ -62,10 +62,10 @@ const AllBooks = () => {
   }, [user, dispatch, axiosJWT, navigate]);
 
   useEffect(() => {
-    if (books.length > 0) {
+    if (books.length > 0 && Object.keys(reviewStats).length === 0) {
       fetchReviewStats();
     }
-  }, [books]);
+  }, [books, reviewStats]);
 
   const fetchReviewStats = async () => {
     setIsLoadingReviews(true);
@@ -196,11 +196,6 @@ const AllBooks = () => {
         </div>
       </div>
 
-      {isLoadingReviews && (
-        <div className="animate-pulse flex items-center justify-center max-w-7xl mx-auto mb-8">
-          <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-32"></div>
-        </div>
-      )}
       {errorReviews && (
         <p className="text-center text-red-500 max-w-7xl mx-auto mb-8">
           {errorReviews}
