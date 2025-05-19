@@ -3,6 +3,7 @@ import { useDispatch, useSelector } from "react-redux";
 import { useParams, useNavigate } from "react-router-dom";
 import { getBookDetail } from "../../redux/apiBooks";
 import { getCategory } from "../../redux/apiCategory";
+import { getAllReviewStatsJWT } from "../../redux/apiReview";
 import { createAxios } from "../../createInstance";
 import { FaShareAlt, FaFacebook, FaInstagram, FaComment } from "react-icons/fa";
 import ReviewSection from "../ReviewSection/ReviewSection";
@@ -26,19 +27,40 @@ const DetailBook = () => {
   const shareRef = useRef(null);
   const recommendedRef = useRef(null);
 
+  const fetchReviewStats = async () => {
+    try {
+      const stats = await getAllReviewStatsJWT("book", user.accessToken, dispatch, axiosJWT);
+      if (stats[id]) {
+        setAverageRating(parseFloat(stats[id].averageRating || 0).toFixed(1));
+        setReviewCount(stats[id].reviewCount || 0);
+      }
+    } catch (error) {
+      console.error("Lỗi khi lấy thống kê đánh giá:", error);
+    }
+  };
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
-  }, [id]); 
+  }, [id]);
 
-  const calculateAverageRating = (reviews) => {
-    if (!reviews || reviews.length === 0) return { rating: 0, count: 0 };
-    const total = reviews.reduce((sum, review) => sum + review.rating, 0);
-    return {
-      rating: (total / reviews.length).toFixed(1),
-      count: reviews.length,
+  useEffect(() => {
+    if (!user) {
+      navigate("/login");
+      return;
+    }
+
+    const fetchData = async () => {
+      try {
+        await getCategory(user.accessToken, dispatch, axiosJWT);
+        await getBookDetail(id, user.accessToken, dispatch, axiosJWT);
+        await fetchReviewStats();
+      } catch (error) {
+        console.error("Lỗi khi tải dữ liệu:", error);
+      }
     };
-  };
+
+    fetchData();
+  }, [id, user, user?.accessToken, dispatch, navigate, axiosJWT]);
 
   const categoryMap = useMemo(() => {
     const map = {};
@@ -88,24 +110,6 @@ const DetailBook = () => {
       console.error("Lỗi khi mượn sách:", error.response?.data || error.message);
     }
   };
-
-  useEffect(() => {
-    if (!user) {
-      navigate("/login");
-      return;
-    }
-
-    const fetchData = async () => {
-      try {
-        await getCategory(user.accessToken, dispatch, axiosJWT);
-        await getBookDetail(id, user.accessToken, dispatch, axiosJWT);
-      } catch (error) {
-        console.error("Lỗi khi tải dữ liệu:", error);
-      }
-    };
-
-    fetchData();
-  }, [id, user, user?.accessToken, dispatch, navigate, axiosJWT]);
 
   useEffect(() => {
     const handleClickOutside = (event) => {
@@ -174,7 +178,9 @@ const DetailBook = () => {
   };
 
   const updateRecommendedRatings = (bookId, reviews) => {
-    const { rating, count } = calculateAverageRating(reviews);
+    const total = reviews.reduce((sum, review) => sum + review.rating, 0);
+    const rating = reviews.length > 0 ? (total / reviews.length).toFixed(1) : 0;
+    const count = reviews.length;
     setRecommendedRatings((prev) => ({
       ...prev,
       [bookId]: { rating, count },
@@ -366,7 +372,9 @@ const DetailBook = () => {
             itemId={book._id}
             user={user}
             onReviewsUpdate={(reviews) => {
-              const { rating, count } = calculateAverageRating(reviews);
+              const total = reviews.reduce((sum, review) => sum + review.rating, 0);
+              const rating = reviews.length > 0 ? (total / reviews.length).toFixed(1) : 0;
+              const count = reviews.length;
               setAverageRating(rating);
               setReviewCount(count);
               recommendedBooks.forEach((recBook) => {
@@ -384,32 +392,28 @@ const DetailBook = () => {
           </h3>
           {recommendedBooks.length > 0 ? (
             <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 gap-6">
-              {recommendedBooks.map((recBook) => {
-                recommendedRatings[recBook._id] ||
-                  calculateAverageRating(recBook.reviews || []);
-                return (
-                  <div
-                    key={recBook._id}
-                    onClick={() => handleBookClick(recBook._id)}
-                    className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer"
-                  >
-                    <img
-                      src={recBook.image || "https://png.pngtree.com/png-vector/20220220/ourmid/pngtree-vector-design-with-pattern-element-for-minimalisticluxurious-cover-menu-invitation-card-bannerbook-vector-png-image_34179868.jpg"}
-                      alt={recBook.title}
-                      className="w-full h-80 object-cover rounded-md mb-2"
-                    />
-                    <h5 className="text-xl font-semibold truncate text-gray-900 dark:text-white">
-                      {recBook.title}
-                    </h5>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Tác giả: {recBook.author || "Không rõ"}
-                    </p>
-                    <p className="text-sm text-gray-600 dark:text-gray-400">
-                      Thể loại: {categoryMap[recBook.category] || "Không rõ"}
-                    </p>
-                  </div>
-                );
-              })}
+              {recommendedBooks.map((recBook) => (
+                <div
+                  key={recBook._id}
+                  onClick={() => handleBookClick(recBook._id)}
+                  className="bg-white dark:bg-gray-800 rounded-lg shadow-md p-4 border border-gray-200 dark:border-gray-700 hover:shadow-lg transition-all duration-300 hover:-translate-y-1 cursor-pointer"
+                >
+                  <img
+                    src={recBook.image || "https://png.pngtree.com/png-vector/20220220/ourmid/pngtree-vector-design-with-pattern-element-for-minimalisticluxurious-cover-menu-invitation-card-bannerbook-vector-png-image_34179868.jpg"}
+                    alt={recBook.title}
+                    className="w-full h-80 object-cover rounded-md mb-2"
+                  />
+                  <h5 className="text-xl font-semibold truncate text-gray-900 dark:text-white">
+                    {recBook.title}
+                  </h5>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Tác giả: {recBook.author || "Không rõ"}
+                  </p>
+                  <p className="text-sm text-gray-600 dark:text-gray-400">
+                    Thể loại: {categoryMap[recBook.category] || "Không rõ"}
+                  </p>
+                </div>
+              ))}
             </div>
           ) : (
             <p className="text-gray-500 dark:text-gray-400 animate-fade-in text-center">
