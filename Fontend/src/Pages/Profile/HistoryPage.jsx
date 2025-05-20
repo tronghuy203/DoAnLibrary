@@ -182,7 +182,6 @@ const HistoryPage = () => {
     currentBorrowPage * itemsPerPage
   );
 
-
   const totalPaymentPages = Math.ceil(paymentHistory.length / itemsPerPage);
   const paymentPageData = paymentHistory.slice(
     (currentPaymentPage - 1) * itemsPerPage,
@@ -420,7 +419,7 @@ const HistoryPage = () => {
                           className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md border border-gray-200 dark:border-gray-700"
                         >
                           <div className="flex justify-between items-start mb-2">
-                            <h3 className="text-base font-semibold text-gray-900 dark:text-white truncate">
+                            <h3 className="w-40 text-base font-semibold text-gray-900 dark:text-white truncate">
                               {record.bookId?.title || "N/A"}
                             </h3>
                             <span
@@ -431,6 +430,8 @@ const HistoryPage = () => {
                                   ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
                                   : record.status === "waiting_pickup"
                                   ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
+                                  : record.status === "cancelled"
+                                  ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
                                   : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
                               }`}
                             >
@@ -474,17 +475,22 @@ const HistoryPage = () => {
                                 "Không có"
                               )}
                             </div>
-                            <div>
+                            <div className="grid grid-cols-2 gap-2">
                               <span className="font-medium">Xác nhận:</span>{" "}
                               <span
-                                className={`inline-flex items-center gap-1 ${
-                                  record.adminConfirmed
-                                    ? "text-green-800 dark:text-green-300"
-                                    : "text-gray-800 dark:text-gray-300"
-                                }`}
-                              >
-                                {record.adminConfirmed ? "Đã xác nhận" : "Chưa xác nhận"}
-                              </span>
+                                  className={`w-32 px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${
+                                    record.adminConfirmed
+                                      ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+                                      : "bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-300"
+                                  }`}
+                                >
+                                  {record.adminConfirmed ? (
+                                    <CheckCircleIcon className="h-5 w-5" />
+                                  ) : (
+                                    <XCircleIcon className="h-5 w-5" />
+                                  )}
+                                  {record.adminConfirmed ? "Đã xác nhận" : "Chưa xác nhận"}
+                                </span>
                             </div>
                           </div>
                           {penalty && penalty.status === "pending" && (
@@ -586,7 +592,7 @@ const HistoryPage = () => {
                         className="bg-white dark:bg-gray-800 p-4 rounded-xl shadow-md border border-gray-200 dark:border-gray-700"
                       >
                         <div className="flex justify-between items-start mb-2">
-                          <h3 className="text-base font-semibold text-gray-900 dark:text-white truncate">
+                          <h3 className="w-44 text-base font-semibold text-gray-900 dark:text-white truncate">
                             {payment.borrowRecordId?.bookId?.title || "N/A"}
                           </h3>
                           <span

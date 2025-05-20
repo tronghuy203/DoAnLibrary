@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { UserGroupIcon, BookOpenIcon, ClockIcon } from "@heroicons/react/24/outline";
+import { UserGroupIcon, BookOpenIcon, ClockIcon, DocumentTextIcon } from "@heroicons/react/24/outline";
 import { getAllBooks } from "../../redux/apiBooks";
 import { getAllUsers } from "../../redux/apiRequest";
 import { getAllBorrowRecords, getTotalRevenue, getDailyRevenue } from "../../redux/apiBorrow";
@@ -19,6 +19,7 @@ import {
   Legend,
 } from "chart.js";
 import { loginSuccess } from "../../redux/authSlice";
+import { getAllDocumentsUser } from "../../redux/apiDocument";
 
 ChartJS.register(ArcElement, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
 
@@ -26,6 +27,7 @@ const AdminDashboard = () => {
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const user = useSelector((state) => state.auth.login.currentUser);
+  const documents = useSelector((state) => state.document.documents);
   const { allBooks, isFetching: booksFetching } = useSelector((state) => state.books);
   const usersState = useSelector((state) => state.users);
   const { borrowRecords, isFetching: borrowsFetching } = useSelector((state) => state.borrow);
@@ -67,6 +69,7 @@ const AdminDashboard = () => {
       getAllBooks(user.accessToken, dispatch, axiosJWT);
       getAllUsers(user.accessToken, dispatch, axiosJWT);
       getAllBorrowRecords(user.accessToken, dispatch, axiosJWT);
+      getAllDocumentsUser(user.accessToken, dispatch, axiosJWT);
       getTotalRevenue(user.accessToken, dispatch, axiosJWT);
       getDailyRevenue(user.accessToken, dispatch, axiosJWT);
       getRevenueByType(user.accessToken, dispatch, axiosJWT)()
@@ -76,6 +79,7 @@ const AdminDashboard = () => {
 
   const totalUsers = allUsers?.length || 0;
   const totalBooks = allBooks?.length || 0;
+  const totalDocuments = documents.filter(doc => doc.status === 'approved').length || 0;
   const recentActivities = borrowRecords?.length || 0;
 
   useEffect(() => {
@@ -208,7 +212,7 @@ const AdminDashboard = () => {
         </div>
       </div>
 
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-6 lg:gap-8 mb-6 sm:mb-8">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-6 lg:gap-8 mb-6 sm:mb-8">
         <div className="relative bg-white dark:bg-gradient-to-br dark:from-gray-900 dark:to-gray-800 p-4 sm:p-6 rounded-2xl shadow-lg hover:shadow-xl hover:shadow-blue-500/20 transform hover:-translate-y-1 transition-all duration-300 ease-in-out animate-fade-in">
           <div className="flex items-center gap-3 sm:gap-4">
             <UserGroupIcon className="w-8 h-8 sm:w-10 sm:h-10 text-blue-500 dark:text-blue-300" />
@@ -234,6 +238,21 @@ const AdminDashboard = () => {
               <p className="text-2xl sm:text-3xl font-bold text-green-500 dark:text-green-300">{totalBooks}</p>
               <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm mt-1">
                 Tăng <span className="text-green-500 dark:text-green-300">5%</span> so với tháng trước
+              </p>
+            </div>
+          </div>
+        </div>
+
+         <div className="relative bg-white dark:bg-gradient-to-br dark:from-gray-900 dark:to-gray-800 p-4 sm:p-6 rounded-2xl shadow-lg hover:shadow-xl hover:shadow-green-500/20 transform hover:-translate-y-1 transition-all duration-300 ease-in-out animate-fade-in">
+          <div className="flex items-center gap-3 sm:gap-4">
+            <DocumentTextIcon className="w-8 h-8 sm:w-10 sm:h-10 text-pink-600 dark:text-pink-600" />
+            <div>
+              <h3 className="text-base sm:text-lg font-semibold text-gray-800 dark:text-gray-200 mb-1">
+                Tổng số tài liệu
+              </h3>
+              <p className="text-2xl sm:text-3xl font-bold text-pink-600 dark:text-pink-600">{totalDocuments}</p>
+              <p className="text-gray-600 dark:text-gray-400 text-xs sm:text-sm mt-1">
+                Tăng <span className="text-green-500 dark:text-green-300">11%</span> so với tháng trước
               </p>
             </div>
           </div>

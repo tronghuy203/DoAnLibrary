@@ -8,6 +8,7 @@ const paymentSlice = createSlice({
       penalty: 0,
       membership: 0,
     },
+    monthlyRevenue: [],
     isFetching: false,
     error: null,
   },
@@ -24,8 +25,27 @@ const paymentSlice = createSlice({
       state.isFetching = false;
       state.error = action.payload;
     },
+    paymentGetMonthlyStart: (state) => {
+      state.isFetching = true;
+      state.error = null;
+    },
+    paymentGetMonthlySuccess: (state, action) => {
+      state.monthlyRevenue = action.payload;
+      state.isFetching = false;
+    },
+    paymentGetMonthlyFail: (state, action) => {
+      state.isFetching = false;
+      state.error = action.payload;
+    },
   },
 });
 
-export const { paymentGetStart, paymentGetSuccess, paymentGetFail } = paymentSlice.actions;
+export const {
+  paymentGetStart,
+  paymentGetSuccess,
+  paymentGetFail,
+  paymentGetMonthlyStart,
+  paymentGetMonthlySuccess,
+  paymentGetMonthlyFail,
+} = paymentSlice.actions;
 export default paymentSlice.reducer;
