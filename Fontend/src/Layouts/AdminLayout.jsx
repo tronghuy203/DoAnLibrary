@@ -370,7 +370,7 @@ const AdminLayout = () => {
                         onClick={handleMenuClick}
                       >
                         <CurrencyDollarIcon className="w-5 h-5" />
-                        <span>Doanh thu sách</span>
+                        <span>Thống kê doanh thu</span>
                       </Link>
                     </li>
                   </ul>
