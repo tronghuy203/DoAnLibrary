@@ -1,4 +1,4 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { Bar } from "react-chartjs-2";
 import {
@@ -38,6 +38,34 @@ const RevenueDashboard = () => {
     [user, dispatch]
   );
 
+  const [activeChart, setActiveChart] = useState("daily");
+  const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+  const [isDarkMode, setIsDarkMode] = useState(() => {
+    const savedMode = localStorage.getItem("darkMode");
+    return savedMode ? JSON.parse(savedMode) : false;
+  });
+
+  useEffect(() => {
+    const handleResize = () => setWindowWidth(window.innerWidth);
+    window.addEventListener("resize", handleResize);
+    return () => window.removeEventListener("resize", handleResize);
+  }, []);
+
+  useEffect(() => {
+    const handleDarkModeChange = () => {
+      const savedMode = localStorage.getItem("darkMode");
+      setIsDarkMode(savedMode ? JSON.parse(savedMode) : false);
+    };
+
+    window.addEventListener("darkModeChange", handleDarkModeChange);
+    window.addEventListener("storage", handleDarkModeChange);
+
+    return () => {
+      window.removeEventListener("darkModeChange", handleDarkModeChange);
+      window.removeEventListener("storage", handleDarkModeChange);
+    };
+  }, []);
+
   useEffect(() => {
     if (user?.accessToken) {
       getDailyRevenue(user.accessToken, dispatch, axiosJWT);
@@ -63,32 +91,31 @@ const RevenueDashboard = () => {
         {
           label: "Doanh thu theo ngày (VNĐ)",
           data: recentDailyRevenue.map((item) => item.totalRevenue) || [],
-          backgroundColor: "rgba(34, 197, 94, 0.6)",
-          borderColor: "rgba(34, 197, 94, 1)",
+          backgroundColor: isDarkMode ? "rgba(34, 197, 94, 0.7)" : "rgba(34, 197, 94, 0.5)",
+          borderColor: isDarkMode ? "rgba(34, 197, 94, 1)" : "rgba(34, 197, 94, 0.8)",
           borderWidth: 1,
-          hoverBackgroundColor: "rgba(34, 197, 94, 0.8)",
+          hoverBackgroundColor: isDarkMode ? "rgba(34, 197, 94, 0.9)" : "rgba(34, 197, 94, 0.8)",
         },
       ],
     }),
-    [recentDailyRevenue]
+    [recentDailyRevenue, isDarkMode]
   );
 
   const monthlyChartData = useMemo(() => {
-    console.log("recentMonthlyRevenue:", recentMonthlyRevenue);
     return {
       labels: recentMonthlyRevenue.map((item) => item.month) || [],
       datasets: [
         {
           label: "Doanh thu theo tháng (VNĐ)",
           data: recentMonthlyRevenue.map((item) => item.totalRevenue) || [],
-          backgroundColor: "rgba(59, 130, 246, 0.6)",
-          borderColor: "rgba(59, 130, 246, 1)",
+          backgroundColor: isDarkMode ? "rgba(59, 130, 246, 0.7)" : "rgba(59, 130, 246, 0.5)",
+          borderColor: isDarkMode ? "rgba(59, 130, 246, 1)" : "rgba(59, 130, 246, 0.8)",
           borderWidth: 1,
-          hoverBackgroundColor: "rgba(59, 130, 246, 0.8)",
+          hoverBackgroundColor: isDarkMode ? "rgba(59, 130, 246, 0.9)" : "rgba(59, 130, 246, 0.8)",
         },
       ],
     };
-  }, [recentMonthlyRevenue]);
+  }, [recentMonthlyRevenue, isDarkMode]);
 
   const typeChartData = useMemo(
     () => ({
@@ -102,98 +129,112 @@ const RevenueDashboard = () => {
             revenueByType.membership || 0,
           ],
           backgroundColor: [
-            "rgba(34, 197, 94, 0.6)",
-            "rgba(239, 68, 68, 0.6)",
-            "rgba(59, 130, 246, 0.6)",
+            isDarkMode ? "rgba(34, 197, 94, 0.7)" : "rgba(34, 197, 94, 0.5)",
+            isDarkMode ? "rgba(239, 68, 68, 0.7)" : "rgba(239, 68, 68, 0.5)",
+            isDarkMode ? "rgba(59, 130, 246, 0.7)" : "rgba(59, 130, 246, 0.5)",
           ],
           borderColor: [
-            "rgba(34, 197, 94, 1)",
-            "rgba(239, 68, 68, 1)",
-            "rgba(59, 130, 246, 1)",
+            isDarkMode ? "rgba(34, 197, 94, 1)" : "rgba(34, 197, 94, 0.8)",
+            isDarkMode ? "rgba(239, 68, 68, 1)" : "rgba(239, 68, 68, 0.8)",
+            isDarkMode ? "rgba(59, 130, 246, 1)" : "rgba(59, 130, 246, 0.8)",
           ],
           borderWidth: 1,
           hoverBackgroundColor: [
-            "rgba(34, 197, 94, 0.8)",
-            "rgba(239, 68, 68, 0.8)",
-            "rgba(59, 130, 246, 0.8)",
+            isDarkMode ? "rgba(34, 197, 94, 0.9)" : "rgba(34, 197, 94, 0.8)",
+            isDarkMode ? "rgba(239, 68, 68, 0.9)" : "rgba(239, 68, 68, 0.8)",
+            isDarkMode ? "rgba(59, 130, 246, 0.9)" : "rgba(59, 130, 246, 0.8)",
           ],
         },
       ],
     }),
-    [revenueByType]
+    [revenueByType, isDarkMode]
   );
+
+  const chartTitle = useMemo(() => {
+    switch (activeChart) {
+      case "daily":
+        return "Doanh thu 7 ngày gần đây";
+      case "monthly":
+        return "Doanh thu 12 tháng gần đây";
+      case "type":
+        return "Doanh thu theo loại";
+      default:
+        return "";
+    }
+  }, [activeChart]);
 
   const chartOptions = {
     responsive: true,
     maintainAspectRatio: false,
+    animation: {
+      duration: 1000,
+      easing: "easeOutQuart",
+    },
     plugins: {
       legend: {
         position: "top",
         labels: {
-          color: (context) =>
-            context.chart.canvas.closest(".dark") ? "#e5e7eb" : "#374151",
-          font: { size: 14 },
+          color: isDarkMode ? "#e5e7eb" : "#1f2937",
+          font: { size: windowWidth < 640 ? 12 : 14 },
         },
       },
       tooltip: {
         mode: "index",
         intersect: false,
-        backgroundColor: (context) =>
-          context.chart.canvas.closest(".dark")
-            ? "rgba(0, 0, 0, 0.8)"
-            : "rgba(255, 255, 255, 0.8)",
-        titleFont: { size: 14 },
-        bodyFont: { size: 12 },
-        titleColor: (context) =>
-          context.chart.canvas.closest(".dark") ? "#e5e7eb" : "#374151",
-        bodyColor: (context) =>
-          context.chart.canvas.closest(".dark") ? "#e5e7eb" : "#374151",
+        backgroundColor: isDarkMode ? "rgba(0, 0, 0, 0.8)" : "rgba(255, 255, 255, 0.8)",
+        titleColor: isDarkMode ? "#e5e7eb" : "#1f2937",
+        bodyColor: isDarkMode ? "#e5e7eb" : "#1f2937",
+        titleFont: { size: windowWidth < 640 ? 12 : 14 },
+        bodyFont: { size: windowWidth < 640 ? 10 : 12 },
+      },
+      title: {
+        display: true,
+        text: chartTitle,
+        color: isDarkMode ? "#e5e7eb" : "#1f2937",
+        font: { size: windowWidth < 640 ? 14 : 16 },
       },
     },
     scales: {
       x: {
         ticks: {
-          color: (context) =>
-            context.chart.canvas.closest(".dark") ? "#e5e7eb" : "#374151",
-          maxRotation: window.innerWidth < 640 ? 45 : 0,
-          minRotation: window.innerWidth < 640 ? 45 : 0,
-          font: {
-            size: window.innerWidth < 640 ? 10 : 12,
-          },
+          color: isDarkMode ? "#9ca3af" : "#6b7280",
+          font: { size: windowWidth < 640 ? 10 : 12 },
+          maxRotation: windowWidth < 640 ? 45 : 0,
+          minRotation: windowWidth < 640 ? 45 : 0,
         },
         grid: {
-          color: (context) =>
-            context.chart.canvas.closest(".dark")
-              ? "rgba(255, 255, 255, 0.05)"
-              : "rgba(0, 0, 0, 0.05)",
+          color: isDarkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
         },
       },
       y: {
         ticks: {
-          color: (context) =>
-            context.chart.canvas.closest(".dark") ? "#e5e7eb" : "#374151",
-          font: {
-            size: window.innerWidth < 640 ? 10 : 12,
-          },
+          color: isDarkMode ? "#9ca3af" : "#6b7280",
+          font: { size: windowWidth < 640 ? 10 : 12 },
           callback: (value) => value.toLocaleString("vi-VN"),
         },
         grid: {
-          color: (context) =>
-            context.chart.canvas.closest(".dark")
-              ? "rgba(255, 255, 255, 0.05)"
-              : "rgba(0, 0, 0, 0.05)",
+          color: isDarkMode ? "rgba(255, 255, 255, 0.1)" : "rgba(0, 0, 0, 0.1)",
         },
         beginAtZero: true,
       },
     },
-    animation: {
-      duration: 1000,
-      easing: "easeOutQuart",
-    },
   };
 
+  const currentChartData = useMemo(() => {
+    if (activeChart === "daily" && recentDailyRevenue.length > 0) {
+      return dailyChartData;
+    } else if (activeChart === "monthly" && recentMonthlyRevenue.length > 0) {
+      return monthlyChartData;
+    } else if (activeChart === "type") {
+      return typeChartData;
+    }
+    return null;
+  }, [activeChart, dailyChartData, monthlyChartData, typeChartData, recentDailyRevenue, recentMonthlyRevenue]);
+
+  
+
   return (
-    <div className="min-h-screen bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 px-4 sm:px-6 lg:px-8 py-12 flex flex-col items-center transition-all duration-500 ease-in-out relative overflow-hidden">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex flex-col items-center py-8 px-4 sm:px-8 lg:px-12 transition-all duration-500 ease-in-out relative overflow-hidden">
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-gradient-to-br from-cyan-200/40 via-blue-200/30 to-purple-200/40 dark:from-cyan-800/30 dark:via-blue-800/30 dark:to-purple-800/30 animate-gradient-slow"></div>
         <div className="absolute top-[-15%] left-[-15%] w-80 h-80 bg-cyan-400/20 dark:bg-cyan-600/15 rounded-full blur-3xl animate-float"></div>
@@ -208,7 +249,7 @@ const RevenueDashboard = () => {
           <div className="absolute w-3 h-3 bg-blue-500/50 dark:bg-blue-400/40 rounded-full top-[30%] left-[85%] animate-particle"></div>
         </div>
         <svg
-          className="absolute bottom-0 left-0 w-full h-48 text-cyan-300/30 dark:text-cyan-700/30"
+          className="absolute bottom-0 left-0 w-full h-32 sm:h-48 text-cyan-300/30 dark:text-cyan-700/30"
           viewBox="0 0 1440 320"
           preserveAspectRatio="none"
         >
@@ -219,8 +260,8 @@ const RevenueDashboard = () => {
         </svg>
       </div>
 
-      <div className="w-full max-w-6xl relative z-10 space-y-8">
-        <div className="text-center mb-10 animate-slide-up">
+      <div className="w-full max-w-7xl relative z-10">
+        <div className="text-center mb-6 animate-slide-up">
           <ChartBarIcon className="w-16 h-16 mx-auto text-cyan-600 dark:text-cyan-400 mb-3 animate-pulse" />
           <h2 className="text-3xl sm:text-4xl font-extrabold text-cyan-600 dark:text-cyan-400 tracking-tight drop-shadow-lg">
             Bảng Điều Khiển Doanh Thu
@@ -231,21 +272,21 @@ const RevenueDashboard = () => {
         </div>
 
         {isFetching && (
-          <div className="text-center text-gray-500 dark:text-gray-300 animate-pulse py-10 text-lg">
-            Đang tải dữ liệu...
+          <div className="flex items-center justify-center gap-3 w-full text-center text-base sm:text-lg mb-10 px-6 py-4 rounded-xl shadow-xl bg-gradient-to-r from-cyan-500 to-blue-500 dark:from-cyan-400 dark:to-blue-400 text-white animate-pulse">
+            <p>Đang tải dữ liệu...</p>
           </div>
         )}
 
         {error && (
-          <div className="flex items-center gap-3 w-full max-w-2xl mx-auto text-center text-base sm:text-lg mb-10 px-6 py-4 rounded-xl shadow-xl transition-all duration-300 animate-pulse bg-gradient-to-r from-red-500 to-red-600 dark:from-red-400 dark:to-red-500 text-white">
+          <div className="flex items-center justify-center gap-3 w-full max-w-2xl mx-auto text-center text-base sm:text-lg mb-10 px-6 py-4 rounded-xl shadow-xl bg-gradient-to-r from-red-500 to-red-600 dark:from-red-500 dark:to-red-600 text-white animate-pulse">
             <p>Lỗi: {error}</p>
           </div>
         )}
 
         {!isFetching && !error && (
           <>
-            <div className="p-4 sm:p-6 bg-white/95 dark:bg-gray-800/95 backdrop-blur-md rounded-3xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 transform transition-all duration-300 hover:shadow-[0_0_30px_rgba(0,255,255,0.2)] animate-slide-up">
-              <h3 className="text-lg sm:text-xl lg:text-2xl font-semibold text-gray-900 dark:text-gray-100">
+            <div className="mb-8 sm:mb-12 bg-white/95 dark:bg-gray-800/95 backdrop-blur-md p-6 sm:p-8 rounded-3xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 transform transition-all duration-300 hover:shadow-[0_0_30px_rgba(0,255,255,0.2)] animate-slide-up">
+              <h3 className="text-lg sm:text-xl font-semibold text-gray-900 dark:text-gray-100 mb-3 sm:mb-4">
                 Tổng doanh thu:{" "}
                 <span className="text-green-500 dark:text-green-400">
                   {totalRevenue?.toLocaleString("vi-VN") || "0"} VNĐ
@@ -253,43 +294,48 @@ const RevenueDashboard = () => {
               </h3>
             </div>
 
-            <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-              <div className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-md rounded-3xl p-4 sm:p-6 shadow-2xl border border-gray-200/50 dark:border-gray-700/50 transform transition-all duration-300 hover:shadow-[0_0_30px_rgba(0,255,255,0.2)] animate-slide-up">
-                <h3 className="text-lg sm:text-xl lg:text-2xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
-                  Doanh thu theo loại
-                </h3>
-                <div className="relative w-full h-[250px] sm:h-[350px]">
-                  <Bar data={typeChartData} options={chartOptions} />
-                </div>
+            <div className="mb-8 sm:mb-12 bg-white/95 dark:bg-gray-800/95 backdrop-blur-md p-6 sm:p-8 rounded-3xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 transform transition-all duration-300 hover:shadow-[0_0_30px_rgba(0,255,255,0.2)] animate-slide-up">
+              <div className="flex flex-wrap justify-center mb-4 sm:mb-6 gap-2 sm:gap-3">
+                <button
+                  onClick={() => setActiveChart("daily")}
+                  className={`px-3 sm:px-5 py-2 rounded-xl font-medium text-sm sm:text-base transition-all duration-300 transform hover:scale-105 ${
+                    activeChart === "daily"
+                      ? "bg-gradient-to-r from-cyan-600 to-blue-600 dark:from-cyan-500 dark:to-blue-500 text-white shadow-lg"
+                      : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 hover:shadow-md"
+                  } ${recentDailyRevenue.length === 0 ? "opacity-50 cursor-not-allowed" : ""}`}
+                  disabled={recentDailyRevenue.length === 0}
+                >
+                  Theo ngày
+                </button>
+                <button
+                  onClick={() => setActiveChart("monthly")}
+                  className={`px-3 sm:px-5 py-2 rounded-xl font-medium text-sm sm:text-base transition-all duration-300 transform hover:scale-105 ${
+                    activeChart === "monthly"
+                      ? "bg-gradient-to-r from-cyan-600 to-blue-600 dark:from-cyan-500 dark:to-blue-500 text-white shadow-lg"
+                      : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 hover:shadow-md"
+                  } ${recentMonthlyRevenue.length === 0 ? "opacity-50 cursor-not-allowed" : ""}`}
+                  disabled={recentMonthlyRevenue.length === 0}
+                >
+                  Theo tháng
+                </button>
+                <button
+                  onClick={() => setActiveChart("type")}
+                  className={`px-3 sm:px-5 py-2 rounded-xl font-medium text-sm sm:text-base transition-all duration-300 transform hover:scale-105 ${
+                    activeChart === "type"
+                      ? "bg-gradient-to-r from-cyan-600 to-blue-600 dark:from-cyan-500 dark:to-blue-500 text-white shadow-lg"
+                      : "bg-gray-200 dark:bg-gray-700 text-gray-700 dark:text-gray-300 hover:bg-gray-300 dark:hover:bg-gray-600 hover:shadow-md"
+                  }`}
+                >
+                  Theo loại
+                </button>
               </div>
-
-              {recentDailyRevenue.length > 0 ? (
-                <div className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-md rounded-3xl p-4 sm:p-6 shadow-2xl border border-gray-200/50 dark:border-gray-700/50 transform transition-all duration-300 hover:shadow-[0_0_30px_rgba(0,255,255,0.2)] animate-slide-up">
-                  <h3 className="text-lg sm:text-xl lg:text-2xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
-                    Doanh thu 7 ngày gần đây
-                  </h3>
-                  <div className="relative w-full h-[250px] sm:h-[350px]">
-                    <Bar data={dailyChartData} options={chartOptions} />
-                  </div>
+              {currentChartData ? (
+                <div className="w-full mx-auto" style={{ height: windowWidth < 640 ? "250px" : "350px", maxHeight: "400px" }}>
+                  <Bar key={windowWidth} data={currentChartData} options={chartOptions} />
                 </div>
               ) : (
-                <div className="text-center text-gray-500 dark:text-gray-400 mt-6 animate-pulse text-lg">
-                  Không có dữ liệu doanh thu hàng ngày
-                </div>
-              )}
-
-              {recentMonthlyRevenue.length > 0 ? (
-                <div className="bg-white/95 dark:bg-gray-800/95 backdrop-blur-md rounded-3xl p-4 sm:p-6 shadow-2xl border border-gray-200/50 dark:border-gray-700/50 transform transition-all duration-300 hover:shadow-[0_0_30px_rgba(0,255,255,0.2)] animate-slide-up">
-                  <h3 className="text-lg sm:text-xl lg:text-2xl font-semibold mb-4 text-gray-900 dark:text-gray-100">
-                    Doanh thu 12 tháng gần đây
-                  </h3>
-                  <div className="relative w-full h-[250px] sm:h-[350px]">
-                    <Bar data={monthlyChartData} options={chartOptions} />
-                  </div>
-                </div>
-              ) : (
-                <div className="text-center text-gray-500 dark:text-gray-400 mt-6 animate-pulse text-lg">
-                  Không có dữ liệu doanh thu theo tháng
+                <div className="text-center text-gray-500 dark:text-gray-400 text-base sm:text-lg p-6 animate-fade-in">
+                  Không có dữ liệu cho biểu đồ này
                 </div>
               )}
             </div>

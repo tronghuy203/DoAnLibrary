@@ -16,6 +16,7 @@ import {
   ExclamationTriangleIcon,
   CurrencyDollarIcon,
   XCircleIcon,
+  MagnifyingGlassIcon,
 } from "@heroicons/react/24/outline";
 
 const BorrowBook = () => {
@@ -26,13 +27,59 @@ const BorrowBook = () => {
 
   const [currentPage, setCurrentPage] = useState(1);
   const [penalties, setPenalties] = useState({});
+  const [searchTerm, setSearchTerm] = useState("");
+  const [startDate, setStartDate] = useState("");
+  const [endDate, setEndDate] = useState("");
+  const [statusFilter, setStatusFilter] = useState("");
   const recordsPerPage = 4;
 
-  const totalRecords = borrowList?.length || 0;
+  const sortedBorrowList = useMemo(() => {
+    return [...(borrowList || [])].sort((a, b) => 
+      new Date(b.borrowDate) - new Date(a.borrowDate)
+    );
+  }, [borrowList]);
+
+  const filteredBorrowList = useMemo(() => {
+    let filtered = sortedBorrowList;
+
+    if (searchTerm.trim()) {
+      const lowerCaseSearch = searchTerm.toLowerCase();
+      filtered = filtered.filter((borrow) =>
+        (borrow.userId?.username || "").toLowerCase().includes(lowerCaseSearch) ||
+        (borrow.bookId?.title || "").toLowerCase().includes(lowerCaseSearch) ||
+        borrow._id.toLowerCase().includes(lowerCaseSearch)
+      );
+    }
+
+    if (startDate) {
+      const start = new Date(startDate);
+      filtered = filtered.filter((borrow) => new Date(borrow.borrowDate) >= start);
+    }
+    if (endDate) {
+      const end = new Date(endDate);
+      end.setHours(23, 59, 59, 999); 
+      filtered = filtered.filter((borrow) => new Date(borrow.borrowDate) <= end);
+    }
+
+    if (statusFilter) {
+      filtered = filtered.filter((borrow) => {
+        if (statusFilter === "returned") return !!borrow.returnDate;
+        return borrow.status === statusFilter;
+      });
+    }
+
+    return filtered;
+  }, [sortedBorrowList, searchTerm, startDate, endDate, statusFilter]);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, startDate, endDate, statusFilter]);
+
+  const totalRecords = filteredBorrowList.length || 0;
   const totalPages = Math.ceil(totalRecords / recordsPerPage);
   const indexOfLastRecord = currentPage * recordsPerPage;
   const indexOfFirstRecord = indexOfLastRecord - recordsPerPage;
-  const currentRecords = borrowList?.slice(indexOfFirstRecord, indexOfLastRecord);
+  const currentRecords = filteredBorrowList.slice(indexOfFirstRecord, indexOfLastRecord);
 
   useEffect(() => {
     if (user?.accessToken) {
@@ -42,10 +89,10 @@ const BorrowBook = () => {
 
   useEffect(() => {
     const fetchPenalties = async () => {
-      if (!borrowList || !user?.accessToken) return;
+      if (!filteredBorrowList || !user?.accessToken) return;
 
       try {
-        const penaltyPromises = borrowList
+        const penaltyPromises = filteredBorrowList
           .filter((record) => record.status === "overdue")
           .map(async (record) => {
             try {
@@ -67,7 +114,7 @@ const BorrowBook = () => {
     };
 
     fetchPenalties();
-  }, [borrowList, user?.accessToken, axiosJWT]);
+  }, [filteredBorrowList, user?.accessToken, axiosJWT]);
 
   const handleConfirmPickup = async (id) => {
     try {
@@ -129,6 +176,15 @@ const BorrowBook = () => {
     return penalty.status === "pending" ? "Chưa trả" : "Đã trả";
   };
 
+  const statusOptions = [
+    { value: "", label: "Tất cả trạng thái" },
+    { value: "borrowing", label: "Đang mượn" },
+    { value: "overdue", label: "Quá hạn" },
+    { value: "waiting_pickup", label: "Chờ lấy" },
+    { value: "returned", label: "Đã trả" },
+    { value: "cancelled", label: "Đã hủy" },
+  ];
+
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 py-12 px-4 sm:px-6 lg:px-8 transition-all duration-500 ease-in-out relative overflow-hidden">
       <div className="absolute inset-0 z-0">
@@ -160,162 +216,238 @@ const BorrowBook = () => {
           </p>
         </div>
 
-        {borrowList?.length > 0 ? (
+        {sortedBorrowList?.length > 0 ? (
           <>
-            <div className="w-full mx-auto bg-white/95 dark:bg-gray-800/95 rounded-3xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 transition-all duration-300 hover:shadow-[0_0_30px_rgba(0,255,255,0.2)] overflow-hidden">
-              <div className="hidden sm:grid sm:grid-cols-[0.5fr_1.5fr_2fr_1fr_1fr_1fr_1fr_1.5fr] bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-900/50 dark:to-blue-900/50 text-gray-900 dark:text-gray-100 font-semibold p-6 sm:p-8">
-                <div className="text-base sm:text-lg">ID</div>
-                <div className="text-base sm:text-lg">Người Mượn</div>
-                <div className="text-base sm:text-lg">Sách</div>
-                <div className="text-base sm:text-lg">Trạng thái</div>
-                <div className="text-base sm:text-lg">Ngày Mượn</div>
-                <div className="text-base sm:text-lg">Ngày Trả</div>
-                <div className="text-base sm:text-lg">Tiền Phạt</div>
-                <div className="text-base sm:text-lg">Hành động</div>
+            <div className="mb-6 space-y-4 sm:space-y-0 sm:flex sm:flex-wrap sm:gap-4 sm:items-end">
+              <div className="relative flex-1 min-w-0">
+                <input
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                  placeholder="Tìm kiếm theo tên người mượn, sách hoặc ID..."
+                  className="w-full py-3 px-4 pr-12 text-base text-gray-900 dark:text-gray-100 bg-white/95 dark:bg-gray-800/95 rounded-xl border border-gray-200/50 dark:border-gray-700/50 focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 transition-all duration-300 placeholder-gray-500 dark:placeholder-gray-400"
+                />
+                <MagnifyingGlassIcon className="w-6 h-6 absolute right-4 top-1/2 transform -translate-y-1/2 text-gray-500 dark:text-gray-400" />
               </div>
-
-              <div className="divide-y divide-gray-200/50 dark:divide-gray-700/50">
-                {currentRecords.map((borrow) => (
-                  <div
-                    key={borrow._id}
-                    className="flex flex-col mx-auto sm:grid sm:grid-cols-[0.5fr_1.5fr_2fr_1fr_1fr_1fr_1fr_1.5fr] p-5 sm:p-8 hover:bg-gradient-to-r hover:from-gray-200/80 hover:to-gray-100/80 dark:hover:from-gray-500/80 dark:hover:to-gray-600/80 hover:-translate-y-0.5 hover:border-l-4 hover:border-cyan-500 transition-all duration-300 animate-slide-up"
+              <div className="flex flex-col sm:flex-row gap-4 sm:items-end">
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Từ ngày
+                  </label>
+                  <input
+                    type="date"
+                    value={startDate}
+                    onChange={(e) => setStartDate(e.target.value)}
+                    className="w-full sm:w-40 py-2 px-3 text-base text-gray-900 dark:text-gray-100 bg-white/95 dark:bg-gray-800/95 rounded-xl border border-gray-200/50 dark:border-gray-700/50 focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 transition-all duration-300"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Đến ngày
+                  </label>
+                  <input
+                    type="date"
+                    value={endDate}
+                    onChange={(e) => setEndDate(e.target.value)}
+                    className="w-full sm:w-40 py-2 px-3 text-base text-gray-900 dark:text-gray-100 bg-white/95 dark:bg-gray-800/95 rounded-xl border border-gray-200/50 dark:border-gray-700/50 focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 transition-all duration-300"
+                  />
+                </div>
+                <div>
+                  <label className="block text-sm font-medium text-gray-700 dark:text-gray-300 mb-1">
+                    Trạng thái
+                  </label>
+                  <select
+                    value={statusFilter}
+                    onChange={(e) => setStatusFilter(e.target.value)}
+                    className="w-full sm:w-48 py-2 px-3 text-base text-gray-900 dark:text-gray-100 bg-white/95 dark:bg-gray-800/95 rounded-xl border border-gray-200/50 dark:border-gray-700/50 focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 transition-all duration-300"
                   >
-                    <div className="py-2 text-gray-900 dark:text-gray-100 flex items-center">
-                      <span className="sm:hidden font-semibold text-cyan-600 dark:text-cyan-400 mr-2">ID:</span>
-                      <span className="text-base break-all">{borrow._id.slice(-6)}</span>
-                    </div>
-                    <div className="py-2 text-gray-900 dark:text-gray-100 flex items-center">
-                      <span className="sm:hidden font-semibold text-cyan-600 dark:text-cyan-400 mr-2">Người Mượn:</span>
-                      <span className="text-base">{borrow.userId?.username || "Không xác định"}</span>
-                    </div>
-                    <div className="py-2 text-gray-900 dark:text-gray-100 flex items-center">
-                      <span className="sm:hidden font-semibold text-cyan-600 dark:text-cyan-400 mr-2">Sách:</span>
-                      <span className="text-base">{borrow.bookId?.title || "Không xác định"}</span>
-                    </div>
-                    <div className="py-2 text-gray-900 dark:text-gray-100 flex items-center">
-                      <span className="sm:hidden font-semibold text-cyan-600 dark:text-cyan-400 mr-2">Trạng thái:</span>
-                      <span
-                        className={`text-base px-2 py-1 rounded-full flex items-center gap-1 ${
-                          borrow.status === "overdue"
-                            ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
-                            : borrow.status === "borrowing"
-                            ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
-                            : borrow.status === "waiting_pickup"
-                            ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
-                                : borrow.status === "cancelled"
-                            ? "bg-red-500 text-red-100 dark:bg-red-500 dark:text-red-100"
-                            : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
-                        }`}
-                      >
-                        {borrow.status === "overdue" && (
-                          <ExclamationTriangleIcon className="w-4 h-4" />
-                        )}
-                        {getStatusDisplay(borrow)}
-                      </span>
-                    </div>
-                    <div className="py-2 text-gray-900 dark:text-gray-100 flex items-center">
-                      <span className="sm:hidden font-semibold text-cyan-600 dark:text-cyan-400 mr-2">Ngày Mượn:</span>
-                      <span className="text-base">
-                        {new Date(borrow.borrowDate).toLocaleDateString("vi-VN")}
-                      </span>
-                    </div>
-                    <div className="py-2 text-gray-900 dark:text-gray-100 flex items-center">
-                      <span className="sm:hidden font-semibold text-cyan-600 dark:text-cyan-400 mr-2">Ngày Trả:</span>
-                      <span className="text-base">
-                        {borrow.returnDate
-                          ? new Date(borrow.returnDate).toLocaleDateString("vi-VN")
-                          : "Chưa trả"}
-                      </span>
-                    </div>
-                    <div className="py-2 flex items-center gap-3 sm:gap-4">
-                      <span className="sm:hidden font-semibold text-cyan-500 dark:text-cyan-400 mr-2">Tiền Phạt:</span>
-                      <span
-                        className={`text-base px-2 py-1 rounded-full flex items-center gap-1 ${
-                          penalties[borrow._id]?.status === "pending"
-                            ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
-                            : penalties[borrow._id]?.status === "paid"
-                            ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
-                            : "bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-300"
-                        }`}
-                      >
-                        <CurrencyDollarIcon className="w-4 h-4" />
-                        {getPenaltyStatusDisplay(borrow)}
-                      </span>
-                    </div>
-                    <div className="py-2 flex items-center gap-2 flex-wrap">
-                      {!borrow.returnDate &&
-                        (borrow.status === "borrowing" || borrow.status === "overdue" ? (
-                          <button
-                            onClick={() => handleConfirmReturn(borrow._id)}
-                            className="bg-gradient-to-r from-red-600 to-red-700 dark:from-red-500 dark:to-red-600 hover:from-red-700 hover:to-red-800 dark:hover:from-red-600 dark:hover:to-red-700 text-white font-semibold py-2 px-4 sm:px-5 rounded-xl transition-all duration-200 hover:shadow-lg hover:scale-105 flex items-center gap-2 text-base"
-                          >
-                            <ArrowUturnUpIcon className="w-6 h-6 text-white transform hover:rotate-12 transition-transform duration-200" />
-                            Xác nhận trả
-                          </button>
-                        ) : borrow.status === "waiting_pickup" ? (
-                          <>
-                            <button
-                              onClick={() => handleConfirmPickup(borrow._id)}
-                              className="bg-gradient-to-r from-amber-600 to-amber-700 dark:from-amber-500 dark:to-amber-600 hover:from-amber-700 hover:to-amber-800 dark:hover:from-amber-600 dark:hover:to-amber-700 text-white font-semibold py-2 px-4 sm:px-5 rounded-xl transition-all duration-200 hover:shadow-lg hover:scale-105 flex items-center gap-2 text-base"
-                            >
-                              <ClipboardDocumentCheckIcon className="w-6 h-6 text-white transform hover:rotate-12 transition-transform duration-200" />
-                              Xác nhận lấy
-                            </button>
-                            {user.admin && (
-                              <button
-                                onClick={() => handleCancelBorrowRecord(borrow._id)}
-                                className="bg-gradient-to-r from-red-600 to-red-700 dark:from-red-500 dark:to-red-600 hover:from-red-700 hover:to-red-800 dark:hover:from-red-600 dark:hover:to-red-700 text-white font-semibold py-2 px-4 sm:px-5 rounded-xl transition-all duration-200 hover:shadow-lg hover:scale-105 flex items-center gap-2 text-base"
-                              >
-                                <XCircleIcon className="w-6 h-6 text-white transform hover:scale-110 transition-transform duration-200" />
-                                Hủy
-                              </button>
-                            )}
-                          </>
-                        ) : null)}
-                    </div>
-                  </div>
-                ))}
+                    {statusOptions.map((option) => (
+                      <option key={option.value} value={option.value}>
+                        {option.label}
+                      </option>
+                    ))}
+                  </select>
+                </div>
               </div>
             </div>
 
-            {totalPages > 1 && (
-              <div className="mt-10 flex justify-center items-center gap-4 sm:gap-6 animate-slide-up">
-                <button
-                  onClick={() => goToPage(currentPage - 1)}
-                  disabled={currentPage === 1}
-                  className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full text-base sm:text-lg font-semibold transition-all duration-300 ${
-                    currentPage === 1
-                      ? "bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed"
-                      : "bg-gradient-to-r from-cyan-600 to-cyan-700 dark:from-cyan-500 dark:to-cyan-600 hover:from-cyan-700 hover:to-cyan-800 dark:hover:from-cyan-600 dark:hover:to-cyan-700 text-white hover:shadow-lg hover:scale-110"
-                  }`}
-                >
-                  ←
-                </button>
-                <div className="flex gap-3 sm:gap-4">
-                  {pageNumbers.map((number) => (
+            {filteredBorrowList.length > 0 ? (
+              <>
+                <div className="w-full mx-auto bg-white/95 dark:bg-gray-800/95 rounded-3xl shadow-2xl border border-gray-200/50 dark:border-gray-700/50 transition-all duration-300 hover:shadow-[0_0_30px_rgba(0,255,255,0.2)] overflow-hidden">
+                  <div className="hidden sm:grid sm:grid-cols-[0.5fr_1.5fr_2fr_1fr_1fr_1fr_1fr_1.5fr]  bg-gradient-to-r from-cyan-50 to-blue-50 dark:from-cyan-900/50 dark:to-blue-900/50 text-gray-900 dark:text-gray-100 font-semibold p-6 sm:p-8">
+                    <div className="text-base sm:text-lg">ID</div>
+                    <div className="text-base sm:text-lg">Người Mượn</div>
+                    <div className="text-base sm:text-lg">Sách</div>
+                    <div className="text-base sm:text-lg">Trạng thái</div>
+                    <div className="text-base sm:text-lg">Ngày Mượn</div>
+                    <div className="text-base sm:text-lg">Ngày Trả</div>
+                    <div className="text-base sm:text-lg">Tiền Phạt</div>
+                    <div className="text-base sm:text-lg">Hành động</div>
+                  </div>
+
+                  <div className=" divide-y divide-gray-200/50 dark:divide-gray-700/50">
+                    {currentRecords.map((borrow) => (
+                      <div
+                        key={borrow._id}
+                        className="flex flex-col mx-auto sm:grid sm:grid-cols-[0.5fr_1.5fr_2fr_1fr_1fr_1fr_1fr_1.5fr] p-5 sm:p-8 hover:bg-gradient-to-r hover:from-gray-200/80 hover:to-gray-100/80 dark:hover:from-gray-500/80 dark:hover:to-gray-600/80 hover:-translate-y-0.5 hover:border-l-4 hover:border-cyan-500 transition-all duration-300 animate-slide-up"
+                      >
+                        <div className="py-2 text-gray-900 dark:text-gray-100 flex items-center">
+                          <span className="sm:hidden font-semibold text-cyan-600 dark:text-cyan-400 mr-2">ID:</span>
+                          <span className="text-base break-all">{borrow._id.slice(-6)}</span>
+                        </div>
+                        <div className="py-2 text-gray-900 dark:text-gray-100 flex items-center">
+                          <span className="sm:hidden font-semibold text-cyan-600 dark:text-cyan-400 mr-2">Người Mượn:</span>
+                          <span className="text-base">{borrow.userId?.username || "Không xác định"}</span>
+                        </div>
+                        <div className="py-2 text-gray-900 dark:text-gray-100 flex items-center">
+                          <span className="sm:hidden font-semibold text-cyan-600 dark:text-cyan-400 mr-2">Sách:</span>
+                          <span className="text-base">{borrow.bookId?.title || "Không xác định"}</span>
+                        </div>
+                        <div className="py-2 text-gray-900 dark:text-gray-100 flex items-center">
+                          <span className="sm:hidden font-semibold text-cyan-600 dark:text-cyan-400 mr-2">Trạng thái:</span>
+                          <span
+                            className={`text-base px-2 py-1 rounded-full flex items-center gap-1 ${
+                              borrow.status === "overdue"
+                                ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+                                : borrow.status === "borrowing"
+                                ? "bg-blue-100 text-blue-800 dark:bg-blue-900 dark:text-blue-300"
+                                : borrow.status === "waiting_pickup"
+                                ? "bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300"
+                                : borrow.status === "cancelled"
+                                ? "bg-red-500 text-red-100 dark:bg-red-500 dark:text-red-100"
+                                : "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+                            }`}
+                          >
+                            {borrow.status === "overdue" && (
+                              <ExclamationTriangleIcon className="w-4 h-4" />
+                            )}
+                            {getStatusDisplay(borrow)}
+                          </span>
+                        </div>
+                        <div className="py-2 text-gray-900 dark:text-gray-100 flex items-center">
+                          <span className="sm:hidden font-semibold text-cyan-600 dark:text-cyan-400 mr-2">Ngày Mượn:</span>
+                          <span className="text-base">
+                            {new Date(borrow.borrowDate).toLocaleDateString("vi-VN")}
+                          </span>
+                        </div>
+                        <div className="py-2 text-gray-900 dark:text-gray-100 flex items-center">
+                          <span className="sm:hidden font-semibold text-cyan-600 dark:text-cyan-400 mr-2">Ngày Trả:</span>
+                          <span className="text-base">
+                            {borrow.returnDate
+                              ? new Date(borrow.returnDate).toLocaleDateString("vi-VN")
+                              : "Chưa trả"}
+                          </span>
+                        </div>
+                        <div className="py-2 flex items-center gap-3 sm:gap-4">
+                          <span className="sm:hidden font-semibold text-cyan-500 dark:text-cyan-400 mr-2">Tiền Phạt:</span>
+                          <span
+                            className={`text-base px-2 py-1 rounded-full flex items-center gap-1 ${
+                              penalties[borrow._id]?.status === "pending"
+                                ? "bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300"
+                                : penalties[borrow._id]?.status === "paid"
+                                ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+                                : "bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-300"
+                            }`}
+                          >
+                            <CurrencyDollarIcon className="w-4 h-4" />
+                            {getPenaltyStatusDisplay(borrow)}
+                          </span>
+                        </div>
+                        <div className="py-2 flex items-center gap-2 flex-wrap">
+                          {!borrow.returnDate &&
+                            (borrow.status === "borrowing" || borrow.status === "overdue" ? (
+                              <button
+                                onClick={() => handleConfirmReturn(borrow._id)}
+                                className="bg-gradient-to-r from-red-600 to-red-700 dark:from-red-500 dark:to-red-600 hover:from-red-700 hover:to-red-800 dark:hover:from-red-600 dark:hover:to-red-700 text-white font-semibold py-2 px-4 sm:px-5 rounded-xl transition-all duration-200 hover:shadow-lg hover:scale-105 flex items-center gap-2 text-base"
+                              >
+                                <ArrowUturnUpIcon className="w-6 h-6 text-white transform hover:rotate-12 transition-transform duration-200" />
+                                Xác nhận trả
+                              </button>
+                            ) : borrow.status === "waiting_pickup" ? (
+                              <>
+                                <button
+                                  onClick={() => handleConfirmPickup(borrow._id)}
+                                  className="bg-gradient-to-r from-amber-600 to-amber-700 dark:from-amber-500 dark:to-amber-600 hover:from-amber-700 hover:to-amber-800 dark:hover:from-amber-600 dark:hover:to-amber-700 text-white font-semibold py-2 px-4 sm:px-5 rounded-xl transition-all duration-200 hover:shadow-lg hover:scale-105 flex items-center gap-2 text-base"
+                                >
+                                  <ClipboardDocumentCheckIcon className="w-6 h-6 text-white transform hover:rotate-12 transition-transform duration-200" />
+                                  Xác nhận lấy
+                                </button>
+                                {user.admin && (
+                                  <button
+                                    onClick={() => handleCancelBorrowRecord(borrow._id)}
+                                    className="bg-gradient-to-r from-red-600 to-red-700 dark:from-red-500 dark:to-red-600 hover:from-red-700 hover:to-red-800 dark:hover:from-red-600 dark:hover:to-red-700 text-white font-semibold py-2 px-4 sm:px-5 rounded-xl transition-all duration-200 hover:shadow-lg hover:scale-105 flex items-center gap-2 text-base"
+                                  >
+                                    <XCircleIcon className="w-6 h-6 text-white transform hover:scale-110 transition-transform duration-200" />
+                                    Hủy
+                                  </button>
+                                )}
+                              </>
+                            ) : null)}
+                        </div>
+                      </div>
+                    ))}
+                  </div>
+                </div>
+
+                {totalPages > 1 && (
+                  <div className="mt-10 flex justify-center items-center gap-4 sm:gap-6 animate-slide-up">
                     <button
-                      key={number}
-                      onClick={() => goToPage(number)}
+                      onClick={() => goToPage(currentPage - 1)}
+                      disabled={currentPage === 1}
                       className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full text-base sm:text-lg font-semibold transition-all duration-300 ${
-                        currentPage === number
-                          ? "bg-gradient-to-r from-cyan-600 to-cyan-700 dark:from-cyan-500 dark:to-cyan-600 text-white"
-                          : "bg-gray-200 dark:bg-gray-700 hover:bg-gradient-to-r hover:from-gray-300 hover:to-gray-200 dark:hover:from-gray-600 dark:hover:to-gray-500 text-gray-800 dark:text-gray-200 hover:text-white hover:scale-105"
+                        currentPage === 1
+                          ? "bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                          : "bg-gradient-to-r from-cyan-600 to-cyan-700 dark:from-cyan-500 dark:to-cyan-600 hover:from-cyan-700 hover:to-cyan-800 dark:hover:from-cyan-600 dark:hover:to-cyan-700 text-white hover:shadow-lg hover:scale-110"
                       }`}
                     >
-                      {number}
+                      ←
                     </button>
-                  ))}
-                </div>
+                    <div className="flex gap-3 sm:gap-4">
+                      {pageNumbers.map((number) => (
+                        <button
+                          key={number}
+                          onClick={() => goToPage(number)}
+                          className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full text-base sm:text-lg font-semibold transition-all duration-300 ${
+                            currentPage === number
+                              ? "bg-gradient-to-r from-cyan-600 to-cyan-700 dark:from-cyan-500 dark:to-cyan-600 text-white"
+                              : "bg-gray-200 dark:bg-gray-700 hover:bg-gradient-to-r hover:from-gray-300 hover:to-gray-200 dark:hover:from-gray-600 dark:hover:to-gray-500 text-gray-800 dark:text-gray-200 hover:text-white hover:scale-105"
+                          }`}
+                        >
+                          {number}
+                        </button>
+                      ))}
+                    </div>
+                    <button
+                      onClick={() => goToPage(currentPage + 1)}
+                      disabled={currentPage === totalPages}
+                      className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full text-base sm:text-lg font-semibold transition-all duration-300 ${
+                        currentPage === totalPages
+                          ? "bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed"
+                          : "bg-gradient-to-r from-cyan-600 to-cyan-700 dark:from-cyan-500 dark:to-cyan-600 hover:from-cyan-700 hover:to-cyan-800 dark:hover:from-cyan-600 dark:hover:to-cyan-700 text-white hover:shadow-lg hover:scale-110"
+                      }`}
+                    >
+                      →
+                    </button>
+                  </div>
+                )}
+              </>
+            ) : (
+              <div className="text-center py-16 animate-pulse">
+                <BookOpenIcon className="w-24 h-24 mx-auto text-cyan-600 dark:text-cyan-400 mb-6 animate-bounce" />
+                <p className="text-xl sm:text-2xl text-gray-600 dark:text-gray-300 mb-4">
+                  Không tìm thấy đơn mượn nào phù hợp
+                </p>
                 <button
-                  onClick={() => goToPage(currentPage + 1)}
-                  disabled={currentPage === totalPages}
-                  className={`w-12 h-12 sm:w-14 sm:h-14 rounded-full text-base sm:text-lg font-semibold transition-all duration-300 ${
-                    currentPage === totalPages
-                      ? "bg-gray-300 dark:bg-gray-600 text-gray-500 dark:text-gray-400 cursor-not-allowed"
-                      : "bg-gradient-to-r from-cyan-600 to-cyan-700 dark:from-cyan-500 dark:to-cyan-600 hover:from-cyan-700 hover:to-cyan-800 dark:hover:from-cyan-600 dark:hover:to-cyan-700 text-white hover:shadow-lg hover:scale-110"
-                  }`}
+                  onClick={() => {
+                    setSearchTerm("");
+                    setStartDate("");
+                    setEndDate("");
+                    setStatusFilter("");
+                  }}
+                  className="bg-gradient-to-r from-cyan-600 to-blue-600 dark:from-cyan-500 dark:to-blue-500 hover:from-cyan-700 hover:to-blue-700 dark:hover:from-cyan-600 dark:hover:to-blue-600 text-white font-semibold py-3 px-6 rounded-xl transition-all duration-200 hover:shadow-lg hover:scale-105 flex items-center gap-2 mx-auto text-base sm:text-lg"
                 >
-                  →
+                  <MagnifyingGlassIcon className="w-6 h-6 text-white" />
+                  Xóa tìm kiếm
                 </button>
               </div>
             )}
