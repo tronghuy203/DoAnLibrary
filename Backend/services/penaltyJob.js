@@ -5,6 +5,8 @@ const Penalty = require("../models/Penalty");
 const User = require("../models/User");
 const nodemailer = require("nodemailer");
 
+process.env.TZ = 'Asia/Ho_Chi_Minh';
+
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
