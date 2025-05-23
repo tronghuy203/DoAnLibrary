@@ -53,7 +53,7 @@ const calculateDelayDays = (currentDate, dueDate) => {
 // Chạy hàng ngày lúc 00:00
 // */2 * * * *
 cron.schedule("0 0 * * *", async () => {
-  console.log("Running penalty check job...");
+  console.log("Running penalty check job at:", new Date().toString());
   try {
     const currentDate = new Date();
 
@@ -164,4 +164,4 @@ cron.schedule("0 0 * * *", async () => {
   }
 });
 
-console.log("Penalty job scheduled");
+console.log("Penalty job scheduled at:", new Date().toString());
