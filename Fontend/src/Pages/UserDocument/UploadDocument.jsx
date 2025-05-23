@@ -296,7 +296,7 @@ const UploadDocument = () => {
             <div>
               <h4 className="font-semibold text-gray-800 dark:text-zinc-200">Lưu ý:</h4>
               <ul className="list-disc pl-5 space-y-2 text-sm">
-                <li>Chỉ tải lên tài liệu ở định dạng PDF hoặc Word.</li>
+                <li>Chỉ tải lên tài liệu ở định dạng PDF hoặc Word, dung lượng tối đa <span className="font-bold">10MB</span>.</li>
                 <li>Ảnh bìa (nếu có) phải là JPEG hoặc PNG.</li>
                 <li>Tài liệu cần có tiêu đề và mô tả rõ ràng để dễ dàng được phê duyệt.</li>
                 <li>Tài liệu vi phạm bản quyền hoặc không phù hợp sẽ bị từ chối.</li>

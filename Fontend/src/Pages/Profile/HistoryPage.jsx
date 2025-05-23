@@ -550,12 +550,12 @@ const HistoryPage = () => {
                                 : "bg-gray-50 dark:bg-gray-700"
                             } hover:bg-gray-100 dark:hover:bg-gray-600 transition-all duration-200`}
                           >
-                            <td className="px-4 py-3 truncate max-w-[150px]">{shortenTxnRef(payment.vnpayTxnRef)}</td>
+                            <td className="px-4 py-3 truncate max-w-[150px]">{payment.vnpayTxnRef ? shortenTxnRef(payment.vnpayTxnRef) : "Không áp dụng"}</td>
                             <td className="px-4 py-3">
-                              {payment.amount ? payment.amount.toLocaleString("vi-VN") : "N/A"} ₫
+                              {payment.amount ? payment.amount.toLocaleString("vi-VN") : "0"} ₫
                             </td>
                             <td className="px-4 py-3 whitespace-nowrap">
-                              {payment.method === "vnpay" ? "Thẻ ngân hàng" : payment.method === "cash" ? "Tiền mặt" : "N/A"}
+                              {payment.method === "vnpay" ? "Thẻ ngân hàng" : payment.method === "cash" ? "Tiền mặt" : payment.method === "points"? "Điểm thành viên": "Gói miễn phí"}
                             </td>
                             <td className="px-4 py-3">
                               <span
@@ -613,15 +613,15 @@ const HistoryPage = () => {
                         <div className="grid grid-cols-2 gap-2 text-sm text-gray-600 dark:text-gray-300">
                           <div>
                             <span className="font-medium">Mã giao dịch:</span>{" "}
-                            {shortenTxnRef(payment.vnpayTxnRef)}
+                            {payment.vnpayTxnRef ? shortenTxnRef(payment.vnpayTxnRef) : "Không áp dụng"}
                           </div>
                           <div>
                             <span className="font-medium">Số tiền:</span>{" "}
-                            {payment.amount ? payment.amount.toLocaleString("vi-VN") : "N/A"} ₫
+                            {payment.amount ? payment.amount.toLocaleString("vi-VN") : "0"} ₫
                           </div>
                           <div>
                             <span className="font-medium">Phương thức:</span>{" "}
-                            {payment.method === "vnpay" ? "Thẻ ngân hàng" : payment.method === "cash" ? "Tiền mặt" : "N/A"}
+                            {payment.method === "vnpay" ? "Thẻ ngân hàng" : payment.method === "cash" ? "Tiền mặt" : payment.method === "points" ? "Điểm thành viên" : "Gói miễn phí"}
                           </div>
                           <div>
                             <span className="font-medium">Ngày thanh toán:</span>{" "}
