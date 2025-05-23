@@ -621,7 +621,7 @@ const HistoryPage = () => {
                           </div>
                           <div>
                             <span className="font-medium">Phương thức:</span>{" "}
-                            {payment.method === "vnpay" ? "Thẻ ngân hàng" : "N/A"}
+                            {payment.method === "vnpay" ? "Thẻ ngân hàng" : payment.method === "cash" ? "Tiền mặt" : "N/A"}
                           </div>
                           <div>
                             <span className="font-medium">Ngày thanh toán:</span>{" "}
