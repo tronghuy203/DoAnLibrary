@@ -62,7 +62,51 @@ const membershipController = {
         return res.status(404).json({ message: "Không tìm thấy gói thành viên" });
       }
 
-      if (method === "vnpay" && membership.price > 0) {
+      if (method === "points") {
+        const user = await User.findById(userId);
+        if (!user) {
+          return res.status(404).json({ message: "Không tìm thấy người dùng" });
+        }
+
+        if ((user.points || 0) < membership.price) {
+          return res.status(400).json({ message: "Không đủ điểm để mua gói này" });
+        }
+
+        user.points -= membership.price;
+        await user.save();
+
+        const startDate = new Date();
+        const endDate = new Date(startDate.getTime() + membership.duration * 24 * 60 * 60 * 1000);
+
+        const userMembership = new UserMembership({
+          userId,
+          membershipId,
+          startDate,
+          endDate,
+          viewCount: [{ date: startDate, count: 0 }],
+          downloadCount: [{ date: startDate, count: 0 }],
+        });
+        await userMembership.save();
+
+        await User.findByIdAndUpdate(userId, {
+          membership: { membershipId, userMembershipId: userMembership._id },
+        });
+
+        const payment = new Payment({
+          userId,
+          amount: membership.price,
+          paymentType: "membership",
+          method: "points",
+          status: "success",
+          membershipId,
+        });
+        await payment.save();
+
+        return res.status(201).json({
+          message: "Đăng ký gói thành viên bằng điểm thành công",
+          userMembership,
+        });
+      } else if (method === "vnpay" && membership.price > 0) {
         const vnp_TxnRef = `${membershipId}_${Date.now()}`;
         const paymentData = { amount: membership.price, membershipId, vnp_TxnRef };
         const vnpayUrl = createVnpayUrl(paymentData, ipAddr);
@@ -243,6 +287,17 @@ const membershipController = {
       res.status(200).json(user.membership);
     } catch (err) {
       res.status(500).json({ message: "Lỗi khi kiểm tra trạng thái", error: err.message });
+    }
+  },
+  getUserPoints: async (req, res) => {
+    try {
+      const user = await User.findById(req.user.id);
+      if (!user) {
+        return res.status(404).json({ message: "Không tìm thấy người dùng" });
+      }
+      res.status(200).json({ points: user.points || 0 });
+    } catch (err) {
+      res.status(500).json({ message: "Lỗi khi lấy số điểm", error: err.message });
     }
   },
 };

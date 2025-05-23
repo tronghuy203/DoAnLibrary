@@ -28,7 +28,7 @@ const paymentSchema = new mongoose.Schema({
   },
   method: {
     type: String,
-    enum: ["vnpay", "cash"],
+    enum: ["vnpay", "cash", "points"],
     required: true,
   },
   status: {
