@@ -1,7 +1,7 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useDispatch, useSelector } from "react-redux";
 import { useNavigate } from "react-router-dom";
-import { getAllMemberships, getMembershipStatus, purchaseMembership } from "../../redux/apiMembership";
+import { getAllMemberships, getMembershipStatus, purchaseMembership, getUserPoints} from "../../redux/apiMembership";
 import { createAxios } from "../../createInstance";
 import { loginSuccess } from "../../redux/authSlice";
 import { FaCrown, FaCheckCircle } from "react-icons/fa";
@@ -17,11 +17,26 @@ const MembershipList = () => {
   const memberships = useSelector((state) => state.membership.memberships);
   const currentMembership = useSelector((state) => state.membership.currentMembership);
   const isFetching = useSelector((state) => state.membership.isFetching);
-  const purchaseStatus = useSelector((state) => state.membership.purchaseStatus);
   const error = useSelector((state) => state.membership.error);
   const dispatch = useDispatch();
   const navigate = useNavigate();
   const axiosJWT = useMemo(() => createAxios(user, dispatch, loginSuccess), [user, dispatch]);
+  const [userPoints, setUserPoints] = useState(0);
+  const [selectedMethod, setSelectedMethod] = useState({});
+
+  useEffect(() => {
+    if (user?.accessToken) {
+      const fetchUserPoints = async () => {
+        try {
+          const res = await getUserPoints(user.accessToken, axiosJWT);
+          setUserPoints(res.points);
+        } catch (err) {
+          console.error("Lỗi khi lấy số điểm:", err);
+        }
+      };
+      fetchUserPoints();
+    }
+  }, [user, axiosJWT]);
 
   useEffect(() => {
     if (!user) {
@@ -37,6 +52,7 @@ const MembershipList = () => {
       const selectedMembership = memberships.find((m) => m._id === membershipId);
       const currentMembershipName = currentMembership?.membershipId.name;
       const selectedMembershipName = selectedMembership?.name;
+      const method = selectedMethod[membershipId] || (selectedMembershipName === "Free" ? "free" : "vnpay");
 
       if (
         currentMembershipName &&
@@ -50,21 +66,34 @@ const MembershipList = () => {
         }
       }
 
-      const method = membershipId === memberships.find((m) => m.name === "Free")?._id ? "free" : "vnpay";
+      if (method === "points" && userPoints < selectedMembership.price) {
+        alert("Bạn không đủ điểm để mua gói này!");
+        return;
+      }
+
       const response = await purchaseMembership(membershipId, method, user.accessToken, dispatch, axiosJWT);
       if (response.paymentUrl) {
-        window.location.href = response.paymentUrl; 
+        window.location.href = response.paymentUrl;
       } else {
         alert("Đăng ký gói thành công!");
-        getMembershipStatus(user.accessToken, dispatch, axiosJWT);
+        await getMembershipStatus(user.accessToken, dispatch, axiosJWT);
+        if (method === "points") {
+          setUserPoints(userPoints - selectedMembership.price);
+        }
       }
     } catch (err) {
-      alert("Lỗi khi mua gói: " + err.message);
+      alert("Lỗi khi mua gói: " + (err.response?.data?.message || err.message));
+      await getMembershipStatus(user.accessToken, dispatch, axiosJWT);
     }
   };
 
   const formatPrice = (price) => {
     return price === 0 ? "Miễn phí" : `${price.toLocaleString("vi-VN")} VND`;
+  };
+
+  const formatPointsToVND = (points) => {
+    const vnd = points;
+    return vnd.toLocaleString("vi-VN");
   };
 
   const getMembershipBadge = (name) => {
@@ -89,7 +118,6 @@ const MembershipList = () => {
       <div className="container mx-auto px-6">
         <div className="flex flex-col items-center mb-16">
           <h2
-            data-aos="slide-up"
             className="text-4xl font-extrabold text-gray-900 dark:text-white tracking-tight animate-slide-in-left"
           >
             Chọn gói thành viên của bạn
@@ -100,6 +128,10 @@ const MembershipList = () => {
               {new Date(currentMembership.userMembershipId.endDate).toLocaleDateString("vi-VN")})
             </p>
           )}
+          <p className="mt-2 text-lg text-gray-600 dark:text-gray-300">
+            Số điểm hiện tại: <span className="font-bold">{userPoints} điểm</span> = {" "}
+            <span className="font-bold">{formatPointsToVND(userPoints)} VND</span>
+          </p>
         </div>
 
         {error && (
@@ -142,6 +174,21 @@ const MembershipList = () => {
                       <FaCheckCircle className="text-green-500" /> Hỗ trợ {membership.name === "Premium" ? "ưu tiên" : "cơ bản"}
                     </li>
                   </ul>
+                  {membership.name !== "Free" && (
+                    <div className="mb-4">
+                      <label className="block text-gray-600 dark:text-gray-300 mb-2">Phương thức thanh toán:</label>
+                      <select
+                        value={selectedMethod[membership._id] || "vnpay"}
+                        onChange={(e) => setSelectedMethod({ ...selectedMethod, [membership._id]: e.target.value })}
+                        className="w-full px-4 py-2 border rounded-lg bg-gray-100 dark:bg-gray-700 text-gray-900 dark:text-white"
+                      >
+                        <option value="vnpay">VNPay</option>
+                        <option value="points" disabled={userPoints < membership.price}>
+                          Điểm ({userPoints < membership.price ? "Không đủ điểm" : "Sử dụng điểm"})
+                        </option>
+                      </select>
+                    </div>
+                  )}
                   <button
                     onClick={() => handlePurchase(membership._id)}
                     disabled={currentMembership?.membershipId._id === membership._id}
