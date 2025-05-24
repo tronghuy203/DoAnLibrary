@@ -54,7 +54,7 @@ const HistoryPage = () => {
 
       const history = await getBorrowHistory(user._id, user.accessToken, axiosJWT);
       setBorrowHistory(Array.isArray(history) ? history : []);
-      
+
       const penaltyPromises = history
         .filter((record) => record.status === "overdue" || record.returnDate)
         .map(async (record) => {
@@ -79,7 +79,7 @@ const HistoryPage = () => {
         return acc;
       }, {});
       setPenalties(penaltyMap);
-  
+
       const paymentHistoryData = await getPaymentHistory(user._id, user.accessToken, axiosJWT);
       setPaymentHistory(Array.isArray(paymentHistoryData) ? paymentHistoryData : []);
     } catch (err) {
@@ -116,7 +116,7 @@ const HistoryPage = () => {
   }, [user, fetchData, navigate]);
 
   useEffect(() => {
-    window.scrollTo({ top: 0, behavior: 'smooth' });
+    window.scrollTo({ top: 0, behavior: "smooth" });
   }, []);
 
   const handlePayPenalty = async (penaltyId, method) => {
@@ -174,6 +174,18 @@ const HistoryPage = () => {
       default:
         return { text: status, icon: null };
     }
+  };
+
+  const getContentDisplay = (payment) => {
+    if (payment.borrowRecordId?.bookId?.title) {
+      return payment.borrowRecordId.bookId.title;
+    } else if (payment.membershipId) {
+      return `Gói thành viên`;
+    } else if (payment.penaltyId) {
+      return "Thanh toán phạt";
+    }
+    return "N/A";
+    
   };
 
   const totalBorrowPages = Math.ceil(borrowHistory.length / itemsPerPage);
@@ -407,7 +419,8 @@ const HistoryPage = () => {
                         })}
                       </tbody>
                     </table>
-                    {totalBorrowPages > 1 && renderPagination(currentBorrowPage, totalBorrowPages, handleBorrowPageChange)}
+                    {totalBorrowPages > 1 &&
+                      renderPagination(currentBorrowPage, totalBorrowPages, handleBorrowPageChange)}
                   </div>
                   <div className="md:hidden space-y-4 max-h-[600px] overflow-y-auto custom-scrollbar">
                     {borrowHistory.map((record, index) => {
@@ -478,19 +491,19 @@ const HistoryPage = () => {
                             <div className="grid grid-cols-2 gap-2">
                               <span className="font-medium">Xác nhận:</span>{" "}
                               <span
-                                  className={`w-32 px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${
-                                    record.adminConfirmed
-                                      ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
-                                      : "bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-300"
-                                  }`}
-                                >
-                                  {record.adminConfirmed ? (
-                                    <CheckCircleIcon className="h-5 w-5" />
-                                  ) : (
-                                    <XCircleIcon className="h-5 w-5" />
-                                  )}
-                                  {record.adminConfirmed ? "Đã xác nhận" : "Chưa xác nhận"}
-                                </span>
+                                className={`w-32 px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${
+                                  record.adminConfirmed
+                                    ? "bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300"
+                                    : "bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-300"
+                                }`}
+                              >
+                                {record.adminConfirmed ? (
+                                  <CheckCircleIcon className="h-5 w-5" />
+                                ) : (
+                                  <XCircleIcon className="h-5 w-5" />
+                                )}
+                                {record.adminConfirmed ? "Đã xác nhận" : "Chưa xác nhận"}
+                              </span>
                             </div>
                           </div>
                           {penalty && penalty.status === "pending" && (
@@ -537,7 +550,7 @@ const HistoryPage = () => {
                           <th className="px-4 py-3 w-[15%]">Phương thức</th>
                           <th className="px-4 py-3 w-[15%]">Trạng thái</th>
                           <th className="px-4 py-3 w-[15%]">Ngày thanh toán</th>
-                          <th className="px-4 py-3 w-[25%]">Tên sách</th>
+                          <th className="px-4 py-3 w-[25%]">Nội dung</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -550,12 +563,20 @@ const HistoryPage = () => {
                                 : "bg-gray-50 dark:bg-gray-700"
                             } hover:bg-gray-100 dark:hover:bg-gray-600 transition-all duration-200`}
                           >
-                            <td className="px-4 py-3 truncate max-w-[150px]">{payment.vnpayTxnRef ? shortenTxnRef(payment.vnpayTxnRef) : "Không áp dụng"}</td>
+                            <td className="px-4 py-3 truncate max-w-[150px]">
+                              {payment.vnpayTxnRef ? shortenTxnRef(payment.vnpayTxnRef) : "Không áp dụng"}
+                            </td>
                             <td className="px-4 py-3">
                               {payment.amount ? payment.amount.toLocaleString("vi-VN") : "0"} ₫
                             </td>
                             <td className="px-4 py-3 whitespace-nowrap">
-                              {payment.method === "vnpay" ? "Thẻ ngân hàng" : payment.method === "cash" ? "Tiền mặt" : payment.method === "points"? "Điểm thành viên": "Gói miễn phí"}
+                              {payment.method === "vnpay"
+                                ? "Thẻ ngân hàng"
+                                : payment.method === "cash"
+                                ? "Tiền mặt"
+                                : payment.method === "points"
+                                ? "Điểm thành viên"
+                                : "Gói miễn phí"}
                             </td>
                             <td className="px-4 py-3">
                               <span
@@ -578,12 +599,13 @@ const HistoryPage = () => {
                                 ? new Date(payment.createdAt).toLocaleDateString("vi-VN")
                                 : "N/A"}
                             </td>
-                            <td className="px-4 py-3 truncate max-w-[200px]">{payment.borrowRecordId?.bookId?.title || "N/A"}</td>
+                            <td className="px-4 py-3 truncate max-w-[200px]">{getContentDisplay(payment)}</td>
                           </tr>
                         ))}
                       </tbody>
                     </table>
-                    {totalPaymentPages > 1 && renderPagination(currentPaymentPage, totalPaymentPages, handlePaymentPageChange)}
+                    {totalPaymentPages > 1 &&
+                      renderPagination(currentPaymentPage, totalPaymentPages, handlePaymentPageChange)}
                   </div>
                   <div className="md:hidden space-y-4 max-h-[600px] overflow-y-auto custom-scrollbar">
                     {paymentHistory.map((payment, index) => (
@@ -593,7 +615,7 @@ const HistoryPage = () => {
                       >
                         <div className="flex justify-between items-start mb-2">
                           <h3 className="w-44 text-base font-semibold text-gray-900 dark:text-white truncate">
-                            {payment.borrowRecordId?.bookId?.title || "N/A"}
+                            {getContentDisplay(payment)}
                           </h3>
                           <span
                             className={`px-2 py-1 rounded-full text-xs font-medium flex items-center gap-1 ${
@@ -621,7 +643,13 @@ const HistoryPage = () => {
                           </div>
                           <div>
                             <span className="font-medium">Phương thức:</span>{" "}
-                            {payment.method === "vnpay" ? "Thẻ ngân hàng" : payment.method === "cash" ? "Tiền mặt" : payment.method === "points" ? "Điểm thành viên" : "Gói miễn phí"}
+                            {payment.method === "vnpay"
+                              ? "Thẻ ngân hàng"
+                              : payment.method === "cash"
+                              ? "Tiền mặt"
+                              : payment.method === "points"
+                              ? "Điểm thành viên"
+                              : "Gói miễn phí"}
                           </div>
                           <div>
                             <span className="font-medium">Ngày thanh toán:</span>{" "}
