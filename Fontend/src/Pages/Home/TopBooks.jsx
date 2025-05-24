@@ -1,46 +1,42 @@
 import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { getReviews } from "../../redux/apiReview";
+import { getAllReviewStats } from "../../redux/apiReview";
+import { getAllBooks } from "../../redux/apiBooks";
 
 const TopBooks = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const books = useSelector((state) => state.books.allBooks);
-
   const [reviewStats, setReviewStats] = useState({});
+  const [isLoadingReviews, setIsLoadingReviews] = useState(false);
+  const [errorReviews, setErrorReviews] = useState(null);
 
   useEffect(() => {
-    const fetchReviewStats = async () => {
-      if (!books.length) return;
-      try {
-        const stats = {};
-        const reviewPromises = books.map((book) =>
-          getReviews("book", book._id, dispatch).then((reviews) => ({
-            bookId: book._id,
-            reviews,
-          }))
-        );
-        const reviewResults = await Promise.all(reviewPromises);
+    if (!books.length) {
+      getAllBooks(dispatch);
+    }
+  }, [dispatch, books]);
 
-        for (const { bookId, reviews } of reviewResults) {
-          const reviewCount = reviews.length;
-          const averageRating =
-            reviewCount > 0
-              ? (
-                  reviews.reduce((acc, r) => acc + r.rating, 0) / reviewCount
-                ).toFixed(1)
-              : 0;
-          stats[bookId] = { averageRating, reviewCount };
-        }
-        setReviewStats(stats);
-      } catch (error) {
-        console.error("Lỗi khi lấy thống kê đánh giá:", error);
-      }
-    };
+  useEffect(() => {
+    if (books.length > 0 && Object.keys(reviewStats).length === 0) {
+      fetchReviewStats();
+    }
+  }, [books, reviewStats]);
 
-    fetchReviewStats();
-  }, [books, dispatch]);
+  const fetchReviewStats = async () => {
+    setIsLoadingReviews(true);
+    setErrorReviews(null);
+    try {
+      const stats = await getAllReviewStats("book", dispatch);
+      setReviewStats(stats);
+    } catch (error) {
+      console.error("Lỗi khi lấy thống kê đánh giá:", error);
+      setErrorReviews("Không thể tải đánh giá. Vui lòng thử lại sau.");
+    } finally {
+      setIsLoadingReviews(false);
+    }
+  };
 
   const topBooks = useMemo(() => {
     if (!books) return [];
@@ -74,13 +70,16 @@ const TopBooks = () => {
             vô tận, mở rộng tầm hiểu biết và thay đổi cách nhìn về thế giới.
           </p>
         </div>
+        {errorReviews && (
+          <p className="text-center text-red-500 mb-8">{errorReviews}</p>
+        )}
         <div data-aos="slide-up">
           <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 place-items-center gap-5">
             {topBooks.length > 0 ? (
               topBooks.map((book, index) => {
-                const ratingInfo = reviewStats[book._id];
-                const avg = parseFloat(ratingInfo?.averageRating || 0);
-                const count = ratingInfo?.reviewCount || 0;
+                const ratingInfo = reviewStats[book._id] || {};
+                const avg = parseFloat(ratingInfo.averageRating || 0);
+                const count = ratingInfo.reviewCount || 0;
 
                 return (
                   <div key={index} className="space-y-3">
@@ -99,27 +98,36 @@ const TopBooks = () => {
                         {book.author || "Không rõ"}
                       </p>
                       <div className="flex flex-col items-start mt-2 text-yellow-400">
-                        <div className="flex">
-                          {[...Array(5)].map((_, i) => (
-                            <svg
-                              key={i}
-                              className={`w-5 h-5 ${
-                                i < Math.round(avg)
-                                  ? "fill-current"
-                                  : "fill-none stroke-current"
-                              }`}
-                              xmlns="http://www.w3.org/2000/svg"
-                              viewBox="0 0 24 24"
-                            >
-                              <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-                            </svg>
-                          ))}
-                        </div>
-                        <span className="mt-2 text-sm text-gray-600 dark:text-gray-300">
-                          {avg > 0
-                            ? `${avg}/5 (${count} đánh giá)`
-                            : "Chưa có đánh giá"}
-                        </span>
+                        {isLoadingReviews ? (
+                          <div className="animate-pulse flex items-center">
+                            <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-16 mr-2"></div>
+                            <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-24"></div>
+                          </div>
+                        ) : (
+                          <>
+                            <div className="flex">
+                              {[...Array(5)].map((_, i) => (
+                                <svg
+                                  key={i}
+                                  className={`w-5 h-5 ${
+                                    i < Math.round(avg)
+                                      ? "fill-current"
+                                      : "fill-none stroke-current"
+                                  }`}
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  viewBox="0 0 24 24"
+                                >
+                                  <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                                </svg>
+                              ))}
+                            </div>
+                            <span className="mt-2 text-sm text-gray-600 dark:text-gray-300">
+                              {avg > 0
+                                ? `${avg}/5 (${count} đánh giá)`
+                                : "Chưa có đánh giá"}
+                            </span>
+                          </>
+                        )}
                       </div>
                     </div>
                   </div>

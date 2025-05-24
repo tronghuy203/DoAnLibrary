@@ -6,7 +6,7 @@ import { loginSuccess } from "../../redux/authSlice";
 import { getAllUsers } from "../../redux/apiRequest";
 import { getJWTAllBooks } from "../../redux/apiBooks";
 import { getCategory } from "../../redux/apiCategory";
-import { getReviews } from "../../redux/apiReview";
+import { getAllReviewStatsJWT } from "../../redux/apiReview";
 
 const AllBooks = () => {
   const user = useSelector((state) => state.auth.login?.currentUser);
@@ -27,6 +27,8 @@ const AllBooks = () => {
   const [visibleBooks, setVisibleBooks] = useState(8);
   const [searchQuery, setSearchQuery] = useState("");
   const [reviewStats, setReviewStats] = useState({});
+  const [isLoadingReviews, setIsLoadingReviews] = useState(false);
+  const [errorReviews, setErrorReviews] = useState(null);
 
   useEffect(() => {
     window.scrollTo({ top: 0, behavior: "smooth" });
@@ -60,36 +62,22 @@ const AllBooks = () => {
   }, [user, dispatch, axiosJWT, navigate]);
 
   useEffect(() => {
-    if (books.length > 0) {
+    if (books.length > 0 && Object.keys(reviewStats).length === 0) {
       fetchReviewStats();
     }
-  }, [books]);
+  }, [books, reviewStats]);
 
   const fetchReviewStats = async () => {
-    if (!books.length) return;
+    setIsLoadingReviews(true);
+    setErrorReviews(null);
     try {
-      const stats = {};
-      const reviewPromises = books.map((book) =>
-        getReviews("book", book._id, dispatch).then((reviews) => ({
-          bookId: book._id,
-          reviews,
-        }))
-      );
-      const reviewResults = await Promise.all(reviewPromises);
-
-      for (const { bookId, reviews } of reviewResults) {
-        const reviewCount = reviews.length;
-        const averageRating =
-          reviewCount > 0
-            ? (
-                reviews.reduce((acc, r) => acc + r.rating, 0) / reviewCount
-              ).toFixed(1)
-            : 0;
-        stats[bookId] = { averageRating, reviewCount };
-      }
+      const stats = await getAllReviewStatsJWT("book", user.accessToken, dispatch, axiosJWT);
       setReviewStats(stats);
     } catch (error) {
       console.error("Lỗi khi lấy thống kê đánh giá:", error);
+      setErrorReviews("Không thể tải đánh giá. Vui lòng thử lại sau.");
+    } finally {
+      setIsLoadingReviews(false);
     }
   };
 
@@ -208,13 +196,19 @@ const AllBooks = () => {
         </div>
       </div>
 
+      {errorReviews && (
+        <p className="text-center text-red-500 max-w-7xl mx-auto mb-8">
+          {errorReviews}
+        </p>
+      )}
+
       {filteredBooks.length > 0 ? (
         <>
           <ul className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-8 max-w-7xl mx-auto">
             {filteredBooks.slice(0, visibleBooks).map((book, index) => {
-              const ratingInfo = reviewStats[book._id];
-              const avg = parseFloat(ratingInfo?.averageRating || 0);
-              const count = ratingInfo?.reviewCount || 0;
+              const ratingInfo = reviewStats[book._id] || {};
+              const avg = parseFloat(ratingInfo.averageRating || 0);
+              const count = ratingInfo.reviewCount || 0;
 
               return (
                 <li
@@ -243,25 +237,34 @@ const AllBooks = () => {
                       Tác giả: {book.author || "Không rõ"}
                     </p>
                     <div className="flex items-center mt-2 text-yellow-400">
-                      {[...Array(5)].map((_, i) => (
-                        <svg
-                          key={i}
-                          className={`w-5 h-5 ${
-                            i < Math.round(avg)
-                              ? "fill-current"
-                              : "fill-none stroke-current"
-                          }`}
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                        >
-                          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-                        </svg>
-                      ))}
-                      <span className="ml-2 text-sm text-gray-600 dark:text-gray-300">
-                        {avg > 0
-                          ? `${avg}/5 (${count} đánh giá)`
-                          : "Chưa có đánh giá"}
-                      </span>
+                      {isLoadingReviews ? (
+                        <div className="animate-pulse flex items-center">
+                          <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-16 mr-2"></div>
+                          <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-24"></div>
+                        </div>
+                      ) : (
+                        <>
+                          {[...Array(5)].map((_, i) => (
+                            <svg
+                              key={i}
+                              className={`w-5 h-5 ${
+                                i < Math.round(avg)
+                                  ? "fill-current"
+                                  : "fill-none stroke-current"
+                              }`}
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                            >
+                              <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                            </svg>
+                          ))}
+                          <span className="ml-2 text-sm text-gray-600 dark:text-gray-300">
+                            {avg > 0
+                              ? `${avg}/5 (${count} đánh giá)`
+                              : "Chưa có đánh giá"}
+                          </span>
+                        </>
+                      )}
                     </div>
                   </div>
                 </li>

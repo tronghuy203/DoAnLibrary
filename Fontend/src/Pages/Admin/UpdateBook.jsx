@@ -12,13 +12,13 @@ import {
   CurrencyDollarIcon,
   ArrowLeftIcon,
   ExclamationCircleIcon,
-  ArrowPathIcon,
   PhotoIcon,
   TagIcon,
   ChevronUpIcon,
   ChevronDownIcon,
   HashtagIcon,
 } from "@heroicons/react/24/outline";
+import LoadingSpinner from "./LoadingSpinner";
 
 const UpdateBook = () => {
   const { bookId } = useParams();
@@ -34,7 +34,7 @@ const UpdateBook = () => {
   });
   const [previewImage, setPreviewImage] = useState(null);
   const [categories, setCategories] = useState([]);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
   const dispatch = useDispatch();
   const navigate = useNavigate();
@@ -49,7 +49,7 @@ const UpdateBook = () => {
   useEffect(() => {
     const fetchData = async () => {
       try {
-        setLoading(true);
+        setIsLoading(true);
         if (!user?.accessToken) {
           setError("Bạn cần đăng nhập để cập nhật sách.");
           return;
@@ -67,7 +67,7 @@ const UpdateBook = () => {
         setError("Lỗi khi tải dữ liệu sách hoặc danh mục.");
         console.error("Error fetching data:", error);
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
 
@@ -75,7 +75,7 @@ const UpdateBook = () => {
   }, [dispatch, user, axiosJWT]);
 
   useEffect(() => {
-    if (loading) return;
+    if (isLoading) return;
 
     const foundBook = books.find((b) => b._id === bookId);
     if (foundBook) {
@@ -84,15 +84,15 @@ const UpdateBook = () => {
         price: formatPrice(foundBook.price.toString()),
         quantity: foundBook.quantity ? foundBook.quantity.toString() : "1",
         publishedYear: foundBook.publishedYear || 0,
+        image: foundBook.image || null,
       });
       if (foundBook.image) {
         setPreviewImage(foundBook.image);
       }
     } else if (books.length > 0) {
       setError("Không tìm thấy sách.");
-      setLoading(false);
     }
-  }, [books, bookId, loading]);
+  }, [books, bookId, isLoading]);
 
   const formatPrice = (value) => {
     const num = parseInt(value.replace(/\./g, "")) || 0;
@@ -146,6 +146,7 @@ const UpdateBook = () => {
   const handleSubmit = async (e) => {
     e.preventDefault();
     try {
+      setIsLoading(true);
       if (!user?.accessToken) {
         setError("Bạn cần đăng nhập để cập nhật sách.");
         return;
@@ -155,24 +156,25 @@ const UpdateBook = () => {
       Object.keys(book).forEach((key) => {
         if (key === "price" || key === "quantity") {
           formData.append(key, book[key].replace(/\./g, ""));
-        } else if (key === "image" && book[key] && book[key] instanceof File) {
+        } else if (key === "image" && book[key]) {
           formData.append(key, book[key]);
         } else if (key !== "image") {
           formData.append(key, book[key] || "");
         }
       });
       await updateBook(bookId, formData, user.accessToken, dispatch, axiosJWT);
-      alert("Cập nhật thành công!");
       navigate("/admin/books/list");
     } catch (error) {
       const errorMessage =
         error.response?.data?.message || "Cập nhật thất bại! Vui lòng thử lại.";
       setError(errorMessage);
       console.error("Error updating book:", error);
+    } finally {
+      setIsLoading(false);
     }
   };
 
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex flex-col items-center justify-center py-8 px-4 transition-all duration-500 ease-in-out relative overflow-hidden">
         <div className="absolute inset-0 z-0">
@@ -188,10 +190,7 @@ const UpdateBook = () => {
             ></path>
           </svg>
         </div>
-        <div className="relative z-10 flex items-center gap-2 bg-teal-500/90 dark:bg-teal-400/90 text-white px-6 py-3 rounded-xl shadow-xl transition-all duration-300 animate-pulse">
-          <ArrowPathIcon className="w-6 h-6 animate-spin" />
-          <p>Đang tải dữ liệu sách...</p>
-        </div>
+        <LoadingSpinner isLoading={isLoading} />
       </div>
     );
   }
@@ -222,7 +221,6 @@ const UpdateBook = () => {
 
   return (
     <div className="min-h-screen bg-gray-100 dark:bg-gray-950 text-gray-900 dark:text-gray-100 flex flex-col items-center py-12 px-4 sm:px-8 lg:px-12 transition-all duration-500 ease-in-out relative overflow-hidden">
-      {/* Background Effects */}
       <div className="absolute inset-0 z-0">
         <div className="absolute inset-0 bg-gradient-to-br from-cyan-200/40 via-blue-200/30 to-purple-200/40 dark:from-cyan-800/30 dark:via-blue-800/30 dark:to-purple-800/30 animate-gradient-slow"></div>
         <div className="absolute top-[-15%] left-[-15%] w-80 h-80 bg-cyan-400/20 dark:bg-cyan-600/15 rounded-full blur-3xl animate-float"></div>
@@ -232,7 +230,7 @@ const UpdateBook = () => {
         <div className="absolute inset-0">
           <div className="absolute w-3 h-3 bg-cyan-500/50 dark:bg-cyan-400/40 rounded-full top-[15%] left-[10%] animate-particle"></div>
           <div className="absolute w-2 h-2 bg-blue-500/50 dark:bg-blue-400/40 rounded-full top-[45%] left-[75%] animate-particle-slow"></div>
-          <div className="absolute w-3 h-3 bg-purple-500/50 dark:bg-purple-400/40 rounded-full top-[65%] left-[25%] animate-particle"></div>
+          <div className="absolute w-3 h-3 bg-purple-500/50 dark:bg-purple-400/40 rounded-full top-[65%] left:[25%] animate-particle"></div>
           <div className="absolute w-2 h-2 bg-cyan-500/50 dark:bg-cyan-400/40 rounded-full top-[5%] left-[55%] animate-particle-slow"></div>
           <div className="absolute w-3 h-3 bg-blue-500/50 dark:bg-blue-400/40 rounded-full top-[30%] left-[85%] animate-particle"></div>
         </div>
@@ -248,6 +246,7 @@ const UpdateBook = () => {
         </svg>
       </div>
 
+      <LoadingSpinner isLoading={isLoading} />
       <div className="w-full max-w-4xl relative z-10">
         <div className="text-center mb-10 animate-slide-up">
           <BookOpenIcon className="w-16 h-16 mx-auto text-cyan-600 dark:text-cyan-400 mb-3 animate-pulse" />
@@ -281,7 +280,8 @@ const UpdateBook = () => {
                     value={book.title}
                     onChange={handleChange}
                     required
-                    className="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300/50 dark:border-gray-600/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200 hover:bg-gray-100/80 dark:hover:bg-gray-600/80"
+                    disabled={isLoading}
+                    className={`w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300/50 dark:border-gray-600/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200 hover:bg-gray-100/80 dark:hover:bg-gray-600/80 ${isLoading ? "opacity-75 cursor-not-allowed" : ""}`}
                     placeholder="Nhập tiêu đề sách"
                   />
                 </div>
@@ -303,7 +303,8 @@ const UpdateBook = () => {
                     value={book.author}
                     onChange={handleChange}
                     required
-                    className="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300/50 dark:border-gray-600/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200 hover:bg-gray-100/80 dark:hover:bg-gray-600/80"
+                    disabled={isLoading}
+                    className={`w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300/50 dark:border-gray-600/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200 hover:bg-gray-100/80 dark:hover:bg-gray-600/80 ${isLoading ? "opacity-75 cursor-not-allowed" : ""}`}
                     placeholder="Nhập tên tác giả"
                   />
                 </div>
@@ -325,7 +326,8 @@ const UpdateBook = () => {
                     value={book.publishedYear}
                     onChange={handleChange}
                     required
-                    className="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300/50 dark:border-gray-600/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200 hover:bg-gray-100/80 dark:hover:bg-gray-600/80"
+                    disabled={isLoading}
+                    className={`w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300/50 dark:border-gray-600/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200 hover:bg-gray-100/80 dark:hover:bg-gray-600/80 ${isLoading ? "opacity-75 cursor-not-allowed" : ""}`}
                     placeholder="Nhập năm xuất bản"
                   />
                 </div>
@@ -346,7 +348,8 @@ const UpdateBook = () => {
                     value={book.category}
                     onChange={handleChange}
                     required
-                    className="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300/50 dark:border-gray-600/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 appearance-none placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200 hover:bg-gray-100/80 dark:hover:bg-gray-600/80"
+                    disabled={isLoading}
+                    className={`w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300/50 dark:border-gray-600/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 appearance-none placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200 hover:bg-gray-100/80 dark:hover:bg-gray-600/80 ${isLoading ? "opacity-75 cursor-not-allowed" : ""}`}
                   >
                     <option value="">Chọn danh mục</option>
                     {categories.map((cat) => (
@@ -376,7 +379,8 @@ const UpdateBook = () => {
                     value={book.price}
                     onChange={handleChange}
                     required
-                    className="w-full pl-10 pr-12 py-2.5 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300/50 dark:border-gray-600/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200 hover:bg-gray-100/80 dark:hover:bg-gray-600/80"
+                    disabled={isLoading}
+                    className={`w-full pl-10 pr-12 py-2.5 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300/50 dark:border-gray-600/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200 hover:bg-gray-100/80 dark:hover:bg-gray-600/80 ${isLoading ? "opacity-75 cursor-not-allowed" : ""}`}
                     placeholder="Nhập giá sách"
                     onKeyPress={(e) => {
                       if (!/[0-9]/.test(e.key)) {
@@ -388,14 +392,16 @@ const UpdateBook = () => {
                     <button
                       type="button"
                       onClick={handleIncrease}
-                      className="p-0.5 text-cyan-500 dark:text-cyan-400 hover:text-cyan-600 dark:hover:text-cyan-300 transition-colors duration-200"
+                      disabled={isLoading}
+                      className={`p-0.5 text-cyan-500 dark:text-cyan-400 hover:text-cyan-600 dark:hover:text-cyan-300 transition-colors duration-200 ${isLoading ? "opacity-75 cursor-not-allowed" : ""}`}
                     >
                       <ChevronUpIcon className="w-4 h-4" />
                     </button>
                     <button
                       type="button"
                       onClick={handleDecrease}
-                      className="p-0.5 text-cyan-500 dark:text-cyan-400 hover:text-cyan-600 dark:hover:text-cyan-300 transition-colors duration-200"
+                      disabled={isLoading}
+                      className={`p-0.5 text-cyan-500 dark:text-cyan-400 hover:text-cyan-600 dark:hover:text-cyan-300 transition-colors duration-200 ${isLoading ? "opacity-75 cursor-not-allowed" : ""}`}
                     >
                       <ChevronDownIcon className="w-4 h-4" />
                     </button>
@@ -420,7 +426,8 @@ const UpdateBook = () => {
                     onChange={handleChange}
                     min="1"
                     required
-                    className="w-full pl-10 pr-12 py-2.5 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300/50 dark:border-gray-600/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200 hover:bg-gray-100/80 dark:hover:bg-gray-600/80"
+                    disabled={isLoading}
+                    className={`w-full pl-10 pr-12 py-2.5 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300/50 dark:border-gray-600/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200 hover:bg-gray-100/80 dark:hover:bg-gray-600/80 ${isLoading ? "opacity-75 cursor-not-allowed" : ""}`}
                     onKeyPress={(e) => {
                       if (!/[0-9]/.test(e.key)) {
                         e.preventDefault();
@@ -431,14 +438,16 @@ const UpdateBook = () => {
                     <button
                       type="button"
                       onClick={handleIncreaseQuantity}
-                      className="p-0.5 text-cyan-500 dark:text-cyan-400 hover:text-cyan-600 dark:hover:text-cyan-300 transition-colors duration-200"
+                      disabled={isLoading}
+                      className={`p-0.5 text-cyan-500 dark:text-cyan-400 hover:text-cyan-600 dark:hover:text-cyan-300 transition-colors duration-200 ${isLoading ? "opacity-75 cursor-not-allowed" : ""}`}
                     >
                       <ChevronUpIcon className="w-4 h-4" />
                     </button>
                     <button
                       type="button"
                       onClick={handleDecreaseQuantity}
-                      className="p-0.5 text-cyan-500 dark:text-cyan-400 hover:text-cyan-600 dark:hover:text-cyan-300 transition-colors duration-200"
+                      disabled={isLoading}
+                      className={`p-0.5 text-cyan-500 dark:text-cyan-400 hover:text-cyan-600 dark:hover:text-cyan-300 transition-colors duration-200 ${isLoading ? "opacity-75 cursor-not-allowed" : ""}`}
                     >
                       <ChevronDownIcon className="w-4 h-4" />
                     </button>
@@ -460,7 +469,8 @@ const UpdateBook = () => {
                     name="description"
                     value={book.description}
                     onChange={handleChange}
-                    className="w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300/50 dark:border-gray-600/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 resize-y placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200 hover:bg-gray-100/80 dark:hover:bg-gray-600/80"
+                    disabled={isLoading}
+                    className={`w-full pl-10 pr-4 py-2.5 bg-gray-50 dark:bg-gray-700 text-gray-900 dark:text-gray-100 border border-gray-300/50 dark:border-gray-600/50 rounded-xl focus:outline-none focus:ring-2 focus:ring-cyan-500 dark:focus:ring-cyan-400 resize-y placeholder-gray-500 dark:placeholder-gray-400 transition-all duration-200 hover:bg-gray-100/80 dark:hover:bg-gray-600/80 ${isLoading ? "opacity-75 cursor-not-allowed" : ""}`}
                     placeholder="Nhập mô tả sách"
                     rows="3"
                   />
@@ -468,13 +478,13 @@ const UpdateBook = () => {
               </div>
 
               <div>
-                <label className="block text-gray-700 dark:text-grey-300 text-sm font-medium mb-2">
+                <label className="block text-gray-700 dark:text-gray-300 text-sm font-medium mb-2">
                   Hình ảnh
                 </label>
                 <div className="relative">
                   <label
                     htmlFor="image"
-                    className="group flex items-center justify-center w-full h-32 bg-gray-50 dark:bg-gray-700 border-2 border-gray-300/50 dark:border-gray-600/50 rounded-xl cursor-pointer hover:bg-gray-100/80 dark:hover:bg-gray-600/80 hover:border-cyan-500 dark:hover:border-cyan-400 transition-all duration-300 shadow-md"
+                    className={`group flex items-center justify-center w-full h-32 bg-gray-50 dark:bg-gray-700 border-2 border-gray-300/50 dark:border-gray-600/50 rounded-xl cursor-pointer hover:bg-gray-100/80 dark:hover:bg-gray-600/80 hover:border-cyan-500 dark:hover:border-cyan-400 transition-all duration-300 shadow-md ${isLoading ? "opacity-75 cursor-not-allowed" : ""}`}
                   >
                     {previewImage ? (
                       <div className="relative w-full h-full">
@@ -503,6 +513,7 @@ const UpdateBook = () => {
                       name="image"
                       accept="image/*"
                       onChange={handleChange}
+                      disabled={isLoading}
                       className="hidden"
                     />
                   </label>
@@ -519,7 +530,8 @@ const UpdateBook = () => {
           <div className="mt-8 flex gap-4">
             <button
               type="submit"
-              className="flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-500 dark:from-cyan-400 to-teal-500 dark:to-teal-400 hover:from-cyan-600 dark:hover:from-cyan-500 hover:to-teal-600 dark:hover:to-teal-500 text-white font-semibold py-2.5 rounded-xl transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105"
+              disabled={isLoading}
+              className={`flex-1 flex items-center justify-center gap-2 bg-gradient-to-r from-cyan-500 dark:from-cyan-400 to-teal-500 dark:to-teal-400 text-white font-semibold py-2.5 rounded-xl transition-all duration-300 shadow-md ${isLoading ? "opacity-75 cursor-not-allowed" : "hover:from-cyan-600 dark:hover:from-cyan-500 hover:to-teal-600 dark:hover:to-teal-500 hover:shadow-lg hover:scale-105"}`}
             >
               <BookOpenIcon className="w-5 h-5" />
               Cập nhật
@@ -527,7 +539,8 @@ const UpdateBook = () => {
             <button
               type="button"
               onClick={() => navigate("/admin/books/list")}
-              className="flex-1 flex items-center justify-center gap-2 bg-gray-300 dark:bg-gray-600 hover:bg-gray-400 dark:hover:bg-gray-500 text-gray-900 dark:text-gray-100 font-semibold py-2.5 rounded-xl transition-all duration-300 shadow-md hover:shadow-lg hover:scale-105"
+              disabled={isLoading}
+              className={`flex-1 flex items-center justify-center gap-2 bg-gray-300 dark:bg-gray-600 text-gray-900 dark:text-gray-100 font-semibold py-2.5 rounded-xl transition-all duration-300 shadow-md ${isLoading ? "opacity-75 cursor-not-allowed" : "hover:bg-gray-400 dark:hover:bg-gray-500 hover:shadow-lg hover:scale-105"}`}
             >
               <ArrowLeftIcon className="w-5 h-5" />
               Hủy

@@ -77,3 +77,19 @@ export const purchaseMembership = async (
     throw err;
   }
 };
+
+
+export const getUserPoints = async (accessToken, axiosJWT) => {
+  try {
+    const res = await axiosJWT.get(
+      `${process.env.REACT_APP_SERVER_URL}/v1/membership/points`,
+      {
+        headers: { token: `Bearer ${accessToken}` },
+      }
+    );
+    return res.data;
+  } catch (err) {
+    console.error("Lỗi khi lấy số điểm:", err);
+    throw err;
+  }
+};

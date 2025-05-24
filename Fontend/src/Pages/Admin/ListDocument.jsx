@@ -5,7 +5,6 @@ import { createAxios } from "../../createInstance";
 import { loginSuccess } from "../../redux/authSlice";
 import { Bar } from "react-chartjs-2";
 import { Chart as ChartJS, CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend } from "chart.js";
-import { useNavigate } from "react-router-dom";
 import { DocumentTextIcon, EyeIcon, TrashIcon } from "@heroicons/react/24/outline";
 
 ChartJS.register(CategoryScale, LinearScale, BarElement, Title, Tooltip, Legend);
@@ -20,7 +19,6 @@ const ListDocument = () => {
   const documents = useSelector((state) => state.document.documents);
   const isLoading = useSelector((state) => state.document.isFetching);
   const dispatch = useDispatch();
-  const navigate = useNavigate();
   const axiosJWT = useMemo(() => createAxios(user, dispatch, loginSuccess), [user, dispatch]);
 
   const [currentPage, setCurrentPage] = useState(1);

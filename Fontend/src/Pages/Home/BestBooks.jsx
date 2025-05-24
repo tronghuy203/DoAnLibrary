@@ -1,52 +1,42 @@
-import React, { useEffect, useMemo } from "react";
+import React, { useEffect, useMemo, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useSelector, useDispatch } from "react-redux";
-import { getReviews } from "../../redux/apiReview";
+import { getAllReviewStats } from "../../redux/apiReview";
 import { getAllBooks } from "../../redux/apiBooks";
 
 const BestBooks = () => {
   const navigate = useNavigate();
   const dispatch = useDispatch();
   const books = useSelector((state) => state.books.allBooks);
-  const [reviewStats, setReviewStats] = React.useState({});
+  const [reviewStats, setReviewStats] = useState({});
+  const [isLoadingReviews, setIsLoadingReviews] = useState(false);
+  const [errorReviews, setErrorReviews] = useState(null);
 
-  useEffect(() => {
+ useEffect(() => {
     if (!books.length) {
       dispatch(getAllBooks());
     }
-  }, [dispatch, books]);
+  }, [dispatch, books])
 
   useEffect(() => {
-    const fetchReviewStats = async () => {
-      if (!books.length) return;
-      try {
-        const stats = {};
-        const reviewPromises = books.map((book) =>
-          getReviews("book", book._id, dispatch).then((reviews) => ({
-            bookId: book._id,
-            reviews,
-          }))
-        );
-        const reviewResults = await Promise.all(reviewPromises);
+    if (books.length > 0 && Object.keys(reviewStats).length === 0) {
+      fetchReviewStats();
+    }
+  }, [books, reviewStats]);
 
-        for (const { bookId, reviews } of reviewResults) {
-          const reviewCount = reviews.length;
-          const averageRating =
-            reviewCount > 0
-              ? (
-                  reviews.reduce((acc, r) => acc + r.rating, 0) / reviewCount
-                ).toFixed(1)
-              : 0;
-          stats[bookId] = { averageRating, reviewCount };
-        }
-        setReviewStats(stats);
-      } catch (error) {
-        console.error("Lỗi khi lấy thống kê đánh giá:", error);
-      }
-    };
-
-    fetchReviewStats();
-  }, [books, dispatch]);
+  const fetchReviewStats = async () => {
+    setIsLoadingReviews(true);
+    setErrorReviews(null);
+    try {
+      const stats = await getAllReviewStats("book", dispatch);
+      setReviewStats(stats);
+    } catch (error) {
+      console.error("Lỗi khi lấy thống kê đánh giá:", error);
+      setErrorReviews("Không thể tải đánh giá. Vui lòng thử lại sau.");
+    } finally {
+      setIsLoadingReviews(false);
+    }
+  };
 
   const topBooksSorted = useMemo(() => {
     if (!books.length) return [];
@@ -87,12 +77,15 @@ const BestBooks = () => {
             cộng đồng độc giả.
           </p>
         </div>
+        {errorReviews && (
+          <p className="text-center text-red-500 mb-8">{errorReviews}</p>
+        )}
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 md:gap-5 place-items-center gap-20">
           {topBooks.length > 0 ? (
             topBooks.map((book) => {
-              const ratingInfo = reviewStats[book._id];
-              const avg = parseFloat(ratingInfo?.averageRating || 0);
-              const count = ratingInfo?.reviewCount || 0;
+              const ratingInfo = reviewStats[book._id] || {};
+              const avg = parseFloat(ratingInfo.averageRating || 0);
+              const count = ratingInfo.reviewCount || 0;
 
               return (
                 <div
@@ -117,25 +110,34 @@ const BestBooks = () => {
                       {book.description || "Không có mô tả"}
                     </p>
                     <div className="flex items-center justify-center mt-2 text-yellow-400">
-                      {[...Array(5)].map((_, i) => (
-                        <svg
-                          key={i}
-                          className={`w-5 h-5 ${
-                            i < Math.round(avg)
-                              ? "fill-current"
-                              : "fill-none stroke-current"
-                          }`}
-                          xmlns="http://www.w3.org/2000/svg"
-                          viewBox="0 0 24 24"
-                        >
-                          <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
-                        </svg>
-                      ))}
-                      <span className="ml-2 text-sm text-gray-600 group-hover:text-white dark:text-gray-300">
-                        {avg > 0
-                          ? `${avg}/5 (${count} đánh giá)`
-                          : "Chưa có đánh giá"}
-                      </span>
+                      {isLoadingReviews ? (
+                        <div className="animate-pulse flex items-center">
+                          <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-16 mr-2"></div>
+                          <div className="h-4 bg-gray-300 dark:bg-gray-600 rounded w-24"></div>
+                        </div>
+                      ) : (
+                        <>
+                          {[...Array(5)].map((_, i) => (
+                            <svg
+                              key={i}
+                              className={`w-5 h-5 ${
+                                i < Math.round(avg)
+                                  ? "fill-current"
+                                  : "fill-none stroke-current"
+                              }`}
+                              xmlns="http://www.w3.org/2000/svg"
+                              viewBox="0 0 24 24"
+                            >
+                              <path d="M12 17.27L18.18 21l-1.64-7.03L22 9.24l-7.19-.61L12 2 9.19 8.63 2 9.24l5.46 4.73L5.82 21z" />
+                            </svg>
+                          ))}
+                          <span className="ml-2 text-sm text-gray-600 group-hover:text-white dark:text-gray-300">
+                            {avg > 0
+                              ? `${avg}/5 (${count} đánh giá)`
+                              : "Chưa có đánh giá"}
+                          </span>
+                        </>
+                      )}
                     </div>
                     <button
                       className="bg-sky-600 to-cyan-200 text-white px-4 py-2 rounded-full mt-4 hover:scale-105 duration-200 group-hover:bg-white group-hover:text-sky-600"

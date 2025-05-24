@@ -5,6 +5,8 @@ const Penalty = require("../models/Penalty");
 const User = require("../models/User");
 const nodemailer = require("nodemailer");
 
+process.env.TZ = 'Asia/Ho_Chi_Minh';
+
 const transporter = nodemailer.createTransport({
   service: "gmail",
   auth: {
@@ -53,7 +55,7 @@ const calculateDelayDays = (currentDate, dueDate) => {
 // Chạy hàng ngày lúc 00:00
 // */2 * * * *
 cron.schedule("0 0 * * *", async () => {
-  console.log("Running penalty check job...");
+  console.log("Running penalty check job at:", new Date().toString());
   try {
     const currentDate = new Date();
 
@@ -164,4 +166,4 @@ cron.schedule("0 0 * * *", async () => {
   }
 });
 
-console.log("Penalty job scheduled");
+console.log("Penalty job scheduled at:", new Date().toString());

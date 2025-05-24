@@ -218,6 +218,12 @@ const documentController = {
       document.status = 'approved';
       await document.save();
 
+      const user = await User.findById(document.uploadedBy);
+      if (user) {
+        user.points = (user.points || 0) + 3000;
+        await user.save();
+      }
+
       res.status(200).json({
         message: 'Tài liệu đã được duyệt thành công',
         document,
