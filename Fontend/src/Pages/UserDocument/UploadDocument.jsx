@@ -254,7 +254,9 @@ const UploadDocument = () => {
               <motion.button
                 whileHover={{ scale: 1.03 }}
                 whileTap={{ scale: 0.97 }}
-                onClick={() => setIsNotesOpen(!isNotesOpen)}
+                onClick={(e) => {
+                  e.preventDefault();
+                  setIsNotesOpen(!isNotesOpen);}}
                 className="w-full flex items-center justify-between p-3 sm:p-4 bg-white/95 dark:bg-zinc-800/95 rounded-xl shadow-md text-gray-900 dark:text-white font-semibold text-sm sm:text-base"
               >
                 <span className="flex items-center gap-2">
