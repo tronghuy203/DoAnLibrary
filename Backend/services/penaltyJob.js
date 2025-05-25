@@ -29,24 +29,24 @@ const formatVietnamDateTime = (date) => {
 
 const calculateDelayDays = (currentDate, dueDate) => {
   const startOfCurrentDate = new Date(
-    currentDate.getUTCFullYear(),
-    currentDate.getUTCMonth(),
-    currentDate.getUTCDate()
+    currentDate.getFullYear(),
+    currentDate.getMonth(),
+    currentDate.getDate()
   );
 
-  const dueDatePlusOne = new Date(dueDate.getTime());
-  dueDatePlusOne.setUTCDate(dueDatePlusOne.getUTCDate() + 1);
   const startOfDueDate = new Date(
-    dueDatePlusOne.getUTCFullYear(),
-    dueDatePlusOne.getUTCMonth(),
-    dueDatePlusOne.getUTCDate()
+    dueDate.getFullYear(),
+    dueDate.getMonth(),
+    dueDate.getDate()
   );
 
   const timeDiff = startOfCurrentDate - startOfDueDate;
   let delayDays = Math.floor(timeDiff / (1000 * 60 * 60 * 24));
 
-  if (currentDate > dueDate) {
-    delayDays = Math.max(1, delayDays + 1);
+  if (startOfCurrentDate > startOfDueDate) {
+    delayDays = Math.max(1, delayDays);
+  } else {
+    delayDays = 0;
   }
 
   return delayDays;
