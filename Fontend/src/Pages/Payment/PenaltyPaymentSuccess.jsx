@@ -228,7 +228,7 @@ const PenaltyPaymentSuccess = () => {
           className="w-full bg-gradient-to-r from-blue-500 to-blue-600 dark:from-blue-600 dark:to-blue-700 text-white py-3 rounded-xl font-semibold text-sm sm:text-base transition-all duration-300 hover:shadow-xl focus:outline-none focus:ring-2 focus:ring-blue-500 focus:ring-offset-2 dark:focus:ring-offset-gray-800"
         >
           <FaArrowLeft className="inline-block mr-2" />
-          Quay Lại Danh Sách Sách
+          Quay Lại Lịch Sử Hoạt Động
         </motion.button>
       </motion.div>
     </div>

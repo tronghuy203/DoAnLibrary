@@ -71,7 +71,12 @@ const AllBooks = () => {
     setIsLoadingReviews(true);
     setErrorReviews(null);
     try {
-      const stats = await getAllReviewStatsJWT("book", user.accessToken, dispatch, axiosJWT);
+      const stats = await getAllReviewStatsJWT(
+        "book",
+        user.accessToken,
+        dispatch,
+        axiosJWT
+      );
       setReviewStats(stats);
     } catch (error) {
       console.error("Lỗi khi lấy thống kê đánh giá:", error);
@@ -91,15 +96,19 @@ const AllBooks = () => {
       matchesSearch &&
       (selectedCategory === "all" || book.category === selectedCategory) &&
       (selectedPriceRange === "all" ||
-        (selectedPriceRange === "low" && book.price < 100000) ||
-        (selectedPriceRange === "medium" &&
-          book.price >= 100000 &&
-          book.price <= 500000) ||
-        (selectedPriceRange === "high" && book.price > 500000)) &&
+        (selectedPriceRange === "under_30000" && book.price <= 30000) ||
+        (selectedPriceRange === "under_50000" && book.price <= 50000) ||
+        (selectedPriceRange === "50000_to_100000" &&
+          book.price > 50000 &&
+          book.price <= 100000) ||
+        (selectedPriceRange === "above_100000" && book.price > 100000)) &&
       (selectedAuthor === "all" || book.author === selectedAuthor) &&
       (selectedRating === "all" ||
+        (selectedRating === "1+" && avgRating >= 1) ||
+        (selectedRating === "2+" && avgRating >= 2) ||
+        (selectedRating === "3+" && avgRating >= 3) ||
         (selectedRating === "4+" && avgRating >= 4) ||
-        (selectedRating === "3+" && avgRating >= 3))
+        (selectedRating === "no_rating" && avgRating === 0))
     );
   });
 
@@ -157,9 +166,10 @@ const AllBooks = () => {
             className="w-full p-3 rounded-lg bg-gray-100 dark:bg-zinc-700 text-gray-900 dark:text-white"
           >
             <option value="all">Tất cả</option>
-            <option value="low">Dưới 100,000 ₫</option>
-            <option value="medium">100,000 ₫ - 500,000 ₫</option>
-            <option value="high">Trên 500,000 ₫</option>
+            <option value="under_30000">Dưới 30,000 ₫</option>
+            <option value="under_50000">Dưới 50,000 ₫</option>
+            <option value="50000_to_100000">50,000 ₫ - 100,000 ₫</option>
+            <option value="above_100000">Trên 100,000 ₫</option>
           </select>
         </div>
 
@@ -190,8 +200,12 @@ const AllBooks = () => {
             className="w-full p-3 rounded-lg bg-gray-100 dark:bg-zinc-700 text-gray-900 dark:text-white"
           >
             <option value="all">Tất cả</option>
+            <option value="5+">5 sao trở lên</option>
             <option value="4+">4 sao trở lên</option>
             <option value="3+">3 sao trở lên</option>
+            <option value="2+">2 sao trở lên</option>
+            <option value="1+">1 sao trở lên</option>
+            <option value="no_rating">Chưa có đánh giá</option>
           </select>
         </div>
       </div>

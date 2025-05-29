@@ -209,7 +209,7 @@ const RentalPaymentSuccess = () => {
           <div className="grid grid-cols-1 sm:grid-cols-2 gap-4 text-gray-600 dark:text-gray-300 text-sm sm:text-base">
             <div className="flex justify-between">
               <span className="font-medium">Mã giao dịch:</span>
-              <span className="font-mono text-blue-600 dark:text-blue-400">{shortenTxnRef(paymentInfo.vnpayTxnRef || "N/A")}</span>
+              <span className="text-blue-600 dark:text-blue-400">{shortenTxnRef(paymentInfo.vnpayTxnRef || "Không áp dụng")}</span>
             </div>
             <div className="flex justify-between">
               <span className="font-medium">Số tiền:</span>

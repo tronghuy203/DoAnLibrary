@@ -150,6 +150,12 @@ const PaymentPage = () => {
                 {(requestDetails.bookId?.price || "0").toLocaleString("vi-VN")} ₫
               </span>
             </div>
+            <div className="flex justify-between">
+              <span className="font-medium">Thời gian mượn:</span>
+              <span className="text-blue-600 dark:text-blue-400">
+                 7 ngày
+              </span>
+            </div>
           </div>
         </motion.div>
 
@@ -203,7 +209,7 @@ const PaymentPage = () => {
               >
                 <ol className="list-decimal list-inside space-y-2">
                   <li>Chọn phương thức thanh toán phù hợp (Tiền mặt hoặc VNPay).</li>
-                  <li>Nếu chọn Tiền mặt, đến thư viện tại<strong>tầng 9 trường Đại Học Đông Á, 33 Xô Viết Nghệ Tĩnh, Thành Phố Đà Nẵng</strong> để thanh toán.</li>
+                  <li>Nếu chọn Tiền mặt, đến thư viện tại<strong> tầng 9 trường Đại Học Đông Á, 33 Xô Viết Nghệ Tĩnh, Thành Phố Đà Nẵng</strong> để thanh toán.</li>
                   <li>Nếu chọn VNPay, bạn sẽ được chuyển hướng đến cổng thanh toán trực tuyến.</li>
                   <li>Sau khi thanh toán thành công, bạn sẽ nhận được xác nhận mượn sách.</li>
                 </ol>

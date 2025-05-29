@@ -92,7 +92,7 @@ cron.schedule("0 0 * * *", async () => {
           currentDate,
           new Date(record.dueDate)
         );
-        const penaltyAmount = delayDays * 10000;
+        const penaltyAmount = delayDays * 5000;
 
         const penalty = new Penalty({
           userId: record.userId,
@@ -132,7 +132,7 @@ cron.schedule("0 0 * * *", async () => {
           currentDate,
           new Date(record.dueDate)
         );
-        const totalPenaltyAmount = delayDays * 10000;
+        const totalPenaltyAmount = delayDays * 5000;
         const newPenaltyAmount =
           totalPenaltyAmount - (existingPenalty.paidAmount || 0);
 
