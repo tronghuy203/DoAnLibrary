@@ -121,10 +121,23 @@ const userController = {
       }
 
       const updateData = {};
-      const fields = ["username", "avatar", "gender", "email", "country", "city"];
+      const fields = ["username", "avatar", "gender", "country", "city"];
       fields.forEach((field) => {
         if (req.body[field]) updateData[field] = req.body[field];
       });
+
+      if (req.body.email) {
+        const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+        if (!emailRegex.test(req.body.email)) {
+          return res.status(400).json({ message: "Email không hợp lệ. Vui lòng nhập email đúng định dạng (ví dụ: example@gmail.com)" });
+        }
+
+        const existingUser = await User.findOne({ email: req.body.email });
+        if (existingUser && existingUser._id.toString() !== req.user.id) {
+          return res.status(400).json({ message: "Email đã được sử dụng bởi người dùng khác" });
+        }
+        updateData.email = req.body.email;
+      }
 
       if (req.body.phone) {
         const phone = req.body.phone;
@@ -161,6 +174,10 @@ const userController = {
       if (err.code === 11000) {
         const field = Object.keys(err.keyValue)[0];
         return res.status(400).json({ message: `${field} đã tồn tại` });
+      }
+      if (err.name === 'ValidationError') {
+        const messages = Object.values(err.errors).map((val) => val.message);
+        return res.status(400).json({ message: messages.join(', ') });
       }
       res.status(500).json({ message: "Lỗi khi cập nhật hồ sơ", error: err.message });
     }

@@ -236,7 +236,7 @@ export const updateUserProfile = async (
   } catch (err) {
     dispatch(updateUserFailed());
     alert("Cập nhật thất bại!");
-    console.log(err);
+    throw err;
   }
 };
 
