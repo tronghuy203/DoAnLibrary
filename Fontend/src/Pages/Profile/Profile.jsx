@@ -109,6 +109,26 @@ const Profile = () => {
       return;
     }
 
+    if (updatedData.username.length < 6) {
+      setError("Tên người dùng phải có ít nhất 6 ký tự");
+      setTimeout(() => setError(null), 3000);
+      return;
+    }
+
+    if (updatedData.email) {
+      const emailRegex = /^[a-zA-Z0-9._%+-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,}$/;
+      if (!emailRegex.test(updatedData.email)) {
+        setError("Email không hợp lệ. Vui lòng nhập email đúng định dạng (ví dụ: example@gmail.com)");
+        setTimeout(() => setError(null), 3000);
+        return;
+      }
+      if (updatedData.email.length < 10 || updatedData.email.length > 50) {
+        setError("Email phải có độ dài từ 10 đến 50 ký tự");
+        setTimeout(() => setError(null), 3000);
+        return;
+      }
+    }    
+
     if (updatedData.phone && !/^[0-9]{10,11}$/.test(updatedData.phone)) {
       setError("Số điện thoại phải là số và có độ dài từ 10 đến 11 số");
       setTimeout(() => setError(null), 3000);
@@ -131,8 +151,16 @@ const Profile = () => {
       setSuccess("Cập nhật hồ sơ thành công!");
       setTimeout(() => setSuccess(null), 3000);
     } catch (err) {
-      console.error("Update error:", err);
-      setError(err.response?.data?.message || "Cập nhật thất bại. Vui lòng thử lại.");
+      const errorMessage = err.response?.data?.message || "Cập nhật thất bại. Vui lòng thử lại.";
+      if (errorMessage.includes("username")) {
+        setError("Tên người dùng không hợp lệ. Vui lòng nhập ít nhất 6 ký tự.");
+      } else if (errorMessage.includes("Email đã được sử dụng")) {
+        setError("Email đã được sử dụng bởi người dùng khác.");
+      } else if (errorMessage.includes("email")) {
+        setError("Email không hợp lệ. Vui lòng kiểm tra lại.");
+      } else {
+        setError(errorMessage);
+      }
       setTimeout(() => setError(null), 3000);
     }
   };
