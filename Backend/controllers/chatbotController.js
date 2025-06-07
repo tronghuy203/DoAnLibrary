@@ -14,6 +14,16 @@ Nếu không có thông tin cụ thể, thông báo rõ ràng: "Hiện không c�
 Luôn trả lời bằng tiếng Việt, ngắn gọn và rõ ràng, không sử dụng định dạng Markdown.
 `;
 
+const BORROW_GUIDE = `
+Hướng dẫn mượn sách:
+- Đăng nhập vào hệ thống thư viện.
+- Tìm sách qua chức năng tìm kiếm hoặc danh sách sách.
+- Kiểm tra số lượng sách còn lại (nếu hết, sách không thể mượn).
+- Nhấn 'Mượn sách' và thực hiện thanh toán (nếu hoàn tất việc thanh toán đến quầy để nhận sách).
+- Thời hạn mượn: 7 ngày.
+- Lưu ý: Trả đúng hạn để tránh phí phạt (5000 VND/ngày).
+`;
+
 const chatbotController = {
   handleChat: async (req, res) => {
     const startTime = Date.now();
@@ -24,16 +34,31 @@ const chatbotController = {
           .status(400)
           .json({ message: "Vui lòng nhập câu hỏi hợp lệ." });
       }
-     const recentHistory = await ChatHistory.find({ userId })
+      const isBorrowQuestion = /mượn sách|cách mượn|hướng dẫn mượn/i.test(
+        message
+      );
+      let replyPrefix = "";
+      if (isBorrowQuestion && !/tên sách|sách cụ thể|cuốn/i.test(message)) {
+        return res.status(200).json({ reply: BORROW_GUIDE });
+      } else if (isBorrowQuestion) {
+        replyPrefix = BORROW_GUIDE + "\n";
+      }
+      const recentHistory = await ChatHistory.find({ userId })
         .sort({ createdAt: -1 })
         .limit(3)
         .lean();
       const historyContext = recentHistory
-        .map((h, index) => `Câu hỏi ${index + 1}: ${h.question}\nCâu trả lời: ${h.response}`)
+        .map(
+          (h, index) =>
+            `Câu hỏi ${index + 1}: ${h.question}\nCâu trả lời: ${h.response}`
+        )
         .join("\n");
 
-      const books = await Book.find({}).populate('category').lean().limit(50);
-      const docs = await Document.find({ status: "approved" }).populate("uploadedBy", "username").lean().limit(50);
+      const books = await Book.find({}).populate("category").lean().limit(50);
+      const docs = await Document.find({ status: "approved" })
+        .populate("uploadedBy", "username")
+        .lean()
+        .limit(50);
       const reviews = await Review.find({})
         .sort({ createdAt: -1 })
         .limit(50)
@@ -63,14 +88,28 @@ const chatbotController = {
       const topRated = reviewData.filter((r) => r.rating >= 4);
 
       const context = [
-       `Lịch sử trò chuyện gần nhất:\n${historyContext || "Không có lịch sử trò chuyện."}`,
-       `Danh sách sách:\n${books
+        `Lịch sử trò chuyện gần nhất:\n${
+          historyContext || "Không có lịch sử trò chuyện."
+        }`,
+        `Danh sách sách:\n${books
           .map(
             (b) =>
-              `- Tên: ${b.title}\n  Tác giả: ${b.author}\n  Năm: ${b.publishedYear}\n  Mô tả: ${b.description || "Không có"}\n  Giá: ${b.price || "Không rõ"} VND\n  Còn lại: ${b.quantity} cuốn\n  Danh mục: ${b.category?.name || "Không có"}`
+              `- Tên: ${b.title}\n  Tác giả: ${b.author}\n  Năm: ${
+                b.publishedYear
+              }\n  Mô tả: ${b.description || "Không có"}\n  Giá: ${
+                b.price || "Không rõ"
+              } VND\n  Còn lại: ${b.quantity} cuốn\n  Danh mục: ${
+                b.category?.name || "Không có"
+              }`
           )
           .join("\n")}`,
-        `Danh sách tài liệu:\n${docs.map((d) => `- Tên: ${d.title}\n  Mô tả: ${d.description || "Không có"}\n  Người đăng: ${d.uploadedBy?.username || "Không rõ"}`)
+        `Danh sách tài liệu:\n${docs
+          .map(
+            (d) =>
+              `- Tên: ${d.title}\n  Mô tả: ${
+                d.description || "Không có"
+              }\n  Người đăng: ${d.uploadedBy?.username || "Không rõ"}`
+          )
           .join("\n")}`,
         `Các đánh giá gần đây:\n${reviewData
           .map(
@@ -86,7 +125,6 @@ const chatbotController = {
               .join("\n")}`
           : "",
       ].join("\n");
-      
 
       const geminiRes = await axios.post(
         "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent",
