@@ -246,7 +246,7 @@ const AdminChat = () => {
                 <p className="text-sm sm:text-base">Không có người dùng nào</p>
               </div>
             ) : (
-              <div className="h-[calc(80vh-100px)] sm:h-[500px] overflow-y-auto scrollbar scrollbar-w-2 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scrollbar-thumb-blue-500 dark:scrollbar-thumb-blue-400 scrollbar-track-gray-100 dark:scrollbar-track-gray-800 [scrollbar-color:#3b82f6_#f3f4f6] dark:[scrollbar-color:#60a5fa_#1f2937] lg:scrollbar-w-3 lg:scrollbar-thumb-blue-600 dark:lg:scrollbar-thumb-blue-500 lg:scrollbar-track-gray-100 dark:lg:scrollbar-track-gray-800 lg:scrollbar-thumb-hover:blue-700 dark:lg:scrollbar-thumb-hover:blue-600">
+              <div className="h-[calc(80vh-100px)] sm:max-h-[calc(65vh-100px)] overflow-y-auto scrollbar scrollbar-w-2 scrollbar-thumb-rounded-full scrollbar-track-rounded-full scrollbar-thumb-blue-500 dark:scrollbar-thumb-blue-400 scrollbar-track-gray-100 dark:scrollbar-track-gray-800 [scrollbar-color:#3b82f6_#f3f4f6] dark:[scrollbar-color:#60a5fa_#1f2937] lg:scrollbar-w-3 lg:scrollbar-thumb-blue-600 dark:lg:scrollbar-thumb-blue-500 lg:scrollbar-track-gray-100 dark:lg:scrollbar-track-gray-800 lg:scrollbar-thumb-hover:blue-700 dark:lg:scrollbar-thumb-hover:blue-600">
                 <ul className="space-y-3 sm:space-y-2">
                   {sortedUsers.map((u, index) => (
                     <li
